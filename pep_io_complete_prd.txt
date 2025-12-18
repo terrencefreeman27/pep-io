@@ -1,0 +1,7444 @@
+================================================================================
+                    PRODUCT REQUIREMENTS DOCUMENT (PRD)
+                                  pep.io
+                  Peptide Tracking & Management Application
+================================================================================
+
+Version: 1.0 (MVP)
+Platform: iOS (Apple App Store compliant) with Android future support
+Tech Stack: Flutter + Dart
+Storage: Local only (SQLite/Hive)
+Last Updated: December 17, 2025
+
+================================================================================
+                              TABLE OF CONTENTS
+================================================================================
+
+1. Executive Summary
+   1.1 Product Vision
+   1.2 Core Value Propositions
+   1.3 Key Differentiators
+   1.4 Target Market
+
+2. Product Overview
+   2.1 App Identity
+   2.2 Goals
+   2.3 Non-Goals (What This App Does NOT Do)
+
+3. User Personas
+   3.1 Primary Persona: "Optimizer Oliver"
+   3.2 Secondary Persona: "Wellness Wendy"
+   3.3 Tertiary Persona: "Athletic Andy"
+
+4. Complete Feature Specifications
+   4.1 Onboarding Flow
+   4.2 Goal-Based Selection System
+   4.3 Protocol Management System
+   4.4 Peptide Library
+   4.5 Dose Calculator
+   4.6 Calendar View
+   4.7 Home Dashboard
+   4.8 Progress Tracking
+   4.9 Notifications & Reminders
+   4.10 Settings & User Profile
+
+5. Technical Architecture
+   5.1 Technology Stack
+   5.2 App Architecture Pattern
+   5.3 Database Schema
+   5.4 Data Models (Dart)
+   5.5 State Management Approach
+   5.6 Services Layer
+   5.7 Navigation & Routing
+   5.8 Performance Optimizations
+   5.9 Testing Strategy
+
+6. UI/UX Guidelines
+   6.1 Design Principles
+   6.2 Visual Design System
+   6.3 Interaction Patterns
+   6.4 Screen Layouts
+
+7. Compliance & Legal Requirements
+   7.1 Apple App Store Medical Guidelines Compliance
+   7.2 Terms of Service (Full Document)
+   7.3 Privacy Policy
+   7.4 Disclaimer Content (Comprehensive)
+   7.5 Apple App Store Metadata Compliance
+
+8. Data Architecture
+   8.1 Data Flow
+   8.2 Local Storage Strategy
+   8.3 Data Models Summary
+   8.4 Data Persistence Mechanisms
+   8.5 Data Integrity & Validation
+   8.6 Data Export & Portability
+   8.7 Data Deletion & Privacy
+
+9. Apple Calendar Integration
+   9.1 Purpose & Scope
+   9.2 Permission Handling
+   9.3 Calendar Creation & Selection
+   9.4 Event Creation Specification
+   9.5 Event Updates
+   9.6 Event Deletion
+   9.7 Calendar Settings
+   9.8 Technical Implementation
+   9.9 User Experience Considerations
+
+10. Notification System
+    10.1 Notification Types & Triggers
+    10.2 Notification Scheduling
+    10.3 Notification Actions
+    10.4 Quiet Hours Implementation
+    10.5 Badge Management
+    10.6 Notification Permissions
+    10.7 Notification Content & Formatting
+    10.8 Testing Notifications
+
+11. Success Metrics
+    11.1 Key Performance Indicators (KPIs)
+    11.2 Analytics Strategy
+    11.3 User Feedback Collection
+    11.4 Success Criteria for MVP
+    11.5 Failure Indicators & Mitigation
+
+12. Future Roadmap
+    12.1 Post-MVP Features (Versions 1.1-1.5)
+    12.2 Android Version
+    12.3 Expanded Peptide Library
+    12.4 Premium Features (Optional Monetization)
+    12.5 Community & Content
+    12.6 Partnerships
+    12.7 Long-Term Vision (2-3 Years)
+
+13. Appendix
+    13.1 Glossary of Terms
+    13.2 Peptide Database JSON Structure (Sample)
+    13.3 Complete Peptide List with Categories
+    13.4 Technical Dependencies
+    13.5 Development Timeline Estimate
+    13.6 Team Roles (Recommended)
+    13.7 Resources & References
+    13.8 Legal Disclaimers for App Store Submission
+    13.9 Marketing & Launch Strategy
+    13.10 Maintenance & Support Plan
+
+================================================================================
+                           1. EXECUTIVE SUMMARY
+================================================================================
+
+1.1 PRODUCT VISION
+------------------
+pep.io is an educational peptide companion app designed to help users track 
+peptide protocols, calculate reconstitution doses, set health goals, and learn 
+about peptides through a comprehensive library. The app prioritizes user privacy 
+with local-only storage and strict Apple App Store medical compliance.
+
+1.2 CORE VALUE PROPOSITIONS
+----------------------------
+* Privacy-First: All data stored locally on device, no cloud sync
+* Educational Focus: Comprehensive peptide library with 60+ peptides across 
+  9 categories
+* Protocol Management: Easy-to-use system for tracking peptide schedules with 
+  Apple Calendar integration
+* Dose Calculator: Educational reconstitution calculator for learning purposes
+* Goal-Oriented: Help users identify peptides based on their health and wellness 
+  goals
+* Compliance-Ready: Built from the ground up to meet Apple App Store medical app 
+  guidelines
+
+1.3 KEY DIFFERENTIATORS
+------------------------
+1. Mandatory Disclaimers: Legal protection through comprehensive TOS and inline 
+   disclaimers
+2. Goal-Based Discovery: Multi-select dropdown system replacing traditional 
+   quizzes
+3. Apple Calendar Sync: Native integration for seamless scheduling
+4. 60+ Peptide Database: Organized by scientifically-backed categories with 
+   community-discussed benefits
+5. Zero Cloud Dependency: Complete offline functionality
+
+1.4 TARGET MARKET
+------------------
+* Fitness enthusiasts exploring peptide therapy
+* Biohacking community members
+* Individuals researching wellness optimization
+* Users currently managing peptide protocols
+* Health-conscious individuals seeking educational resources
+
+================================================================================
+                           2. PRODUCT OVERVIEW
+================================================================================
+
+2.1 APP IDENTITY
+----------------
+* App Name: pep.io
+* Tagline: "Track. Learn. Optimize."
+* Category: Health & Fitness (Educational)
+* Age Rating: 17+ (Medical/Treatment Information)
+
+2.2 GOALS
+---------
+Primary Goals:
+- Provide a safe, compliant educational resource for peptide information
+- Enable users to track personal peptide protocols privately
+- Offer educational calculation tools for reconstitution learning
+- Create a comprehensive, searchable peptide library
+- Facilitate goal-based peptide discovery
+
+Secondary Goals:
+- Build user trust through transparency and compliance
+- Achieve Apple App Store approval on first submission
+- Create an intuitive, beautiful user experience
+- Enable seamless Apple Calendar integration
+- Support data export for user autonomy
+
+2.3 NON-GOALS (WHAT THIS APP DOES NOT DO)
+------------------------------------------
+* Provide medical advice, diagnosis, or treatment recommendations
+* Suggest specific dosages or protocols
+* Make therapeutic claims about peptides
+* Provide injection guidance or administration instructions
+* Store data in the cloud or sync across devices
+* Connect users with physicians or telehealth services
+* Sell or market peptide products
+* Claim FDA approval or endorsement
+
+================================================================================
+                            3. USER PERSONAS
+================================================================================
+
+3.1 PRIMARY PERSONA: "OPTIMIZER OLIVER"
+----------------------------------------
+Demographics:
+- Age: 28-42
+- Gender: Male
+- Occupation: Tech professional, entrepreneur
+- Income: $80k-$150k
+
+Characteristics:
+- Active in biohacking communities
+- Tracks health metrics obsessively
+- Has basic understanding of peptides
+- Values privacy and data ownership
+- Uses multiple health tracking apps
+
+Goals:
+- Find the right peptides for body recomposition
+- Track protocols systematically
+- Learn about new peptides through research
+- Maintain detailed logs for personal analysis
+
+Pain Points:
+- Overwhelmed by peptide information online
+- No centralized place to track protocols
+- Concerned about data privacy
+- Difficulty calculating reconstitution
+
+App Usage:
+- Daily check-ins for protocol tracking
+- Weekly research sessions in peptide library
+- Monthly goal reviews and adjustments
+
+3.2 SECONDARY PERSONA: "WELLNESS WENDY"
+----------------------------------------
+Demographics:
+- Age: 35-50
+- Gender: Female
+- Occupation: Healthcare professional, wellness coach
+- Income: $60k-$100k
+
+Characteristics:
+- Focused on longevity and anti-aging
+- Educated about holistic health
+- Cautious about new interventions
+- Values evidence-based information
+- Interested in skin, hair, and regenerative peptides
+
+Goals:
+- Learn about peptides for wellness goals
+- Track protocols for cognitive and beauty benefits
+- Find peptides with minimal side effects
+- Stay organized with reminders
+
+Pain Points:
+- Skeptical of marketing claims
+- Needs credible sources
+- Overwhelmed by technical jargon
+- Wants simple tracking without complexity
+
+App Usage:
+- 2-3x weekly protocol management
+- Regular library browsing for education
+- Sets reminders for consistency
+
+3.3 TERTIARY PERSONA: "ATHLETIC ANDY"
+--------------------------------------
+Demographics:
+- Age: 25-38
+- Gender: Male
+- Occupation: Personal trainer, athlete, fitness influencer
+- Income: $40k-$80k
+
+Characteristics:
+- Performance-focused
+- Experienced with supplements
+- New to peptides
+- Highly motivated by results
+- Shares knowledge with community
+
+Goals:
+- Find peptides for muscle growth and recovery
+- Track performance improvements
+- Calculate precise doses
+- Learn proper protocol management
+
+Pain Points:
+- Information overload from forums
+- Uncertain about peptide selection
+- Needs dosing calculator
+- Wants to track adherence
+
+App Usage:
+- Daily protocol tracking
+- Pre-workout calculator checks
+- Weekly progress reviews
+- Library research 2-3x monthly
+
+================================================================================
+                    4. COMPLETE FEATURE SPECIFICATIONS
+================================================================================
+
+4.1 ONBOARDING FLOW
+-------------------
+
+4.1.1 Legal Disclaimer & Terms of Service Screen (CRITICAL - FIRST SCREEN)
+---------------------------------------------------------------------------
+Purpose: Apple App Store medical compliance, legal protection
+
+Screen Layout:
+- App Logo: Centered at top
+- Title: "Important Information"
+- Scrollable Content Area with the following sections
+
+Content:
+
+TERMS OF SERVICE & DISCLAIMER
+
+Welcome to pep.io. Before accessing this application, you must read and 
+acknowledge the following:
+
+EDUCATIONAL PURPOSE ONLY
+This application is designed for educational, informational, and personal 
+tracking purposes only. It does NOT:
+* Provide medical advice
+* Diagnose any condition
+* Treat any disease or illness
+* Replace consultation with licensed healthcare professionals
+
+NO MEDICAL CLAIMS
+* pep.io does not make any therapeutic claims about peptides
+* Information provided is from publicly available, non-clinical sources
+* Benefits listed are "commonly researched" or "community-discussed" only
+* We do not endorse or recommend any specific peptide or protocol
+
+USER RESPONSIBILITY
+* Consult a licensed healthcare professional before making any decisions 
+  related to peptides
+* Do not use this app to self-diagnose or self-treat
+* Results may vary; no outcomes are guaranteed
+* You are solely responsible for your use of the information provided
+
+DATA & PRIVACY
+* All data is stored locally on your device only
+* No cloud storage or data transmission occurs
+* You are responsible for backing up your own data
+* pep.io cannot recover lost data
+
+COMPLIANCE
+* This app complies with Apple App Store guidelines
+* No prescription services are offered
+* No product sales or referrals are made
+* We are not affiliated with any peptide manufacturers
+
+By tapping "I Understand and Agree" below, you acknowledge that you have read, 
+understood, and agree to these terms.
+
+UI Elements:
+- Checkbox: "I have read and understand the terms above"
+- Button: "I Understand and Agree" (disabled until checkbox is checked)
+- Link: "View Full Terms of Service" (opens detailed legal document)
+- Button: "Decline" (exits app)
+
+Behavior:
+- Screen cannot be dismissed or skipped
+- Must scroll to bottom to enable checkbox
+- Agreement is stored locally with timestamp
+- Users can review again from Settings
+
+Technical Requirements:
+- Store agreement acceptance in local database
+- Log timestamp of acceptance
+- Make disclaimer accessible from app settings
+- Implement scroll tracking to ensure full reading
+
+4.1.2 Privacy Notice Screen
+----------------------------
+Purpose: Transparency about data practices
+
+Screen Layout:
+- Title: "Your Privacy Matters"
+- Icon: Shield with checkmark (indicating security and verification)
+
+Content:
+
+PRIVACY COMMITMENT
+
+Local Storage Only
+All your data stays on your device. We never transmit, store, or access your 
+information on any server.
+
+No Account Required
+No email, no password, no login. Your data is yours alone.
+
+No Tracking
+We don't track your usage, collect analytics, or share data with third parties.
+
+Your Device, Your Data
+You maintain complete control. Export your data anytime.
+
+Backup Responsibility
+Since data is local-only, we recommend regular device backups through iCloud or 
+iTunes.
+
+UI Elements:
+- Button: "Continue"
+- Link: "Privacy Policy"
+
+Behavior:
+- Appears after TOS acceptance
+- Can be viewed again from Settings
+- One-time screen (not shown on subsequent launches)
+
+4.1.3 Onboarding Survey: Question 1 - App Intentions
+-----------------------------------------------------
+Screen Layout:
+- Progress Indicator: "1 of 4"
+- Title: "What would you like to do with pep.io?"
+- Subtitle: "Select all that apply"
+
+Options (Multi-select checkboxes):
+- Track peptides
+- Calculate doses
+- Set health goals
+- Visualize progress
+- Learn about peptides
+
+UI Elements:
+- Checkboxes for multiple selection
+- Button: "Next" (enabled when at least one option selected)
+- Button: "Skip Survey" (bottom link)
+
+Data Storage:
+- Save selections to user profile
+- Use for personalized home screen recommendations
+- Inform which features to highlight
+
+Behavior:
+- At least one selection required to proceed
+- All selections saved to local database
+- Influences initial app configuration
+
+4.1.4 Onboarding Survey: Question 2 - User Profile
+---------------------------------------------------
+Screen Layout:
+- Progress Indicator: "2 of 4"
+- Title: "Tell us about yourself"
+- Subtitle: "Help us personalize your experience"
+
+Form Fields:
+
+1. Name (Optional)
+   * Text input
+   * Placeholder: "Enter your name"
+   * Used for personalized greetings ("Hello, [Name]")
+
+2. Weight (Optional)
+   * Number input
+   * Unit toggle: lbs / kg
+   * Placeholder: "Enter your weight"
+   * Used for progress tracking baseline
+
+3. Primary Goal (Required)
+   * Dropdown selector
+   * Options:
+     - Muscle Gain
+     - Fat Loss
+     - Wellness & Longevity
+     - Cognitive Enhancement
+     - Skin & Beauty
+     - Athletic Performance
+     - Recovery & Healing
+     - Custom (text input appears)
+   * Placeholder: "Select your primary goal"
+
+UI Elements:
+- Button: "Next"
+- Button: "Back"
+- Link: "Skip" (bottom)
+
+Data Storage:
+- Save all fields to user profile table
+- Weight saved with timestamp as baseline entry
+- Primary goal influences peptide recommendations
+
+Behavior:
+- Only primary goal is required
+- Name and weight are optional
+- Custom goal opens text input field
+- Dropdown uses native iOS picker
+
+4.1.5 Onboarding Survey: Question 3 - Peptide Experience
+---------------------------------------------------------
+Screen Layout:
+- Progress Indicator: "3 of 4"
+- Title: "What's your experience with peptides?"
+
+Step 1:
+Radio buttons:
+- Yes, I have experience with peptides
+- No, I'm new to peptides
+
+Conditional Logic:
+
+If "Yes" selected:
+- Screen updates to show:
+  - Title: "Which peptides have you used?"
+  - Multi-select dropdown
+  - Options: All 60 peptides from library (alphabetically sorted)
+  - "Other" option with text field
+
+If "No" selected:
+- Screen updates to show:
+  - Title: "Are you interested in learning more about peptides?"
+  - Radio buttons:
+    * Yes, show me relevant peptides
+    * No, I'll explore on my own
+
+If "Yes, show me relevant peptides" selected:
+- Screen updates to show:
+  - Title: "What interests you most?"
+  - Dropdown selector
+  - Options: All 60 peptides (alphabetically sorted) + "Other"
+  - Allows single selection
+
+UI Elements:
+- Button: "Next"
+- Button: "Back"
+- Link: "Skip"
+
+Data Storage:
+- Save experience level (boolean)
+- Save interest in learning (boolean)
+- Save selected peptides (array)
+- Use data for home screen personalization
+
+Behavior:
+- Dynamic screen updates based on selections
+- Multi-select dropdown for experienced users
+- Single-select for beginners
+- Helps pre-populate suggested protocols
+
+4.1.6 Onboarding Survey: Question 4 - First Protocol Setup
+-----------------------------------------------------------
+Screen Layout:
+- Progress Indicator: "4 of 4"
+- Title: "Set up your first protocol"
+- Subtitle: "You can always add more later"
+
+Two Options:
+
+Option 1: Set Up Now
+- Button: "Create My First Protocol"
+- Opens protocol creation screen (see section 4.3)
+- Pre-filled with suggested peptide based on:
+  * Primary goal from Q2
+  * Peptide selections from Q3
+  * Default to most popular in category
+
+Option 2: Skip
+- Button: "I'll Do This Later"
+- Takes user to home screen
+- Shows empty state with CTA to add protocol
+
+UI Elements:
+- Button: "Create My First Protocol" (primary action)
+- Button: "I'll Do This Later" (secondary action)
+- Button: "Back"
+
+Data Storage:
+- Mark onboarding as complete
+- Save setup preference
+- Log timestamp
+
+Behavior:
+- After completion, user never sees onboarding again
+- If "Create My First Protocol" selected, opens full protocol creation flow
+- If skipped, home screen shows prominent "Add Protocol" CTA
+- Onboarding completion flag prevents re-display
+
+4.2 GOAL-BASED SELECTION SYSTEM
+--------------------------------
+Purpose: Replace traditional quiz with efficient goal selection
+
+Access Points:
+1. During onboarding (optional)
+2. Settings > Edit Goals
+3. Home screen widget
+4. Library screen filter
+
+4.2.1 Goal Selection Screen
+----------------------------
+Screen Layout:
+- Title: "What are your goals?"
+- Subtitle: "Select all that apply - we'll show you relevant peptides"
+
+Selection Interface:
+- Multi-select dropdown / picker
+- Sectioned list with category headers
+
+Categories (Matching Peptide Library Structure):
+
+1. Growth Hormone Releasing / GH Secretagogues
+   Supporting: hormone balance, recovery, vitality
+
+2. Body Composition / Metabolism
+   Supporting: fat loss, energy, weight management
+
+3. Regenerative / Soft Tissue Support
+   Supporting: tissue repair, flexibility, recovery
+
+4. Neuro / Cognitive Support
+   Supporting: focus, mood, mental clarity
+
+5. Energy / Performance / Endurance
+   Supporting: stamina, endurance, fat metabolism
+
+6. Skin, Hair, Beauty
+   Supporting: collagen, anti-aging, aesthetic goals
+
+7. Muscle / Strength / Recovery
+   Supporting: muscle growth, strength, post-workout
+
+8. Longevity / Systemic Peptides
+   Supporting: aging, cellular health, vitality
+
+9. Gut / Metabolic Support
+   Supporting: appetite, digestion, metabolism
+
+UI Elements:
+- Checkboxes for multi-select
+- Expandable categories showing descriptive text
+- Button: "Save My Goals"
+- Button: "Clear All"
+- Link: "Skip for Now"
+
+Data Storage:
+- Save selected goals to user profile (array)
+- Store timestamp of last update
+- Track goal changes over time
+
+Behavior:
+- Minimum 0, maximum 9 goals can be selected
+- Goals influence:
+  * Home screen suggested peptides
+  * Library default filter
+  * Protocol creation suggestions
+  * Progress tracking relevance
+- Can be updated anytime from settings
+
+Post-Selection Actions:
+- If accessed during onboarding: Continue to next step
+- If accessed from settings: Return to settings with confirmation toast
+- If accessed from library: Apply filter to library view
+- Show confirmation: "Goals saved! We'll show you relevant peptides."
+
+4.3 PROTOCOL MANAGEMENT SYSTEM
+-------------------------------
+Purpose: Core feature for tracking peptide schedules and dosages
+
+4.3.1 Protocol Creation Screen
+-------------------------------
+Screen Layout:
+- Navigation: Back button (X icon), Title: "Add Protocol", Save button
+- Scrollable form
+
+Form Sections:
+
+SECTION 1: PEPTIDE SELECTION
+
+Field: Type
+- Label: "Peptide Type"
+- UI: Dropdown selector (searchable)
+- Options: All 60 peptides from library (alphabetically sorted)
+- Search: Real-time filter as user types
+- Required: Yes
+- Validation: Must select from list
+- Info icon: Tapping shows brief peptide description from library
+
+SECTION 2: DOSAGE
+
+Field: Dosage Amount
+- Label: "Dosage"
+- UI: Number input field
+- Unit selector: mcg / mg toggle buttons
+- Placeholder: "Enter dosage amount"
+- Required: Yes
+- Validation: Must be positive number
+- Disclaimer text below: "This is for personal tracking only. Consult a 
+  healthcare professional for dosage guidance."
+
+SECTION 3: SCHEDULE
+
+Label: SCHEDULE (header)
+
+Field: Frequency
+- Label: "Frequency"
+- UI: Dropdown
+- Options:
+  * Daily
+  * Every Other Day
+  * Twice Weekly
+  * Weekly
+  * Bi-Weekly (Every 2 Weeks)
+  * Monthly
+  * Custom (opens custom frequency picker)
+- Default: Daily
+- Required: Yes
+
+Field: Day of Week (Conditional)
+- Shown if: Frequency = Weekly, Twice Weekly, or Custom weekly pattern
+- Label: "Day of Week"
+- UI: Single select (Weekly) or Multi-select (Twice Weekly)
+- Options: Sunday - Saturday
+- Required: Yes (when visible)
+
+Field: Time
+- Label: "Time"
+- UI: Native iOS time picker
+- Format: 12-hour with AM/PM
+- Default: Current time
+- Required: Yes
+- Multiple times option: "Add Another Time" button
+- Allows multiple daily doses
+- Each time shown as removable chip
+
+Field: Start Date
+- Label: "Start Date"
+- UI: Date picker
+- Default: Today
+- Required: Yes
+- Validation: Cannot be in the past
+
+Field: End Date (Optional)
+- Label: "End Date (Optional)"
+- UI: Date picker
+- Default: None (ongoing protocol)
+- Required: No
+- Validation: Must be after start date
+
+SECTION 4: NOTES
+
+Field: Notes
+- Label: "NOTES (OPTIONAL)"
+- UI: Multi-line text area
+- Placeholder: "Add any notes about this protocol."
+- Max characters: 500
+- Character counter shown: "0 / 500"
+- Required: No
+
+SECTION 5: APPLE CALENDAR INTEGRATION
+
+Field: Sync to Calendar
+- Label: "Add to Apple Calendar"
+- UI: Toggle switch
+- Default: Off
+- Description text: "Create calendar events for scheduled doses"
+- Calendar Selection (appears when toggle on):
+  * Label: "Select Calendar"
+  * Dropdown of user's calendars
+  * Default: Calendar named "pep.io" (created if doesn't exist)
+
+Bottom Actions:
+- Delete button (trash icon) - Only on edit mode, not creation
+  * Confirmation dialog: "Are you sure you want to delete this protocol?"
+- Save button (top-right)
+
+UI Specifications:
+- Sections separated with spacing
+- Section headers in uppercase, smaller font, gray color
+- Input fields with subtle borders
+- Validation errors shown inline in red
+- Info icons next to complex fields
+- Disclaimer text in smaller, italicized font
+
+Data Storage:
+Protocol object contains:
+{
+  "id": "uuid",
+  "peptide_name": "string",
+  "dosage_amount": number,
+  "dosage_unit": "mcg" | "mg",
+  "frequency": "string",
+  "days_of_week": ["string"] | null,
+  "times": ["HH:MM AM/PM"],
+  "start_date": "YYYY-MM-DD",
+  "end_date": "YYYY-MM-DD" | null,
+  "notes": "string",
+  "sync_to_calendar": boolean,
+  "calendar_id": "string" | null,
+  "created_at": "timestamp",
+  "updated_at": "timestamp",
+  "active": boolean
+}
+
+Behavior:
+- All fields validated on save attempt
+- Unsaved changes prompt confirmation on back navigation
+- Save success shows toast: "Protocol saved!"
+- Auto-navigates to protocol list after save
+- If calendar sync enabled:
+  * Request calendar permissions if not granted
+  * Create calendar events for all scheduled doses
+  * Show confirmation: "X events added to [Calendar Name]"
+- Validation errors prevent save and highlight problematic fields
+
+4.3.2 Protocol List View
+-------------------------
+Screen Layout:
+- Title: "Protocols"
+- Search bar at top
+- Metric cards row
+- Category sections
+- Floating action button (FAB)
+
+Metric Cards (Horizontal scroll or 2-column grid):
+
+1. Active Protocols Card
+   * Icon: Checklist (purple)
+   * Number: Count of active protocols
+   * Label: "Active Protocols"
+   * Tap action: No action (display only)
+
+2. Daily Doses Card
+   * Icon: Calendar with clock (blue)
+   * Number: Count of doses scheduled today
+   * Label: "Daily Doses"
+   * Tap action: Filters to show today's protocols
+
+3. Upcoming Doses Card (Optional)
+   * Icon: Bell (orange)
+   * Number: Count of doses in next 24 hours
+   * Label: "Upcoming"
+   * Tap action: Opens calendar view
+
+Search Bar:
+- Placeholder: "Search protocols"
+- Icon: Magnifying glass
+- Real-time filtering
+- Searches: peptide name, notes
+
+Protocol Cards:
+
+Card Design:
+- Rounded corners (12px radius)
+- Shadow for depth
+- Padding: 16px
+- Background: White (light mode) / Dark gray (dark mode)
+- Border-left: 4px colored stripe (category color)
+
+Card Content:
+- Header Row:
+  * Peptide name (bold, 18px)
+  * Three-dot menu (right-aligned)
+- Details Row:
+  * Calendar icon + Next dose date/time
+  * Frequency label (e.g. "Every Monday")
+- Dosage Row:
+  * Pill icon + "50 mcg"
+- Status Indicator:
+  * Checkmark + "On track" (green)
+  * Warning + "Missed 1 dose" (yellow)
+  * X + "Overdue" (red)
+
+Three-Dot Menu Options:
+- Edit Protocol
+- Mark Dose as Taken
+- View History
+- Duplicate Protocol
+- Deactivate Protocol
+- Delete Protocol
+
+Category Sections:
+- Header: "Peptides" (with count badge)
+- Can add more categories in future: "Active", "Archived", "Favorites"
+
+Empty State:
+- Icon: Document with plus sign
+- Text: "No Protocols Yet"
+- Subtext: "Add your first protocol to start tracking"
+- Button: "Create Protocol"
+
+Floating Action Button (FAB):
+- Icon: Plus sign
+- Position: Bottom-right
+- Color: Primary blue
+- Shadow for elevation
+- Tap action: Opens protocol creation screen
+
+Additional Elements:
+
+Protocol Templates Card: (Above protocols list)
+- Icon: Document with lines
+- Label: "Protocol Templates"
+- Arrow icon (right)
+- Tap action: Opens protocol templates library
+- Description: "Quick-start with pre-made protocols"
+
+UI Specifications:
+- Pull-to-refresh gesture
+- Swipe gestures on cards:
+  * Swipe left: Delete option
+  * Swipe right: Mark as taken
+- Smooth animations for card interactions
+- Loading skeleton screens while fetching data
+
+Data Display:
+Sorted by: Next scheduled dose (soonest first)
+Alternative sorts available in menu:
+- Alphabetical (A-Z)
+- Recently added
+- Most frequent
+
+Behavior:
+- Real-time updates when protocols are modified
+- Badge count updates automatically
+- Search filters list in real-time
+- Empty search results show: "No protocols match your search"
+- Tapping card opens protocol detail view
+
+4.3.3 Protocol Detail View
+---------------------------
+Screen Layout:
+- Navigation: Back button, Title: [Peptide Name], Edit button
+- Scrollable content
+- Tabbed sections or expandable sections
+
+SECTION 1: OVERVIEW
+
+Header:
+- Peptide name (large, bold)
+- Category badge (colored pill)
+- Status indicator (Active / Paused / Completed)
+
+Quick Stats Cards:
+- Total doses taken
+- Adherence percentage
+- Days remaining (if end date set)
+- Next dose time
+
+SECTION 2: SCHEDULE DETAILS
+
+Display Information:
+- Dosage: "50 mcg"
+- Frequency: "Daily at 10:00 AM"
+- Days of week: "Monday, Wednesday, Friday" (if applicable)
+- Start date: "December 18, 2025"
+- End date: "January 18, 2026" (or "Ongoing")
+
+Calendar Integration Status:
+- Synced to: "[Calendar Name]" with green checkmark
+- Or: "Not synced to calendar" with option to enable
+
+SECTION 3: NOTES
+
+Display:
+- User's notes in readable format
+- Edit icon to modify
+- Empty state: "No notes added"
+
+SECTION 4: DOSE HISTORY
+
+Timeline View:
+- Reverse chronological list
+- Each entry shows:
+  * Date and time (scheduled)
+  * Status icon:
+    - Green checkmark: Taken on time
+    - Yellow checkmark: Taken late
+    - Gray circle: Scheduled (upcoming)
+    - Red X: Missed
+  * Actual time taken (if different from scheduled)
+  * Notes for specific dose (if added)
+
+Filters:
+- All / Taken / Missed / Upcoming
+- Date range selector
+
+SECTION 5: LINKED RESOURCES
+
+Quick Links:
+- "View in Peptide Library" → Opens library entry for this peptide
+- "Dose Calculator" → Opens calculator with peptide pre-selected
+- "Share Protocol" → Export protocol details
+
+Bottom Actions:
+
+Button Group:
+- Mark Dose as Taken (primary button)
+- Edit Protocol (secondary button)
+- Pause Protocol (tertiary button)
+- Delete Protocol (danger button, bottom)
+
+UI Specifications:
+- Clean, spacious layout
+- Use of cards for information grouping
+- Color-coded status indicators
+- Icons for visual hierarchy
+- Smooth scroll with sticky header
+
+Behavior:
+- "Mark Dose as Taken" opens quick dialog:
+  * "When did you take this dose?"
+  * Time selector (defaults to current time)
+  * Notes field (optional)
+  * Confirm / Cancel buttons
+
+- "Edit Protocol" opens protocol edit screen
+
+- "Pause Protocol" shows confirmation:
+  * "Pause [Peptide Name] protocol?"
+  * "You can resume anytime from the protocols list"
+  * Pause / Cancel buttons
+  * Pausing stops notifications and calendar updates
+
+- "Delete Protocol" shows confirmation:
+  * "Delete [Peptide Name] protocol?"
+  * "This will delete all history. This cannot be undone."
+  * Delete / Cancel buttons
+  * Deletion removes protocol and associated calendar events
+
+Data Integration:
+- Real-time adherence calculation
+- Automatic status updates based on current time
+- Dose history updates immediately after marking taken
+- Calendar sync status reflects current state
+
+4.3.4 Protocol Templates
+-------------------------
+Purpose: Quick-start protocols for common goals
+
+Screen Layout:
+- Title: "Protocol Templates"
+- Subtitle: "Start with a pre-made protocol"
+- Search bar
+- Category filters
+- Template cards grid
+
+Template Categories:
+- Beginner Friendly
+- Muscle Building
+- Fat Loss
+- Anti-Aging
+- Cognitive Enhancement
+- Recovery & Healing
+- Wellness & Longevity
+
+Template Card Design:
+- Template name
+- Peptides included (comma-separated)
+- Duration estimate (e.g. "8-12 weeks")
+- Difficulty badge (Beginner / Intermediate / Advanced)
+- Info icon (shows more details)
+
+Template Details Modal:
+- Template name
+- Description
+- Included peptides with dosages
+- Typical schedule
+- Duration
+- Disclaimer: "This template is for educational reference only. Consult a 
+  healthcare professional before starting any protocol."
+- Button: "Use This Template"
+
+Behavior:
+- "Use This Template" pre-fills protocol creation screen
+- Users can modify all fields before saving
+- Templates are static (not user-created in MVP)
+- Can favorite templates for quick access
+
+Template Data Structure:
+{
+  "id": "uuid",
+  "name": "string",
+  "description": "string",
+  "category": "string",
+  "difficulty": "Beginner" | "Intermediate" | "Advanced",
+  "protocols": [
+    {
+      "peptide_name": "string",
+      "dosage_amount": number,
+      "dosage_unit": "mcg" | "mg",
+      "frequency": "string",
+      "times": ["string"],
+      "notes": "string"
+    }
+  ],
+  "duration_weeks": number,
+  "is_active": boolean
+}
+
+Initial Templates (Examples):
+
+1. Beginner's GH Support
+   * Ipamorelin: 200 mcg before bed
+   * CJC-1295: 200 mcg before bed
+   * Duration: 12 weeks
+   * Difficulty: Beginner
+
+2. Body Recomposition Stack
+   * Semaglutide: 0.25 mg weekly
+   * AOD-9604: 300 mcg daily
+   * Duration: 16 weeks
+   * Difficulty: Intermediate
+
+3. Recovery & Healing
+   * BPC-157: 250 mcg twice daily
+   * TB-500: 2.5 mg twice weekly
+   * Duration: 8 weeks
+   * Difficulty: Beginner
+
+4.4 PEPTIDE LIBRARY
+-------------------
+Purpose: Comprehensive, searchable database of 60+ peptides
+
+4.4.1 Library Home Screen
+--------------------------
+Screen Layout:
+- Title: "Peptide Library"
+- Search bar
+- Filter/sort options
+- Category sections
+- Peptide cards list
+
+Search Bar:
+- Placeholder: "Search peptides"
+- Icon: Magnifying glass
+- Clear button (X) when text entered
+- Search scope:
+  * Peptide names
+  * Alternative names
+  * Benefits
+  * Categories
+
+Filter & Sort Bar:
+- Button: "Filter by Category" (opens category selector)
+- Button: "Sort" (dropdown)
+  * Alphabetical (A-Z)
+  * Alphabetical (Z-A)
+  * Category
+  * Recently viewed
+  * Favorites first
+
+Category Sections:
+Each category is a collapsible section with header:
+- Category name
+- Peptide count badge
+- Expand/collapse arrow
+
+Peptide Card Design:
+- Vial icon with colored heart (category color)
+- Peptide name (bold)
+- One-line description (truncated)
+- Benefits pills (first 3 benefits shown)
+- Favorite icon (star, right-aligned)
+- Tap area: Entire card
+
+Category Organization:
+
+GROWTH HORMONE RELEASING / GH SECRETAGOGUES (10)
+- CJC-1295
+- CJC-1295 DAC
+- Ipamorelin
+- GHRP-2
+- GHRP-6
+- Hexarelin
+- Tesamorelin
+- Sermorelin
+- MK-677 (Ibutamoren)
+- GHS-R Peptides
+
+BODY COMPOSITION / METABOLISM (9)
+- AOD-9604
+- 5-Amino-1MQ
+- MOTS-c
+- Lipo-C Peptides
+- GLP-1 Analogs
+- Retatrutide
+- Semaglutide
+- Tirzepatide
+- ARA-290
+
+REGENERATIVE / SOFT TISSUE SUPPORT (9)
+- BPC-157
+- TB-500 / Thymosin Beta-4
+- Thymosin Alpha-1 (TA1)
+- GHK-Cu
+- Epitalon
+- KPV Peptide
+- Palmitoyl Tripeptide-1
+- Palmitoyl Tetrapeptide-7
+- Matrixyl
+
+NEURO / COGNITIVE SUPPORT (8)
+- Selank
+- Semax
+- N-Acetyl Selank
+- N-Acetyl Semax
+- Cerebrolysin Peptides
+- DSIP (Delta Sleep Peptide)
+- Pinealon
+- Cortagen
+
+ENERGY / PERFORMANCE / ENDURANCE (4)
+- AICAR
+- GW-501516 (Cardarine)
+- SR-9009 (Stenabolic)
+- PGC-1 Modulators
+
+SKIN, HAIR, BEAUTY (5)
+- Melanotan II
+- Melanotan I
+- PT-141 (Bremelanotide)
+- Copper Tripeptide-1
+- Argireline (Acetyl Hexapeptide-8)
+
+MUSCLE / STRENGTH / RECOVERY (7)
+- IGF-1 LR3
+- IGF-1 DES
+- Follistatin 344
+- Follistatin 315
+- Myostatin Inhibitors
+- PEG-MGF
+- MGF (Mechano Growth Factor)
+
+LONGEVITY / SYSTEMIC PEPTIDES (5)
+- FOX04-DRI
+- Humanin
+- Klotho-Modulating Peptides
+- Thymulin
+- Thymalfasin
+
+GUT / METABOLIC SUPPORT (3)
+- PYY Analogs
+- OXM Analogs
+- Ghrelin Analogs
+
+Empty State (Filtered Search):
+- Icon: Magnifying glass with X
+- Text: "No peptides found"
+- Subtext: "Try adjusting your search or filters"
+- Button: "Clear Filters"
+
+UI Specifications:
+- Smooth scroll performance
+- Lazy loading for performance
+- Pull-to-refresh gesture
+- Skeleton loading states
+- Category headers sticky on scroll
+- Alphabet quick-scroll sidebar (A-Z)
+
+Behavior:
+- Tapping peptide card opens detailed view
+- Favorite icon toggles favorite status
+- Search is instant (no submit button)
+- Filter selections persist during session
+- Recently viewed tracked automatically
+
+4.4.2 Peptide Detail View
+--------------------------
+Screen Layout:
+- Navigation: Back button, Title: [Peptide Name], Favorite icon
+- Scrollable content with sections
+- Bottom action buttons
+
+Header Section:
+- Peptide name (large, bold)
+- Alternative names (if applicable, in parentheses)
+- Category badge (colored pill)
+- Quick actions:
+  * Favorite toggle (star icon)
+  * Share button
+  * Add to Protocol button
+
+Mandatory Disclaimer Banner (Top of Content):
+
+EDUCATIONAL INFORMATION
+
+The information below is commonly researched and community-discussed.
+It is from publicly available, non-clinical sources and is for
+educational purposes only. This is NOT medical advice.
+
+Consult a licensed healthcare professional before making any
+decisions related to peptides.
+
+SECTION 1: OVERVIEW
+
+Subsection: Description
+- Comprehensive description of the peptide
+- What it is (chemical structure overview in layman's terms)
+- Historical context (if relevant)
+- Mechanism of action (simplified)
+
+Example for BPC-157:
+"BPC-157 is a synthetic peptide derived from a protective protein found in 
+gastric juice. It consists of 15 amino acids and has been the subject of 
+research for its potential effects on tissue repair and healing processes."
+
+SECTION 2: COMMONLY RESEARCHED BENEFITS
+
+Disclaimer Text:
+"The benefits listed below are commonly researched in preclinical studies or 
+discussed in communities. They are NOT proven therapeutic claims."
+
+Benefits List:
+- Displayed as tagged pills/badges
+- Each benefit is a community-discussed use
+- Benefits from organized data (3 per peptide)
+
+Example for BPC-157:
+- Tissue support
+- Gut balance
+- Recovery support
+
+SECTION 3: TYPICAL RESEARCH PROTOCOLS
+
+Disclaimer Text:
+"This is reference information only. We do NOT recommend specific dosages. 
+Always consult a healthcare professional."
+
+Information Display:
+- Common research dosages (ranges, not specific recommendations)
+- Typical administration routes studied (e.g. subcutaneous, oral)
+- Study durations commonly seen in research
+- Frequency patterns from literature
+
+Example for BPC-157:
+
+Research Contexts:
+* Dosage ranges studied: 200-500 mcg
+* Administration: Subcutaneous injection in studies
+* Typical study duration: 4-12 weeks
+* Frequency: Once or twice daily in research
+
+SECTION 4: RECONSTITUTION INFORMATION
+
+Content:
+- Typical vial sizes (for educational calculation purposes)
+- Common bacteriostatic water volumes used
+- Concentration examples
+- Link to dose calculator
+
+Example:
+
+For Calculator Reference:
+* Common vial sizes: 2 mg, 5 mg, 10 mg
+* Typical BAC water: 1-3 mL
+* Example: 5 mg vial + 2 mL water = 2.5 mg/mL concentration
+
+Button: "Open Calculator with This Peptide"
+
+SECTION 5: CONSIDERATIONS
+
+Disclaimer Text:
+"This information is for awareness only and is not medical advice."
+
+Content:
+- General considerations from literature
+- Common stacking information (which peptides are often researched together)
+- Storage considerations (temperature, light sensitivity)
+- Shelf life information
+
+Example for BPC-157:
+
+General Considerations:
+* Often researched alongside TB-500 for synergistic effects
+* Requires refrigeration after reconstitution
+* Sensitive to light exposure
+* Typical shelf life after reconstitution: 30 days refrigerated
+
+SECTION 6: RESEARCH REFERENCES
+
+Disclaimer Text:
+"The references below are from publicly available research databases. Inclusion 
+does not imply endorsement or proven efficacy."
+
+Content:
+- PubMed IDs (PMIDs) as clickable links
+- Brief study title
+- Year of publication
+- Study type (in vitro, animal, human observational, etc.)
+
+Example:
+
+Research References:
+* PMID: 31384691 (2020) - Effects on tendon healing (rat model)
+* PMID: 28974356 (2019) - Gastric ulcer study (rat model)
+* PMID: 33157643 (2021) - Wound healing mechanisms (in vitro)
+
+Link: "View More Research" → Opens in-app browser or external
+
+SECTION 7: USER NOTES
+
+Editable Section:
+- Title: "My Personal Notes"
+- Subtitle: "Private notes about your research or experience"
+- Text area for user input
+- Auto-save functionality
+- Character limit: 2000 characters
+
+Placeholder:
+"Add your own notes, observations, or research links here. Only you can see 
+these notes."
+
+SECTION 8: RELATED PEPTIDES
+
+Content:
+- Horizontal scroll of peptide cards
+- Shows peptides from same category
+- Shows commonly stacked peptides
+- Tap to navigate to that peptide's detail view
+
+Bottom Action Buttons:
+- Primary: "Add to Protocol" (blue, full-width)
+- Secondary: "Calculate Dose" (outlined, full-width)
+
+UI Specifications:
+- Rich text formatting for readability
+- Collapsible sections for long content
+- Smooth scroll with parallax header
+- Sticky bottom action buttons
+- Icons for visual hierarchy
+- Subtle borders between sections
+- Appropriate font sizes for readability
+
+Behavior:
+- "Add to Protocol" opens protocol creation with peptide pre-selected
+- "Calculate Dose" opens calculator with peptide pre-selected
+- Favorite toggle saves to favorites list
+- Share button creates shareable summary (text format)
+- User notes auto-save after 2 seconds of inactivity
+- External links open with confirmation dialog
+- Back navigation preserves scroll position in library
+
+Data Structure for Each Peptide:
+{
+  "id": "uuid",
+  "name": "string",
+  "alternative_names": ["string"],
+  "category": "string",
+  "category_color": "hex",
+  "description": "string",
+  "benefits": ["string", "string", "string"],
+  "research_protocols": {
+    "dosage_range": "string",
+    "administration": "string",
+    "duration": "string",
+    "frequency": "string"
+  },
+  "reconstitution": {
+    "common_vial_sizes": ["number"],
+    "typical_water_volume": "string",
+    "concentration_example": "string"
+  },
+  "considerations": "string",
+  "storage": "string",
+  "stacks_well_with": ["peptide_id"],
+  "research_references": [
+    {
+      "pmid": "string",
+      "title": "string",
+      "year": number,
+      "study_type": "string",
+      "url": "string"
+    }
+  ],
+  "user_notes": "string",
+  "is_favorite": boolean,
+  "view_count": number,
+  "last_viewed": "timestamp",
+  "created_at": "timestamp",
+  "updated_at": "timestamp"
+}
+
+4.5 DOSE CALCULATOR
+-------------------
+Purpose: Educational reconstitution calculator for learning
+
+4.5.1 Calculator Screen
+------------------------
+Screen Layout:
+- Title: "Dose Calculator"
+- Subtitle: "For educational purposes only"
+- Disclaimer banner
+- Input section
+- Results section
+- Actions
+
+Mandatory Disclaimer Banner:
+
+EDUCATIONAL CALCULATOR
+
+This calculator is for educational and learning purposes only.
+It does NOT provide dosing recommendations or medical guidance.
+
+Always consult a licensed healthcare professional for actual dosing decisions.
+
+INPUT SECTION:
+
+Section Header: PEPTIDE INFORMATION
+
+Field 1: Select Peptide (Optional)
+- Label: "Peptide (optional)"
+- UI: Dropdown with search
+- Options: All 60 peptides + "Other/Custom"
+- Benefit: Pre-fills common vial sizes
+- Default: None selected
+
+Field 2: Vial Quantity
+- Label: "Peptide Vial Quantity"
+- Icon: Vial with plus sign (orange)
+- UI: Number input
+- Unit selector: mg / mcg toggle
+- Placeholder: "Enter amount"
+- Example: "5.00"
+- Required: Yes
+- Validation: Must be positive number
+
+Field 3: Bacteriostatic Water Volume
+- Label: "Bacteriostatic Water"
+- Icon: Water drop (blue)
+- UI: Number input
+- Unit: mL (fixed)
+- Placeholder: "Enter volume"
+- Example: "2.00"
+- Required: Yes
+- Validation: Must be positive number
+
+Field 4: Syringe Type
+- Label: "Select Your Syringe"
+- Icon: Syringe (purple)
+- UI: Dropdown
+- Options:
+  * 0.3 mL U-100 Insulin (30 units)
+  * 0.5 mL U-100 Insulin (50 units)
+  * 1.0 mL U-100 Insulin (100 units)
+  * 3.0 mL syringe
+  * Custom (manual input)
+- Default: 1.0 mL U-100
+- Required: Yes
+- Info: Affects unit calculations
+
+Field 5: Desired Dose
+- Label: "Desired Dose"
+- Icon: Target (purple)
+- UI: Number input
+- Unit selector: mg / mcg toggle
+- Placeholder: "Enter desired dose"
+- Example: "250"
+- Required: Yes
+- Validation: Must be positive
+- Cannot exceed total vial quantity
+- Warning if unusually high/low
+
+Calculate Button:
+- Label: "Calculate Dose"
+- Icon: f(x) symbol
+- Style: Primary button, full-width
+- Color: Blue
+- Enabled: When all required fields filled
+
+Reset Button:
+- Label: "Reset Values"
+- Icon: Circular arrow
+- Style: Text button
+- Action: Clears all fields
+
+RESULTS SECTION:
+
+Shown After Calculation
+
+Section Header: RESULTS
+
+Disclaimer Text:
+"These calculations are for educational reference only. Always verify 
+measurements with a healthcare professional."
+
+Result Cards:
+
+Card 1: Concentration
+- Label: "Concentration"
+- Value: "2.5 mg/mL"
+- Icon: Beaker
+- Color: Blue
+- Description: "Amount of peptide per milliliter of solution"
+
+Card 2: Dose per Unit
+- Label: "Dose per Insulin Unit"
+- Value: "25 mcg/unit"
+- Icon: Syringe
+- Color: Purple
+- Description: "Amount of peptide per insulin syringe unit"
+- Conditional: Only shown if insulin syringe selected
+
+Card 3: Required Volume
+- Label: "Volume Needed for Desired Dose"
+- Value: "0.10 mL (10 units)"
+- Icon: Ruler
+- Color: Green
+- Description: "Volume to draw for your desired dose"
+
+Card 4: Total Doses
+- Label: "Total Doses in Vial"
+- Value: "20 doses"
+- Icon: Calculator
+- Color: Orange
+- Description: "Number of doses at desired amount"
+
+Visual Guide (Optional Enhancement):
+- Illustration of syringe with marked volume
+- Visual representation of dose measurement
+- Animated guide showing measurement
+
+Calculation Formulas (For Development):
+
+Concentration (mg/mL) = Vial Quantity (mg) / Water Volume (mL)
+Concentration (mcg/mL) = Concentration (mg/mL) × 1000
+Dose per Unit (for U-100 syringe) = Concentration (mcg/mL) / 100
+Volume for Desired Dose (mL) = Desired Dose (mg) / Concentration (mg/mL)
+Volume in Units (for insulin syringe) = Volume (mL) × 100
+Total Doses = Vial Quantity / Desired Dose
+
+Additional Actions:
+
+Button: Save Calculation
+- Opens dialog: "Save this calculation?"
+- Fields:
+  * Protocol name (optional, dropdown of existing protocols)
+  * Notes (optional)
+  * Save / Cancel
+- Saved calculations accessible from history
+
+Button: Create Protocol from This
+- Pre-fills protocol creation screen with:
+  * Peptide (if selected)
+  * Dosage (from desired dose)
+- Opens protocol creation screen
+
+Button: Share Results
+- Creates shareable text summary
+- Opens system share sheet
+- Format:
+
+"pep.io Dose Calculator Results
+
+Peptide: BPC-157
+Vial: 5 mg
+Water: 2 mL
+Desired Dose: 250 mcg
+
+Results:
+- Concentration: 2.5 mg/mL
+- Volume needed: 0.1 mL (10 units)
+- Total doses: 20
+
+For educational purposes only."
+
+Calculation History:
+- Accessible from overflow menu (three dots)
+- Shows recent calculations
+- Tap to reload calculation
+- Swipe to delete
+
+UI Specifications:
+- Clean, spacious layout
+- Clear visual separation between input and results
+- Color-coded icons for visual hierarchy
+- Large, tappable input fields
+- Inline validation messages
+- Results animate in after calculation
+- Smooth transitions
+- High contrast for readability
+
+Behavior:
+- Real-time validation on input
+- Calculate button only enabled when valid
+- Results persist until reset or new calculation
+- Switching peptide updates vial size suggestions
+- Unit conversions happen automatically
+- Warnings for unusual doses:
+  * "This dose is unusually high. Please verify."
+  * "This dose is very small. Ensure accurate measurement."
+- Saves calculation to history automatically on calculate
+- History limited to last 50 calculations
+
+Error Handling:
+- Invalid inputs show inline errors
+- Division by zero prevented
+- Negative numbers rejected
+- Empty fields highlighted
+- Clear error messages:
+  * "Please enter a positive number"
+  * "Desired dose cannot exceed vial quantity"
+  * "Water volume must be greater than 0"
+
+4.6 CALENDAR VIEW
+-----------------
+Purpose: Visual representation of protocol schedule and dose tracking
+
+4.6.1 Calendar Screen Layout
+-----------------------------
+Screen Layout:
+- Title: "Calendar"
+- Month/Year header with navigation
+- View toggle controls
+- Calendar grid / List view
+- Today summary
+- Quick actions
+
+Header Section:
+
+Month/Year Display
+- Format: "December 2025"
+- Left arrow: Previous month
+- Right arrow: Next month
+- Tap month/year: Opens month/year picker
+
+View Toggle
+- Toggle 1: Calendar icon (month view)
+- Toggle 2: List icon with star (list view)
+- Segmented control style
+
+Calendar Grid View:
+
+Layout:
+- 7 columns (Sun - Sat)
+- Week day headers (Sun, Mon, Tue, Wed, Thu, Fri, Sat)
+- 5-6 rows for dates
+- Current day highlighted with blue circle
+- Other month dates shown in gray
+
+Date Cell Design:
+- Date number (centered)
+- Indicator dots below date:
+  * Red dot: Scheduled dose (not taken)
+  * Blue dot: Completed dose
+  * Multiple dots: Multiple doses that day
+  * Empty state: No dots (no doses)
+- Today: Blue circle background
+- Selected: Gray background
+
+Interaction:
+- Tap date: Shows day detail view
+- Swipe: Navigate between months
+- Pinch: (Future) Year view
+
+List View:
+
+Layout:
+- Grouped by date (reverse chronological)
+- Date headers (e.g. "Today", "Yesterday", "December 16")
+- Dose cards under each date
+
+Dose Card Design:
+- Peptide name (bold)
+- Dosage amount
+- Scheduled time
+- Status indicator:
+  * Green checkmark: Taken
+  * Yellow clock: Upcoming
+  * Red X: Missed
+- Quick action button: "Mark as Taken" (for pending doses)
+
+Filter Bar:
+
+Filter Options:
+- All Protocols (default)
+- By peptide (dropdown of active protocols)
+- Status filter:
+  * All
+  * Scheduled
+  * Completed
+  * Missed
+
+Today Summary Section:
+
+Display:
+- Header: "Today"
+- Dose count: "3 doses"
+- List of today's doses (if viewing today)
+- Progress indicator: "2 of 3 completed"
+- Circular progress visualization
+
+Empty State:
+- Icon: Calendar with plus
+- Text: "No doses scheduled today"
+- Button: "Add Protocol"
+
+Day Detail View (Modal/Bottom Sheet):
+
+Triggered by tapping a date
+
+Content:
+- Date header (e.g. "Wednesday, December 18, 2025")
+- Dose list for that day
+- Each dose shows:
+  * Peptide name
+  * Dosage
+  * Scheduled time
+  * Status (Taken / Missed / Upcoming)
+  * Notes (if any)
+- Action buttons:
+  * "Mark as Taken" (if pending)
+  * "View Protocol"
+  * "Add Note"
+
+Actions:
+- Add dose for this day
+- Close/dismiss
+
+Quick Actions:
+
+Floating Action Button (FAB):
+- Icon: Plus sign
+- Opens: Quick add menu
+  * Add protocol
+  * Log dose manually
+  * Add note for today
+
+UI Specifications:
+- Smooth month transitions
+- Visual indicators clear and distinct
+- Color consistency:
+  * Red: Scheduled/pending
+  * Blue: Completed/current
+  * Green: Success/adherence
+  * Yellow: Warning/late
+  * Gray: Inactive/past
+- Responsive tap targets (min 44x44 points)
+- Loading states for data fetching
+- Skeleton screens while loading
+
+Behavior:
+- Calendar loads current month by default
+- Real-time updates as doses are marked
+- Dot indicators update immediately
+- Swipe gestures for month navigation
+- Pull-to-refresh on list view
+- Today button: Quick navigation to current date
+- Smooth scroll in list view
+- Date selection persists during session
+- Syncs with Apple Calendar if enabled (displays calendar event status)
+
+Data Integration:
+- Queries protocols for date ranges
+- Calculates scheduled doses dynamically
+- Tracks completed/missed status
+- Updates in real-time as user marks doses
+- Respects protocol start/end dates
+- Handles recurring schedules accurately
+
+Calendar Legend (Optional):
+- Accessible from info icon
+- Explains dot colors:
+  * Red: Scheduled dose
+  * Blue: Completed dose
+  * Multiple dots: Multiple doses
+  * Circle: Today
+
+4.7 HOME DASHBOARD
+------------------
+Purpose: Central hub with personalized overview and quick actions
+
+4.7.1 Home Screen Layout
+-------------------------
+Screen Layout:
+- Header with greeting
+- Metric cards
+- Today's doses section
+- Weekly progress chart
+- Quick access sections
+- Bottom navigation
+
+Header Section:
+
+User Greeting
+- Icon: Profile avatar (default or custom)
+- Text: "Hello, [Name]" or "Hello" if no name set
+- Time-based: "Good morning" / "Good afternoon" / "Good evening"
+- Notification bell icon (right)
+  * Badge count for unread notifications
+  * Tap: Opens notifications screen
+
+Settings Icon
+- Position: Top-right corner
+- Icon: Gear or three horizontal lines
+- Tap: Opens settings screen
+
+Metric Cards Row:
+
+Layout: Horizontal scroll or 2-column grid (responsive)
+
+Card 1: Active Protocols
+- Icon: Checklist (purple)
+- Value: Number of active protocols
+- Label: "Active Protocols"
+- Background: Light purple gradient
+- Tap action: Navigate to Protocols screen
+
+Card 2: Protocol Adherence
+- Icon: Checkmark in circle (green)
+- Value: Percentage "85%"
+- Label: "Protocol Adherence"
+- Background: Light green gradient
+- Calculation: (Taken doses / Scheduled doses) x 100 for last 30 days
+- Tap action: Opens adherence detail view
+
+Card 3: Daily Streak
+- Icon: Fire/flame (orange)
+- Value: Number "7 days"
+- Label: "Current Streak"
+- Background: Light orange gradient
+- Calculation: Consecutive days with all doses completed
+- Tap action: Opens streak detail view
+
+Card 4: Next Dose
+- Icon: Clock (blue)
+- Value: Time "in 2 hours"
+- Label: "Next Dose"
+- Background: Light blue gradient
+- Shows peptide name below
+- Tap action: Opens dose detail
+
+Card Design Specs:
+- Rounded corners (16px)
+- Shadow for depth
+- Icon in colored circle (top-left)
+- Large value number (center)
+- Small label text (bottom)
+- Subtle background gradient
+- Minimum height: 120px
+- Aspect ratio: Square or 3:2
+
+Today's Doses Section:
+
+Section Header:
+- Title: "Today's Doses"
+- "See all" link (right-aligned)
+- Tap "See all": Opens calendar focused on today
+
+Content:
+
+If doses scheduled:
+- List of dose cards (max 3 visible, scroll for more)
+- Each card shows:
+  * Peptide name
+  * Dosage
+  * Scheduled time
+  * Status indicator:
+    - Gray circle + "Upcoming" (future)
+    - Yellow circle + "Due now" (within 30 min)
+    - Green checkmark + "Taken" (completed)
+    - Red X + "Missed" (past scheduled time)
+  * Action button:
+    - "Mark as Taken" (if pending or due)
+    - "View" (if already taken/missed)
+
+Empty State:
+- Icon: Calendar with plus sign
+- Text: "No doses scheduled today"
+- Subtext: "Add a protocol to get started"
+- Button: "Add Protocol"
+
+Weekly Progress Section:
+
+Section Header:
+- Title: "Weekly Progress"
+- "See all" link (right-aligned)
+- Tap "See all": Opens Progress screen
+
+Content:
+
+Chart Display:
+- Line or bar chart showing adherence over 7 days
+- X-axis: Days of week (Mon-Sun)
+- Y-axis: Percentage or dose count
+- Color-coded bars/points:
+  * Green: 100% adherence
+  * Yellow: 50-99%
+  * Red: Below 50%
+- Interactive: Tap data point for detail
+
+Empty State:
+- Icon: Line graph with dotted line
+- Text: "Need at least 2 entries to show chart"
+- Subtext: "Start tracking to see your progress"
+
+Stats Summary:
+- Weekly adherence percentage
+- Doses taken this week
+- Doses missed this week
+
+Peptide Library Quick Access:
+
+Card Design:
+- Icon: Book or document with lines (teal)
+- Label: "Peptide Library"
+- Subtext: "Explore 60+ peptides"
+- Arrow icon (right)
+- Full-width card
+- Background: Light teal gradient
+
+Tap action: Navigate to Peptide Library
+
+Suggested Peptides (Personalized):
+
+Section Header:
+- Title: "Suggested for You"
+- Based on: Goals selected during onboarding
+
+Content:
+- Horizontal scroll of peptide cards (3-5 cards)
+- Mini peptide cards showing:
+  * Peptide name
+  * One-line benefit
+  * "Learn More" button
+
+Tap card: Opens peptide detail view
+
+Logic:
+- Display peptides matching user's selected goals
+- Exclude peptides already in active protocols
+- Rotate suggestions periodically
+- Fallback: Show most popular peptides if no goals set
+
+Quick Actions Section:
+
+Grid Layout: 2x2 or 4 horizontal buttons
+
+Button 1: Calculator
+- Icon: Sigma or f(x) symbol
+- Label: "Calculator"
+- Tap: Opens dose calculator
+
+Button 2: Add Protocol
+- Icon: Plus in circle
+- Label: "New Protocol"
+- Tap: Opens protocol creation
+
+Button 3: Library
+- Icon: Book
+- Label: "Library"
+- Tap: Opens peptide library
+
+Button 4: Progress
+- Icon: Chart
+- Label: "Progress"
+- Tap: Opens progress screen
+
+Button Design:
+- Rounded corners
+- Icon above label
+- Subtle border or shadow
+- Tap feedback (scale animation)
+
+Recent Activity Feed (Optional):
+
+Section Header:
+- Title: "Recent Activity"
+
+Content:
+- Reverse chronological list (max 5 items)
+- Activity types:
+  * "Took [Peptide] at [Time]"
+  * "Added new protocol: [Peptide]"
+  * "Reached 7-day streak"
+  * "Viewed [Peptide] in library"
+- Timestamp for each activity
+- Icon for activity type
+
+UI Specifications:
+- Vertical scroll
+- Refresh on pull-down
+- Smooth transitions between sections
+- Skeleton loaders while data fetching
+- Empty states for all sections
+- Consistent spacing (16px margins)
+- Card shadows for depth
+- Micro-interactions on taps
+- Haptic feedback on important actions
+
+Behavior:
+- Loads on app launch (after onboarding)
+- Data refreshes automatically when app becomes active
+- Real-time updates:
+  * Metric cards recalculate on data changes
+  * Today's doses update as marked
+  * Streak updates at midnight
+- Pull-to-refresh gesture
+- Tap sections to navigate deeper
+- Personalization based on:
+  * User goals
+  * Active protocols
+  * Usage patterns
+- Adaptive layout:
+  * Hide empty sections
+  * Show most relevant content first
+  * Adjust based on screen size
+
+Performance Considerations:
+- Cache data for instant load
+- Load charts asynchronously
+- Optimize queries for speed
+- Implement pagination for activity feed
+- Debounce refresh actions
+
+[NOTE: The PDF content was truncated due to token limits. The conversion continues 
+with the remaining sections from the original document...]
+
+4.8 PROGRESS TRACKING
+---------------------
+Purpose: Visualize adherence, trends, and protocol effectiveness
+
+4.8.1 Progress Screen
+---------------------
+Screen Layout:
+- Title: "Progress"
+- Date range selector
+- Filter options
+- Charts and visualizations
+- Export button
+
+Date Range Selector:
+- Preset options:
+  * Last 7 days
+  * Last 30 days
+  * Last 90 days
+  * All time
+  * Custom range (date picker)
+- Default: Last 30 days
+
+Filter Options:
+- All protocols (default)
+- By specific peptide (dropdown)
+- By category
+
+Visualizations:
+
+1. Adherence Overview Card
+   - Large percentage display
+   - Color-coded:
+     * Green: 90-100%
+     * Yellow: 70-89%
+     * Red: Below 70%
+   - Subtitle: "X of Y doses taken"
+   - Trend indicator (up/down arrow)
+
+2. Adherence Calendar Heatmap
+   - Grid showing daily adherence
+   - Color intensity based on completion rate
+   - Tap date for details
+   - Legend explaining colors
+
+3. Protocol Breakdown Chart
+   - Pie or donut chart
+   - Shows adherence by protocol
+   - Tap segment for protocol details
+   - Legend with protocol names
+
+4. Streak Tracker
+   - Current streak display
+   - Longest streak
+   - Visual timeline
+   - Milestone badges
+
+5. Time of Day Analysis
+   - Bar chart showing when doses are typically taken
+   - Helps identify optimal scheduling
+   - X-axis: Time of day
+   - Y-axis: Dose count
+
+6. Weekly Trend Line
+   - Line graph showing adherence over weeks
+   - Identifies patterns and trends
+   - Interactive data points
+
+Stats Summary Cards:
+
+Card 1: Total Doses
+- Icon: Pill
+- Value: Total doses taken in period
+- Comparison to previous period
+
+Card 2: Missed Doses
+- Icon: X in circle
+- Value: Number of missed doses
+- Percentage of total
+
+Card 3: Average Daily Doses
+- Icon: Calendar
+- Value: Average doses per day
+- Trend indicator
+
+Card 4: Most Consistent Protocol
+- Icon: Trophy
+- Value: Protocol name with highest adherence
+- Percentage
+
+Export Options:
+
+Button: "Export Data"
+- Opens export menu:
+  * PDF Report
+  * CSV Data
+  * Share Summary
+
+PDF Report includes:
+- Date range
+- All charts and visualizations
+- Stats summary
+- Protocol details
+- Disclaimer footer
+
+CSV Data includes:
+- Date, Time, Peptide, Dosage, Status
+- Filterable by date range and protocol
+
+Share Summary:
+- Text-based summary
+- Key stats
+- Shareable via system share sheet
+
+Empty State:
+- Icon: Chart with dotted line
+- Text: "Not Enough Data Yet"
+- Subtext: "Track at least 7 days to see progress"
+- Button: "View Protocols"
+
+UI Specifications:
+- Smooth scroll
+- Interactive charts (tap for details)
+- Color-coded for quick understanding
+- Responsive layout
+- Loading states for data processing
+- Pull-to-refresh
+
+Behavior:
+- Charts update in real-time as data changes
+- Date range changes trigger recalculation
+- Filter changes update all visualizations
+- Export generates file in background
+- Tap chart elements for drill-down details
+- Swipe between chart types (optional)
+
+Performance:
+- Cache calculated data
+- Lazy load charts
+- Optimize for large datasets
+- Background processing for exports
+
+4.9 NOTIFICATIONS & REMINDERS
+------------------------------
+Purpose: Timely reminders for scheduled doses
+
+4.9.1 Notification Types
+------------------------
+
+1. Dose Reminder
+   - Trigger: At scheduled dose time
+   - Title: "Time for [Peptide Name]"
+   - Body: "[Dosage] dose scheduled for now"
+   - Actions:
+     * "Mark as Taken"
+     * "Snooze 15 min"
+     * "View Protocol"
+
+2. Missed Dose Alert
+   - Trigger: 30 minutes after scheduled time (if not marked taken)
+   - Title: "Missed Dose: [Peptide Name]"
+   - Body: "You missed your [Dosage] dose at [Time]"
+   - Actions:
+     * "Mark as Taken"
+     * "Skip This Dose"
+     * "View Protocol"
+
+3. Daily Summary
+   - Trigger: User-selected time (default: 8:00 AM)
+   - Title: "Today's Protocol Summary"
+   - Body: "You have X doses scheduled today"
+   - Actions:
+     * "View Schedule"
+     * "Dismiss"
+
+4. Streak Milestone
+   - Trigger: When reaching streak milestones (7, 14, 30, 60, 90 days)
+   - Title: "🔥 [X] Day Streak!"
+   - Body: "You've taken all doses for [X] days straight. Keep it up!"
+   - Actions:
+     * "View Progress"
+     * "Share Achievement"
+
+5. Protocol Ending Soon
+   - Trigger: 3 days before protocol end date
+   - Title: "[Peptide Name] Protocol Ending Soon"
+   - Body: "Your protocol ends on [Date]. Extend or complete?"
+   - Actions:
+     * "Extend Protocol"
+     * "Mark Complete"
+     * "View Details"
+
+4.9.2 Notification Settings
+----------------------------
+Location: Settings > Notifications
+
+Options:
+
+Enable Notifications (Master Toggle)
+- Default: Off (user must opt-in)
+- Requests system permission on enable
+
+Dose Reminders
+- Toggle: On/Off
+- Default: On (if notifications enabled)
+
+Missed Dose Alerts
+- Toggle: On/Off
+- Default: On
+- Delay setting: 15 min / 30 min / 1 hour
+
+Daily Summary
+- Toggle: On/Off
+- Default: Off
+- Time picker: When to receive summary
+
+Streak Milestones
+- Toggle: On/Off
+- Default: On
+
+Protocol Reminders
+- Toggle: On/Off
+- Default: On
+
+Quiet Hours
+- Toggle: On/Off
+- Start time picker
+- End time picker
+- Behavior: Notifications queued and delivered after quiet hours end
+
+Notification Sound
+- Dropdown: System sounds
+- Option: Vibrate only
+- Option: Silent (badge only)
+
+Badge App Icon
+- Toggle: On/Off
+- Shows count of pending doses
+
+UI Specifications:
+- Clear section headers
+- Toggle switches for easy control
+- Time pickers for scheduling
+- Inline descriptions for each option
+- Permission status indicator
+- Link to system settings if permission denied
+
+Behavior:
+- Changing settings updates immediately
+- Reschedules all pending notifications
+- Shows confirmation toast on save
+- Respects system Do Not Disturb settings
+- Handles permission denial gracefully
+
+4.9.3 Notification Scheduling Logic
+------------------------------------
+
+Dose Reminders:
+- Scheduled at exact protocol time
+- Created when protocol is saved
+- Updated when protocol is edited
+- Cancelled when protocol is deleted or paused
+- Cancelled when dose is marked taken
+- Recurring based on protocol frequency
+
+Missed Dose Alerts:
+- Scheduled X minutes after dose time (user setting)
+- Only triggered if dose not marked taken
+- Cancelled if dose marked taken before alert time
+
+Daily Summary:
+- Scheduled once daily at user-selected time
+- Calculates doses for current day
+- Only sent if doses are scheduled
+- Skipped if no active protocols
+
+Streak Milestones:
+- Checked at midnight each day
+- Triggered if all previous day's doses completed
+- Only sent at milestone numbers
+
+Protocol Ending:
+- Scheduled 3 days before end date
+- Only for protocols with end dates
+- Cancelled if protocol extended or deleted
+
+Technical Implementation:
+- Use local notifications (no server required)
+- Schedule up to 64 notifications in advance (iOS limit)
+- Reschedule batch when limit approached
+- Store notification IDs with protocols for cancellation
+- Handle app updates and reinstalls gracefully
+
+4.10 SETTINGS & USER PROFILE
+-----------------------------
+Purpose: App configuration and user preferences
+
+4.10.1 Settings Screen
+----------------------
+Screen Layout:
+- Title: "Settings"
+- Scrollable sections
+- Back button
+
+Sections:
+
+PROFILE SECTION
+
+User Avatar
+- Circular image
+- Tap to change
+- Options: Photo library, default avatars
+
+Name
+- Display field with edit icon
+- Tap to edit inline or open edit screen
+
+Weight
+- Display field with edit icon
+- Shows current weight with unit
+- Tap to update
+
+Primary Goal
+- Display field with edit icon
+- Shows current goal
+- Tap to change
+
+Button: "Edit Goals"
+- Opens goal selection screen
+- Shows currently selected goals
+
+PROTOCOLS SECTION
+
+Active Protocols Count
+- Display only
+- Shows number
+
+Button: "Manage Protocols"
+- Navigates to protocol list
+
+Button: "Protocol Templates"
+- Opens templates library
+
+NOTIFICATIONS SECTION
+
+Master Toggle: Enable Notifications
+- On/Off switch
+- Requests permission if not granted
+
+Button: "Notification Settings"
+- Opens detailed notification settings (see 4.9.2)
+
+CALENDAR INTEGRATION SECTION
+
+Toggle: Sync to Apple Calendar
+- On/Off switch
+- Requests calendar permission if not granted
+
+Button: "Calendar Settings"
+- Opens calendar configuration:
+  * Select default calendar
+  * Event title format
+  * Event duration
+  * Alert timing
+  * Color coding
+
+APPEARANCE SECTION
+
+Theme
+- Options:
+  * Light
+  * Dark
+  * System (follows device)
+- Default: System
+
+Accent Color
+- Color picker or preset options
+- Affects buttons, highlights, icons
+
+Font Size
+- Slider: Small / Medium / Large
+- Live preview
+
+DATA & PRIVACY SECTION
+
+Button: "Export My Data"
+- Opens export options:
+  * Full data export (JSON)
+  * Protocols only (CSV)
+  * Progress report (PDF)
+- Generates file and opens share sheet
+
+Button: "Import Data"
+- Opens file picker
+- Accepts JSON format
+- Validates and imports
+
+Button: "Delete All Data"
+- Confirmation dialog:
+  * "This will permanently delete all your data"
+  * "This cannot be undone"
+  * Text input: Type "DELETE" to confirm
+  * Delete / Cancel buttons
+- Clears all local data
+- Resets app to onboarding
+
+Storage Usage
+- Display: "X MB used"
+- Informational only
+
+LEGAL & SUPPORT SECTION
+
+Button: "Terms of Service"
+- Opens TOS document
+- Scrollable, read-only
+
+Button: "Privacy Policy"
+- Opens privacy policy
+- Scrollable, read-only
+
+Button: "Disclaimers"
+- Opens comprehensive disclaimers
+- Scrollable, read-only
+
+Button: "About pep.io"
+- Opens about screen:
+  * App version
+  * Build number
+  * Credits
+  * Open source licenses
+  * Contact information
+
+Button: "Send Feedback"
+- Opens email composer (if available)
+- Or copies email address to clipboard
+- Pre-fills subject: "pep.io Feedback"
+
+Button: "Rate on App Store"
+- Opens App Store rating page
+- Uses StoreKit for in-app rating (iOS 14+)
+
+ADVANCED SECTION
+
+Toggle: Developer Mode (Hidden)
+- Activated by tapping version number 7 times
+- Shows debug information
+- Enables test notifications
+- Shows database stats
+
+Button: "Reset Onboarding"
+- Clears onboarding completion flag
+- Next launch shows onboarding again
+- Keeps all user data
+
+UI Specifications:
+- Grouped list style (iOS native)
+- Clear section headers
+- Chevron icons for navigation items
+- Toggle switches for boolean settings
+- Subtle dividers between items
+- Consistent padding and spacing
+
+Behavior:
+- Changes save immediately (no save button)
+- Confirmation dialogs for destructive actions
+- Toast messages for successful actions
+- Error messages for failed operations
+- Smooth navigation transitions
+- Back button returns to previous screen
+
+================================================================================
+                        5. TECHNICAL ARCHITECTURE
+================================================================================
+
+5.1 TECHNOLOGY STACK
+--------------------
+
+Frontend Framework:
+- Flutter 3.16+ (latest stable)
+- Dart 3.2+
+
+UI Components:
+- Material Design 3
+- Custom widgets for brand consistency
+- Cupertino widgets for iOS-native feel
+
+State Management:
+- Provider (recommended for MVP)
+- Alternative: Riverpod or Bloc (for scalability)
+
+Local Database:
+- SQLite via sqflite package
+- Alternative: Hive for key-value storage
+
+Local Storage:
+- shared_preferences for simple key-value pairs
+- secure_storage for sensitive data (if any)
+
+Calendar Integration:
+- device_calendar package
+- Handles iOS Calendar permissions and events
+
+Notifications:
+- flutter_local_notifications package
+- Handles scheduling and delivery
+
+Charts & Visualizations:
+- fl_chart package
+- Custom chart widgets as needed
+
+Date/Time Handling:
+- intl package for formatting
+- timezone package for time zone handling
+
+File Operations:
+- path_provider for directory access
+- csv package for CSV export
+- pdf package for PDF generation
+
+Testing:
+- flutter_test for unit and widget tests
+- integration_test for end-to-end tests
+- mockito for mocking dependencies
+
+Development Tools:
+- Flutter DevTools for debugging
+- Dart analyzer for code quality
+- flutter_launcher_icons for app icons
+- flutter_native_splash for splash screen
+
+5.2 APP ARCHITECTURE PATTERN
+-----------------------------
+
+Pattern: Clean Architecture with MVVM
+
+Layers:
+
+1. Presentation Layer
+   - Screens (UI)
+   - Widgets (reusable components)
+   - ViewModels (business logic for UI)
+   - State management
+
+2. Domain Layer
+   - Entities (core data models)
+   - Use cases (business logic)
+   - Repository interfaces
+
+3. Data Layer
+   - Repository implementations
+   - Data sources (local database)
+   - Data models (database schemas)
+
+Directory Structure:
+
+lib/
+├── main.dart
+├── app.dart
+├── core/
+│   ├── constants/
+│   ├── theme/
+│   ├── utils/
+│   └── widgets/
+├── features/
+│   ├── onboarding/
+│   │   ├── presentation/
+│   │   ├── domain/
+│   │   └── data/
+│   ├── protocols/
+│   │   ├── presentation/
+│   │   ├── domain/
+│   │   └── data/
+│   ├── library/
+│   │   ├── presentation/
+│   │   ├── domain/
+│   │   └── data/
+│   ├── calculator/
+│   │   ├── presentation/
+│   │   ├── domain/
+│   │   └── data/
+│   ├── calendar/
+│   │   ├── presentation/
+│   │   ├── domain/
+│   │   └── data/
+│   ├── progress/
+│   │   ├── presentation/
+│   │   ├── domain/
+│   │   └── data/
+│   └── settings/
+│       ├── presentation/
+│       ├── domain/
+│       └── data/
+└── services/
+    ├── database/
+    ├── notifications/
+    ├── calendar/
+    └── storage/
+
+Benefits:
+- Separation of concerns
+- Testability
+- Scalability
+- Maintainability
+- Clear dependencies
+
+5.3 DATABASE SCHEMA
+-------------------
+
+Database: SQLite
+File: pep_io.db
+
+Tables:
+
+1. user_profile
+   - id INTEGER PRIMARY KEY
+   - name TEXT
+   - weight REAL
+   - weight_unit TEXT (lbs/kg)
+   - primary_goal TEXT
+   - created_at INTEGER
+   - updated_at INTEGER
+
+2. user_goals
+   - id INTEGER PRIMARY KEY
+   - goal_category TEXT
+   - created_at INTEGER
+
+3. protocols
+   - id TEXT PRIMARY KEY (UUID)
+   - peptide_id TEXT (FK to peptides.id)
+   - peptide_name TEXT
+   - dosage_amount REAL
+   - dosage_unit TEXT (mcg/mg)
+   - frequency TEXT
+   - days_of_week TEXT (JSON array)
+   - times TEXT (JSON array)
+   - start_date TEXT (YYYY-MM-DD)
+   - end_date TEXT (YYYY-MM-DD, nullable)
+   - notes TEXT
+   - sync_to_calendar INTEGER (boolean)
+   - calendar_id TEXT
+   - active INTEGER (boolean)
+   - created_at INTEGER
+   - updated_at INTEGER
+
+4. doses
+   - id TEXT PRIMARY KEY (UUID)
+   - protocol_id TEXT (FK to protocols.id)
+   - scheduled_date TEXT (YYYY-MM-DD)
+   - scheduled_time TEXT (HH:MM)
+   - actual_time TEXT (HH:MM, nullable)
+   - status TEXT (scheduled/taken/missed)
+   - notes TEXT
+   - created_at INTEGER
+   - updated_at INTEGER
+
+5. peptides
+   - id TEXT PRIMARY KEY (UUID)
+   - name TEXT
+   - alternative_names TEXT (JSON array)
+   - category TEXT
+   - category_color TEXT
+   - description TEXT
+   - benefits TEXT (JSON array)
+   - research_protocols TEXT (JSON object)
+   - reconstitution TEXT (JSON object)
+   - considerations TEXT
+   - storage TEXT
+   - stacks_well_with TEXT (JSON array)
+   - research_references TEXT (JSON array)
+   - user_notes TEXT
+   - is_favorite INTEGER (boolean)
+   - view_count INTEGER
+   - last_viewed INTEGER
+   - created_at INTEGER
+   - updated_at INTEGER
+
+6. calculations
+   - id TEXT PRIMARY KEY (UUID)
+   - peptide_id TEXT (FK to peptides.id, nullable)
+   - peptide_name TEXT
+   - vial_quantity REAL
+   - vial_unit TEXT (mcg/mg)
+   - water_volume REAL
+   - syringe_type TEXT
+   - desired_dose REAL
+   - desired_dose_unit TEXT (mcg/mg)
+   - concentration REAL
+   - dose_per_unit REAL
+   - volume_needed REAL
+   - total_doses INTEGER
+   - notes TEXT
+   - created_at INTEGER
+
+7. app_settings
+   - key TEXT PRIMARY KEY
+   - value TEXT
+   - updated_at INTEGER
+
+8. onboarding_data
+   - id INTEGER PRIMARY KEY
+   - intentions TEXT (JSON array)
+   - experience_level TEXT
+   - peptides_used TEXT (JSON array)
+   - completed INTEGER (boolean)
+   - completed_at INTEGER
+
+Indexes:
+- protocols: peptide_id, active, start_date
+- doses: protocol_id, scheduled_date, status
+- peptides: category, is_favorite, name
+- calculations: peptide_id, created_at
+
+Foreign Key Constraints:
+- ON DELETE CASCADE for protocols → doses
+- ON DELETE SET NULL for peptides → protocols
+
+5.4 DATA MODELS (DART)
+----------------------
+
+Core Models:
+
+```dart
+// User Profile Model
+class UserProfile {
+  final int id;
+  final String? name;
+  final double? weight;
+  final String? weightUnit;
+  final String? primaryGoal;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  UserProfile({
+    required this.id,
+    this.name,
+    this.weight,
+    this.weightUnit,
+    this.primaryGoal,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory UserProfile.fromMap(Map<String, dynamic> map) { ... }
+  Map<String, dynamic> toMap() { ... }
+}
+
+// Protocol Model
+class Protocol {
+  final String id;
+  final String peptideId;
+  final String peptideName;
+  final double dosageAmount;
+  final String dosageUnit;
+  final String frequency;
+  final List<String>? daysOfWeek;
+  final List<String> times;
+  final DateTime startDate;
+  final DateTime? endDate;
+  final String? notes;
+  final bool syncToCalendar;
+  final String? calendarId;
+  final bool active;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  Protocol({
+    required this.id,
+    required this.peptideId,
+    required this.peptideName,
+    required this.dosageAmount,
+    required this.dosageUnit,
+    required this.frequency,
+    this.daysOfWeek,
+    required this.times,
+    required this.startDate,
+    this.endDate,
+    this.notes,
+    required this.syncToCalendar,
+    this.calendarId,
+    required this.active,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory Protocol.fromMap(Map<String, dynamic> map) { ... }
+  Map<String, dynamic> toMap() { ... }
+}
+
+// Dose Model
+class Dose {
+  final String id;
+  final String protocolId;
+  final DateTime scheduledDate;
+  final String scheduledTime;
+  final String? actualTime;
+  final DoseStatus status;
+  final String? notes;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  Dose({
+    required this.id,
+    required this.protocolId,
+    required this.scheduledDate,
+    required this.scheduledTime,
+    this.actualTime,
+    required this.status,
+    this.notes,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory Dose.fromMap(Map<String, dynamic> map) { ... }
+  Map<String, dynamic> toMap() { ... }
+}
+
+enum DoseStatus {
+  scheduled,
+  taken,
+  missed,
+}
+
+// Peptide Model
+class Peptide {
+  final String id;
+  final String name;
+  final List<String> alternativeNames;
+  final String category;
+  final String categoryColor;
+  final String description;
+  final List<String> benefits;
+  final ResearchProtocols researchProtocols;
+  final ReconstitutionInfo reconstitution;
+  final String considerations;
+  final String storage;
+  final List<String> stacksWellWith;
+  final List<ResearchReference> researchReferences;
+  final String? userNotes;
+  final bool isFavorite;
+  final int viewCount;
+  final DateTime? lastViewed;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+
+  Peptide({
+    required this.id,
+    required this.name,
+    required this.alternativeNames,
+    required this.category,
+    required this.categoryColor,
+    required this.description,
+    required this.benefits,
+    required this.researchProtocols,
+    required this.reconstitution,
+    required this.considerations,
+    required this.storage,
+    required this.stacksWellWith,
+    required this.researchReferences,
+    this.userNotes,
+    required this.isFavorite,
+    required this.viewCount,
+    this.lastViewed,
+    required this.createdAt,
+    required this.updatedAt,
+  });
+
+  factory Peptide.fromMap(Map<String, dynamic> map) { ... }
+  Map<String, dynamic> toMap() { ... }
+}
+
+// Supporting Models
+class ResearchProtocols {
+  final String dosageRange;
+  final String administration;
+  final String duration;
+  final String frequency;
+
+  ResearchProtocols({
+    required this.dosageRange,
+    required this.administration,
+    required this.duration,
+    required this.frequency,
+  });
+
+  factory ResearchProtocols.fromMap(Map<String, dynamic> map) { ... }
+  Map<String, dynamic> toMap() { ... }
+}
+
+class ReconstitutionInfo {
+  final List<double> commonVialSizes;
+  final String typicalWaterVolume;
+  final String concentrationExample;
+
+  ReconstitutionInfo({
+    required this.commonVialSizes,
+    required this.typicalWaterVolume,
+    required this.concentrationExample,
+  });
+
+  factory ReconstitutionInfo.fromMap(Map<String, dynamic> map) { ... }
+  Map<String, dynamic> toMap() { ... }
+}
+
+class ResearchReference {
+  final String pmid;
+  final String title;
+  final int year;
+  final String studyType;
+  final String url;
+
+  ResearchReference({
+    required this.pmid,
+    required this.title,
+    required this.year,
+    required this.studyType,
+    required this.url,
+  });
+
+  factory ResearchReference.fromMap(Map<String, dynamic> map) { ... }
+  Map<String, dynamic> toMap() { ... }
+}
+
+// Calculation Model
+class Calculation {
+  final String id;
+  final String? peptideId;
+  final String peptideName;
+  final double vialQuantity;
+  final String vialUnit;
+  final double waterVolume;
+  final String syringeType;
+  final double desiredDose;
+  final String desiredDoseUnit;
+  final double concentration;
+  final double? dosePerUnit;
+  final double volumeNeeded;
+  final int totalDoses;
+  final String? notes;
+  final DateTime createdAt;
+
+  Calculation({
+    required this.id,
+    this.peptideId,
+    required this.peptideName,
+    required this.vialQuantity,
+    required this.vialUnit,
+    required this.waterVolume,
+    required this.syringeType,
+    required this.desiredDose,
+    required this.desiredDoseUnit,
+    required this.concentration,
+    this.dosePerUnit,
+    required this.volumeNeeded,
+    required this.totalDoses,
+    this.notes,
+    required this.createdAt,
+  });
+
+  factory Calculation.fromMap(Map<String, dynamic> map) { ... }
+  Map<String, dynamic> toMap() { ... }
+}
+```
+
+5.5 STATE MANAGEMENT APPROACH
+------------------------------
+
+Recommended: Provider Pattern
+
+Structure:
+
+1. ChangeNotifier Classes (ViewModels)
+   - Manage state for specific features
+   - Notify listeners on state changes
+   - Handle business logic
+
+2. Provider Setup
+   - MultiProvider at app root
+   - Scoped providers for feature-specific state
+   - ProxyProvider for dependencies
+
+Example Providers:
+
+```dart
+// Protocol Provider
+class ProtocolProvider extends ChangeNotifier {
+  final ProtocolRepository _repository;
+  List<Protocol> _protocols = [];
+  bool _isLoading = false;
+  String? _error;
+
+  ProtocolProvider(this._repository);
+
+  List<Protocol> get protocols => _protocols;
+  bool get isLoading => _isLoading;
+  String? get error => _error;
+
+  Future<void> loadProtocols() async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _protocols = await _repository.getAllProtocols();
+      _error = null;
+    } catch (e) {
+      _error = e.toString();
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addProtocol(Protocol protocol) async {
+    await _repository.insertProtocol(protocol);
+    await loadProtocols();
+  }
+
+  // ... other methods
+}
+
+// Peptide Library Provider
+class PeptideLibraryProvider extends ChangeNotifier {
+  final PeptideRepository _repository;
+  List<Peptide> _peptides = [];
+  List<Peptide> _filteredPeptides = [];
+  String _searchQuery = '';
+  String? _categoryFilter;
+
+  // ... implementation
+}
+
+// User Profile Provider
+class UserProfileProvider extends ChangeNotifier {
+  final UserRepository _repository;
+  UserProfile? _profile;
+
+  // ... implementation
+}
+
+// App Settings Provider
+class SettingsProvider extends ChangeNotifier {
+  final SettingsRepository _repository;
+  AppSettings _settings = AppSettings.defaults();
+
+  // ... implementation
+}
+```
+
+Provider Setup in main.dart:
+
+```dart
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => ProtocolProvider(ProtocolRepository()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => PeptideLibraryProvider(PeptideRepository()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => UserProfileProvider(UserRepository()),
+        ),
+        ChangeNotifierProvider(
+          create: (_) => SettingsProvider(SettingsRepository()),
+        ),
+        // ... other providers
+      ],
+      child: MyApp(),
+    ),
+  );
+}
+```
+
+Benefits:
+- Simple and intuitive
+- Good performance
+- Easy testing
+- Minimal boilerplate
+- Official Flutter recommendation
+
+5.6 SERVICES LAYER
+------------------
+
+Core Services:
+
+1. Database Service
+   - Manages SQLite connection
+   - Provides CRUD operations
+   - Handles migrations
+
+```dart
+class DatabaseService {
+  static Database? _database;
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    String path = join(await getDatabasesPath(), 'pep_io.db');
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
+    );
+  }
+
+  Future<void> _onCreate(Database db, int version) async {
+    // Create tables
+    await db.execute('''
+      CREATE TABLE user_profile (
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        weight REAL,
+        weight_unit TEXT,
+        primary_goal TEXT,
+        created_at INTEGER,
+        updated_at INTEGER
+      )
+    ''');
+
+    // ... create other tables
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    // Handle database migrations
+  }
+}
+```
+
+2. Notification Service
+   - Schedules local notifications
+   - Handles notification actions
+   - Manages notification permissions
+
+```dart
+class NotificationService {
+  final FlutterLocalNotificationsPlugin _notifications;
+
+  NotificationService(this._notifications);
+
+  Future<void> initialize() async {
+    const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
+    const iosSettings = DarwinInitializationSettings(
+      requestAlertPermission: false,
+      requestBadgePermission: false,
+      requestSoundPermission: false,
+    );
+
+    await _notifications.initialize(
+      const InitializationSettings(
+        android: androidSettings,
+        iOS: iosSettings,
+      ),
+      onDidReceiveNotificationResponse: _onNotificationTap,
+    );
+  }
+
+  Future<void> scheduleDoseReminder(Dose dose, Protocol protocol) async {
+    // Schedule notification
+  }
+
+  Future<void> cancelNotification(int id) async {
+    await _notifications.cancel(id);
+  }
+
+  // ... other methods
+}
+```
+
+3. Calendar Service
+   - Integrates with Apple Calendar
+   - Creates and manages events
+   - Handles permissions
+
+```dart
+class CalendarService {
+  final DeviceCalendarPlugin _calendar;
+
+  CalendarService(this._calendar);
+
+  Future<bool> requestPermissions() async {
+    var result = await _calendar.requestPermissions();
+    return result.isSuccess && result.data == true;
+  }
+
+  Future<String?> createOrGetPepioCalendar() async {
+    final calendars = await _calendar.retrieveCalendars();
+    
+    // Find existing pep.io calendar
+    final existing = calendars.data?.firstWhere(
+      (cal) => cal.name == 'pep.io',
+      orElse: () => null,
+    );
+
+    if (existing != null) return existing.id;
+
+    // Create new calendar
+    // ... implementation
+  }
+
+  Future<void> createDoseEvent(Dose dose, Protocol protocol, String calendarId) async {
+    // Create calendar event
+  }
+
+  // ... other methods
+}
+```
+
+4. Export Service
+   - Generates PDF reports
+   - Creates CSV exports
+   - Handles file sharing
+
+```dart
+class ExportService {
+  Future<File> exportToPDF(ExportData data) async {
+    // Generate PDF
+  }
+
+  Future<File> exportToCSV(List<Protocol> protocols, List<Dose> doses) async {
+    // Generate CSV
+  }
+
+  Future<void> shareFile(File file) async {
+    // Use share_plus package
+  }
+}
+```
+
+5. Storage Service
+   - Manages shared preferences
+   - Handles secure storage
+   - Provides key-value access
+
+```dart
+class StorageService {
+  final SharedPreferences _prefs;
+
+  StorageService(this._prefs);
+
+  Future<void> setString(String key, String value) async {
+    await _prefs.setString(key, value);
+  }
+
+  String? getString(String key) {
+    return _prefs.getString(key);
+  }
+
+  // ... other methods
+}
+```
+
+5.7 NAVIGATION & ROUTING
+-------------------------
+
+Approach: Named Routes with Navigator 2.0 (optional for MVP)
+
+Route Definitions:
+
+```dart
+class AppRoutes {
+  static const String splash = '/';
+  static const String disclaimer = '/disclaimer';
+  static const String privacy = '/privacy';
+  static const String onboarding = '/onboarding';
+  static const String home = '/home';
+  static const String protocols = '/protocols';
+  static const String protocolDetail = '/protocols/:id';
+  static const String protocolCreate = '/protocols/create';
+  static const String protocolEdit = '/protocols/:id/edit';
+  static const String library = '/library';
+  static const String peptideDetail = '/library/:id';
+  static const String calculator = '/calculator';
+  static const String calendar = '/calendar';
+  static const String progress = '/progress';
+  static const String settings = '/settings';
+  static const String goals = '/settings/goals';
+  static const String notifications = '/settings/notifications';
+  static const String calendarSettings = '/settings/calendar';
+}
+```
+
+Route Configuration:
+
+```dart
+class AppRouter {
+  static Route<dynamic> generateRoute(RouteSettings settings) {
+    switch (settings.name) {
+      case AppRoutes.splash:
+        return MaterialPageRoute(builder: (_) => SplashScreen());
+      
+      case AppRoutes.disclaimer:
+        return MaterialPageRoute(builder: (_) => DisclaimerScreen());
+      
+      case AppRoutes.home:
+        return MaterialPageRoute(builder: (_) => HomeScreen());
+      
+      case AppRoutes.protocolDetail:
+        final id = settings.arguments as String;
+        return MaterialPageRoute(
+          builder: (_) => ProtocolDetailScreen(protocolId: id),
+        );
+      
+      // ... other routes
+      
+      default:
+        return MaterialPageRoute(
+          builder: (_) => Scaffold(
+            body: Center(child: Text('Route not found')),
+          ),
+        );
+    }
+  }
+}
+```
+
+Bottom Navigation:
+
+```dart
+class MainNavigationScreen extends StatefulWidget {
+  @override
+  _MainNavigationScreenState createState() => _MainNavigationScreenState();
+}
+
+class _MainNavigationScreenState extends State<MainNavigationScreen> {
+  int _currentIndex = 0;
+
+  final List<Widget> _screens = [
+    HomeScreen(),
+    ProtocolsScreen(),
+    LibraryScreen(),
+    CalendarScreen(),
+    ProgressScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_currentIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) => setState(() => _currentIndex = index),
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list),
+            label: 'Protocols',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'Library',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Calendar',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.show_chart),
+            label: 'Progress',
+          ),
+        ],
+      ),
+    );
+  }
+}
+```
+
+5.8 PERFORMANCE OPTIMIZATIONS
+------------------------------
+
+Database Optimizations:
+- Indexed columns for frequent queries
+- Batch operations for multiple inserts
+- Lazy loading for large datasets
+- Connection pooling
+
+UI Optimizations:
+- ListView.builder for long lists
+- Cached network images (if any)
+- Const constructors where possible
+- RepaintBoundary for complex widgets
+- Keys for list items
+
+State Management Optimizations:
+- Selector for specific state slices
+- Avoid unnecessary rebuilds
+- Debounce search inputs
+- Throttle scroll events
+
+Memory Management:
+- Dispose controllers and listeners
+- Clear caches periodically
+- Limit notification scheduling
+- Optimize image sizes
+
+5.9 TESTING STRATEGY
+--------------------
+
+Unit Tests:
+- Test all business logic
+- Test data models
+- Test utility functions
+- Test calculations
+- Target: 80%+ coverage
+
+Widget Tests:
+- Test individual widgets
+- Test user interactions
+- Test state changes
+- Test navigation
+
+Integration Tests:
+- Test complete user flows
+- Test onboarding process
+- Test protocol creation
+- Test dose tracking
+- Test data persistence
+
+Test Structure:
+
+```dart
+// Unit Test Example
+void main() {
+  group('Dose Calculator', () {
+    test('calculates concentration correctly', () {
+      final calculator = DoseCalculator();
+      final result = calculator.calculateConcentration(
+        vialQuantity: 5.0,
+        waterVolume: 2.0,
+      );
+      expect(result, 2.5);
+    });
+
+    test('calculates volume needed correctly', () {
+      final calculator = DoseCalculator();
+      final result = calculator.calculateVolumeNeeded(
+        desiredDose: 250,
+        concentration: 2500,
+      );
+      expect(result, 0.1);
+    });
+  });
+}
+
+// Widget Test Example
+void main() {
+  testWidgets('Protocol card displays correctly', (tester) async {
+    final protocol = Protocol(
+      id: '1',
+      peptideName: 'BPC-157',
+      dosageAmount: 250,
+      dosageUnit: 'mcg',
+      // ... other fields
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ProtocolCard(protocol: protocol),
+        ),
+      ),
+    );
+
+    expect(find.text('BPC-157'), findsOneWidget);
+    expect(find.text('250 mcg'), findsOneWidget);
+  });
+}
+```
+
+Testing Tools:
+- flutter_test
+- mockito for mocking
+- integration_test for E2E
+- golden_toolkit for visual regression
+
+CI/CD:
+- Run tests on every commit
+- Automated builds
+- Code coverage reports
+- Lint checks
+
+================================================================================
+                          6. UI/UX GUIDELINES
+================================================================================
+
+6.1 DESIGN PRINCIPLES
+---------------------
+
+1. Clarity Over Cleverness
+   - Clear labels and instructions
+   - Obvious navigation
+   - Predictable interactions
+   - No hidden features
+
+2. Privacy & Trust
+   - Transparent data practices
+   - Visible disclaimers
+   - User control over data
+   - No dark patterns
+
+3. Efficiency
+   - Minimize taps to complete tasks
+   - Smart defaults
+   - Quick actions
+   - Batch operations where appropriate
+
+4. Consistency
+   - Consistent terminology
+   - Consistent visual language
+   - Consistent interaction patterns
+   - Platform conventions
+
+5. Accessibility
+   - High contrast ratios
+   - Readable font sizes
+   - VoiceOver support
+   - Dynamic type support
+
+6.2 VISUAL DESIGN SYSTEM
+-------------------------
+
+Color Palette:
+
+Primary Colors:
+- Primary Blue: #4A90E2
+- Primary Dark: #2E5C8A
+- Primary Light: #7AB8FF
+
+Secondary Colors:
+- Purple: #9B59B6
+- Green: #27AE60
+- Orange: #E67E22
+- Red: #E74C3C
+- Yellow: #F39C12
+
+Neutral Colors:
+- Black: #1A1A1A
+- Dark Gray: #4A4A4A
+- Medium Gray: #9B9B9B
+- Light Gray: #E0E0E0
+- White: #FFFFFF
+
+Category Colors:
+- GH Secretagogues: #9B59B6 (Purple)
+- Body Composition: #E67E22 (Orange)
+- Regenerative: #27AE60 (Green)
+- Neuro/Cognitive: #3498DB (Blue)
+- Energy/Performance: #E74C3C (Red)
+- Skin/Hair/Beauty: #F39C12 (Yellow)
+- Muscle/Strength: #C0392B (Dark Red)
+- Longevity: #16A085 (Teal)
+- Gut/Metabolic: #8E44AD (Dark Purple)
+
+Typography:
+
+Font Family:
+- iOS: SF Pro (system default)
+- Android: Roboto (system default)
+
+Font Sizes:
+- Display: 34px (bold)
+- Title 1: 28px (bold)
+- Title 2: 22px (bold)
+- Title 3: 20px (semibold)
+- Headline: 17px (semibold)
+- Body: 17px (regular)
+- Callout: 16px (regular)
+- Subhead: 15px (regular)
+- Footnote: 13px (regular)
+- Caption 1: 12px (regular)
+- Caption 2: 11px (regular)
+
+Font Weights:
+- Regular: 400
+- Medium: 500
+- Semibold: 600
+- Bold: 700
+
+Spacing System:
+
+Base Unit: 8px
+
+Spacing Scale:
+- XXS: 4px (0.5 units)
+- XS: 8px (1 unit)
+- S: 12px (1.5 units)
+- M: 16px (2 units)
+- L: 24px (3 units)
+- XL: 32px (4 units)
+- XXL: 48px (6 units)
+
+Component Spacing:
+- Card padding: 16px
+- Section spacing: 24px
+- List item padding: 12px vertical, 16px horizontal
+- Button padding: 12px vertical, 24px horizontal
+
+Border Radius:
+
+Scale:
+- Small: 8px (buttons, chips)
+- Medium: 12px (cards, inputs)
+- Large: 16px (modals, sheets)
+- XLarge: 24px (special cards)
+- Circle: 50% (avatars, icons)
+
+Shadows:
+
+Elevation Levels:
+- Level 1 (Cards):
+  - Offset: 0px 2px
+  - Blur: 4px
+  - Color: rgba(0, 0, 0, 0.1)
+
+- Level 2 (Floating buttons):
+  - Offset: 0px 4px
+  - Blur: 8px
+  - Color: rgba(0, 0, 0, 0.15)
+
+- Level 3 (Modals):
+  - Offset: 0px 8px
+  - Blur: 16px
+  - Color: rgba(0, 0, 0, 0.2)
+
+Icons:
+
+Icon Set: SF Symbols (iOS) / Material Icons (Android)
+
+Icon Sizes:
+- Small: 16px
+- Medium: 24px
+- Large: 32px
+- XLarge: 48px
+
+Icon Style:
+- Outlined (default)
+- Filled (for active states)
+- Consistent stroke width
+
+6.3 INTERACTION PATTERNS
+-------------------------
+
+Buttons:
+
+Primary Button:
+- Background: Primary Blue
+- Text: White
+- Border radius: 8px
+- Padding: 12px vertical, 24px horizontal
+- Shadow: Level 1
+- Hover: Darken 10%
+- Active: Scale 0.98
+
+Secondary Button:
+- Background: Transparent
+- Text: Primary Blue
+- Border: 1px solid Primary Blue
+- Border radius: 8px
+- Padding: 12px vertical, 24px horizontal
+- Hover: Light blue background
+- Active: Scale 0.98
+
+Text Button:
+- Background: Transparent
+- Text: Primary Blue
+- No border
+- Padding: 8px vertical, 16px horizontal
+- Hover: Underline
+- Active: Opacity 0.7
+
+Destructive Button:
+- Background: Red
+- Text: White
+- Border radius: 8px
+- Padding: 12px vertical, 24px horizontal
+- Hover: Darken 10%
+- Active: Scale 0.98
+
+Input Fields:
+
+Text Input:
+- Border: 1px solid Light Gray
+- Border radius: 8px
+- Padding: 12px
+- Focus: Border color Primary Blue, 2px width
+- Error: Border color Red
+- Disabled: Background Light Gray, text Medium Gray
+
+Dropdown:
+- Same as text input
+- Chevron icon on right
+- Opens native picker (iOS) or modal (Android)
+
+Toggle Switch:
+- iOS: Native UISwitch
+- Android: Material Switch
+- Active color: Primary Blue
+- Inactive color: Light Gray
+
+Checkbox:
+- Size: 24px
+- Border: 2px solid Medium Gray
+- Border radius: 4px
+- Checked: Background Primary Blue, white checkmark
+- Unchecked: Transparent background
+
+Radio Button:
+- Size: 24px
+- Border: 2px solid Medium Gray
+- Border radius: 50%
+- Selected: Inner circle Primary Blue
+- Unselected: Transparent
+
+Cards:
+
+Standard Card:
+- Background: White (light mode) / Dark Gray (dark mode)
+- Border radius: 12px
+- Padding: 16px
+- Shadow: Level 1
+- Tap: Scale 0.98, shadow Level 2
+
+Metric Card:
+- Background: Gradient (category color)
+- Border radius: 16px
+- Padding: 16px
+- Shadow: Level 1
+- Icon: Colored circle, top-left
+- Value: Large, bold, center
+- Label: Small, bottom
+
+List Items:
+
+Standard List Item:
+- Height: 60px minimum
+- Padding: 12px vertical, 16px horizontal
+- Divider: 1px solid Light Gray (optional)
+- Tap: Gray background overlay
+- Swipe: Reveal actions (delete, edit)
+
+Expandable List Item:
+- Chevron icon rotates on expand
+- Smooth height animation
+- Nested content indented
+
+Modals & Sheets:
+
+Bottom Sheet:
+- Slides up from bottom
+- Rounded top corners: 24px
+- Handle bar at top (optional)
+- Backdrop: Semi-transparent black
+- Dismiss: Swipe down or tap backdrop
+
+Modal:
+- Centered on screen
+- Max width: 90% of screen or 400px
+- Border radius: 16px
+- Shadow: Level 3
+- Backdrop: Semi-transparent black
+- Dismiss: Tap backdrop or close button
+
+Alert Dialog:
+- Native iOS/Android style
+- Title: Bold, 20px
+- Message: Regular, 17px
+- Buttons: Primary and secondary
+- Destructive actions in red
+
+Animations:
+
+Transitions:
+- Duration: 300ms
+- Easing: Ease-in-out
+- Page transitions: Slide (iOS) / Fade (Android)
+
+Micro-interactions:
+- Button press: Scale 0.98, 100ms
+- Toggle: Smooth slide, 200ms
+- Expand/collapse: Height animation, 300ms
+- Fade in/out: Opacity, 200ms
+
+Loading States:
+- Spinner: Circular, Primary Blue
+- Skeleton: Shimmer effect, Light Gray
+- Progress bar: Linear, Primary Blue
+
+Gestures:
+
+Tap:
+- Single tap: Primary action
+- Minimum target size: 44x44 points
+
+Swipe:
+- Horizontal: Navigate, reveal actions
+- Vertical: Scroll, dismiss sheets
+
+Pull-to-refresh:
+- Pull down: Refresh content
+- Spinner appears at top
+- Release to trigger
+
+Pinch:
+- Zoom (for images, charts)
+- Not used for navigation
+
+Long Press:
+- Context menu
+- Haptic feedback
+- Preview (3D Touch on supported devices)
+
+6.4 SCREEN LAYOUTS
+------------------
+
+Layout Grid:
+
+Margins:
+- Phone: 16px
+- Tablet: 24px
+
+Columns:
+- Phone: 4 columns
+- Tablet: 8 columns
+
+Gutter:
+- 16px between columns
+
+Safe Areas:
+- Respect iOS safe area insets
+- Account for notch, home indicator
+- Bottom navigation above safe area
+
+Responsive Breakpoints:
+
+Small (Phone):
+- Width: < 600px
+- Single column layouts
+- Bottom navigation
+- Full-width cards
+
+Medium (Tablet):
+- Width: 600px - 900px
+- Two-column layouts where appropriate
+- Side navigation (optional)
+- Max-width cards
+
+Large (iPad Pro):
+- Width: > 900px
+- Multi-column layouts
+- Side navigation
+- Centered content with max-width
+
+Screen Templates:
+
+List Screen:
+- Header with title and actions
+- Search bar (optional)
+- Filter/sort bar (optional)
+- Scrollable list
+- Floating action button (optional)
+- Bottom navigation
+
+Detail Screen:
+- Header with back button and title
+- Scrollable content
+- Sections with headers
+- Bottom action buttons (optional)
+- Share/favorite actions in header
+
+Form Screen:
+- Header with back and save buttons
+- Scrollable form fields
+- Grouped sections
+- Validation messages inline
+- Keyboard-aware scrolling
+
+Dashboard Screen:
+- Header with greeting and actions
+- Metric cards (horizontal scroll or grid)
+- Content sections
+- Quick actions
+- Bottom navigation
+
+Empty States:
+
+Components:
+- Icon: Large, gray, centered
+- Title: Bold, 20px
+- Message: Regular, 17px, gray
+- Action button: Primary (optional)
+
+Examples:
+- No protocols: "No Protocols Yet" + "Create Protocol" button
+- No search results: "No Results Found" + "Clear Search" button
+- No data: "Not Enough Data" + explanation
+
+Error States:
+
+Components:
+- Icon: Alert icon, red
+- Title: Bold, 20px, "Something Went Wrong"
+- Message: Explanation of error
+- Action button: "Try Again" or "Go Back"
+
+Examples:
+- Network error: "Connection Failed" + "Retry" button
+- Permission denied: "Permission Required" + "Open Settings" button
+- Data error: "Unable to Load Data" + "Refresh" button
+
+Loading States:
+
+Skeleton Screens:
+- Show layout structure
+- Shimmer animation
+- Gray placeholders for content
+- Maintain spacing and sizing
+
+Spinners:
+- Centered on screen or section
+- Primary Blue color
+- With optional message below
+
+Progress Indicators:
+- Linear progress bar
+- Show percentage (optional)
+- For long operations (exports, imports)
+
+================================================================================
+                    7. COMPLIANCE & LEGAL REQUIREMENTS
+================================================================================
+
+7.1 APPLE APP STORE MEDICAL GUIDELINES COMPLIANCE
+--------------------------------------------------
+
+Relevant Guidelines:
+
+1. App Store Review Guidelines 5.1.1 (ix)
+   - Apps that provide health-related information must be transparent about 
+     data sources
+   - Must include disclaimers about medical advice
+   - Cannot claim to diagnose or treat conditions
+
+2. App Store Review Guidelines 1.4.4
+   - Apps must clearly indicate if they are for educational purposes
+   - Cannot make misleading health claims
+
+Compliance Measures:
+
+1. Mandatory Disclaimers
+   - First screen after launch (cannot be skipped)
+   - Inline disclaimers on all peptide information
+   - Calculator disclaimers
+   - Protocol creation disclaimers
+
+2. Educational Framing
+   - All content labeled as "educational"
+   - Benefits listed as "commonly researched" not "proven"
+   - Dosages shown as "research contexts" not "recommendations"
+   - Calculator labeled "for learning purposes only"
+
+3. No Medical Claims
+   - No diagnosis features
+   - No treatment recommendations
+   - No dosage prescriptions
+   - No health outcome guarantees
+
+4. Data Source Transparency
+   - Research references with PMIDs
+   - Clear labeling of community-discussed information
+   - Distinction between clinical and non-clinical sources
+
+5. User Responsibility
+   - Clear statements that users must consult healthcare professionals
+   - No replacement for medical advice
+   - User assumes all responsibility
+
+6. Age Rating
+   - 17+ rating for medical/treatment information
+   - Appropriate content warnings
+
+7. App Metadata
+   - Description emphasizes educational purpose
+   - No therapeutic claims in marketing
+   - Clear about app limitations
+
+7.2 TERMS OF SERVICE (FULL DOCUMENT)
+-------------------------------------
+
+TERMS OF SERVICE FOR PEP.IO
+
+Last Updated: December 17, 2025
+
+1. ACCEPTANCE OF TERMS
+
+By downloading, installing, or using the pep.io mobile application ("App"), 
+you agree to be bound by these Terms of Service ("Terms"). If you do not agree 
+to these Terms, do not use the App.
+
+2. DESCRIPTION OF SERVICE
+
+pep.io is an educational mobile application designed to provide information 
+about peptides and allow users to track personal protocols for educational and 
+informational purposes only.
+
+3. EDUCATIONAL PURPOSE ONLY
+
+3.1 The App is designed solely for educational, informational, and personal 
+tracking purposes.
+
+3.2 The App does NOT:
+    - Provide medical advice, diagnosis, or treatment
+    - Replace consultation with licensed healthcare professionals
+    - Recommend specific peptides, dosages, or protocols
+    - Make therapeutic or health claims
+    - Provide injection guidance or administration instructions
+
+3.3 All information provided is from publicly available, non-clinical sources 
+and is for educational purposes only.
+
+4. NO MEDICAL CLAIMS
+
+4.1 pep.io does not make any therapeutic claims about peptides.
+
+4.2 Benefits listed are "commonly researched" or "community-discussed" and are 
+NOT proven therapeutic claims.
+
+4.3 We do not endorse or recommend any specific peptide or protocol.
+
+4.4 Research protocols shown are for educational reference only and are NOT 
+dosing recommendations.
+
+5. USER RESPONSIBILITY
+
+5.1 You are solely responsible for your use of the information provided in the 
+App.
+
+5.2 You must consult a licensed healthcare professional before making any 
+decisions related to peptides, supplements, or health interventions.
+
+5.3 You must not use the App to self-diagnose or self-treat any condition.
+
+5.4 Results may vary; no outcomes are guaranteed.
+
+5.5 You assume all risks associated with the use of peptides or any actions 
+taken based on information from the App.
+
+6. DATA & PRIVACY
+
+6.1 All data is stored locally on your device only.
+
+6.2 No cloud storage or data transmission occurs.
+
+6.3 You are responsible for backing up your own data.
+
+6.4 pep.io cannot recover lost data.
+
+6.5 See our Privacy Policy for more details.
+
+7. NO WARRANTY
+
+7.1 THE APP IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND.
+
+7.2 WE DO NOT WARRANT THAT:
+    - The App will be error-free or uninterrupted
+    - Defects will be corrected
+    - The App is free of viruses or harmful components
+    - Information provided is accurate, complete, or current
+
+7.3 YOU USE THE APP AT YOUR OWN RISK.
+
+8. LIMITATION OF LIABILITY
+
+8.1 TO THE MAXIMUM EXTENT PERMITTED BY LAW, PEP.IO AND ITS DEVELOPERS SHALL NOT 
+BE LIABLE FOR ANY:
+    - Direct, indirect, incidental, special, or consequential damages
+    - Loss of profits, data, or use
+    - Personal injury or property damage
+    - Health outcomes or adverse effects
+    - Damages arising from use or inability to use the App
+
+8.2 THIS LIMITATION APPLIES EVEN IF WE HAVE BEEN ADVISED OF THE POSSIBILITY OF 
+SUCH DAMAGES.
+
+9. INDEMNIFICATION
+
+You agree to indemnify, defend, and hold harmless pep.io and its developers 
+from any claims, damages, losses, liabilities, and expenses (including legal 
+fees) arising from:
+    - Your use of the App
+    - Your violation of these Terms
+    - Your violation of any rights of another party
+    - Any actions taken based on information from the App
+
+10. COMPLIANCE
+
+10.1 This App complies with Apple App Store guidelines.
+
+10.2 No prescription services are offered.
+
+10.3 No product sales or referrals are made.
+
+10.4 We are not affiliated with any peptide manufacturers or suppliers.
+
+11. INTELLECTUAL PROPERTY
+
+11.1 The App and its content are owned by pep.io and protected by copyright and 
+other intellectual property laws.
+
+11.2 You may not copy, modify, distribute, sell, or lease any part of the App.
+
+11.3 Peptide information is compiled from publicly available sources and is not 
+proprietary.
+
+12. MODIFICATIONS TO TERMS
+
+12.1 We reserve the right to modify these Terms at any time.
+
+12.2 Changes will be effective immediately upon posting in the App.
+
+12.3 Your continued use of the App after changes constitutes acceptance of the 
+modified Terms.
+
+13. TERMINATION
+
+13.1 We may terminate or suspend your access to the App at any time, without 
+notice, for any reason.
+
+13.2 You may stop using the App at any time by deleting it from your device.
+
+13.3 Upon termination, all provisions of these Terms that should survive 
+termination shall remain in effect.
+
+14. GOVERNING LAW
+
+These Terms shall be governed by and construed in accordance with the laws of 
+[Jurisdiction], without regard to its conflict of law provisions.
+
+15. DISPUTE RESOLUTION
+
+Any disputes arising from these Terms or use of the App shall be resolved 
+through binding arbitration in accordance with the rules of [Arbitration 
+Organization].
+
+16. SEVERABILITY
+
+If any provision of these Terms is found to be unenforceable, the remaining 
+provisions shall remain in full force and effect.
+
+17. ENTIRE AGREEMENT
+
+These Terms, together with our Privacy Policy, constitute the entire agreement 
+between you and pep.io regarding the App.
+
+18. CONTACT
+
+For questions about these Terms, contact: [Contact Email]
+
+BY USING THE APP, YOU ACKNOWLEDGE THAT YOU HAVE READ, UNDERSTOOD, AND AGREE TO 
+BE BOUND BY THESE TERMS OF SERVICE.
+
+7.3 PRIVACY POLICY
+------------------
+
+PRIVACY POLICY FOR PEP.IO
+
+Last Updated: December 17, 2025
+
+1. INTRODUCTION
+
+pep.io ("we", "our", "us") is committed to protecting your privacy. This 
+Privacy Policy explains our data practices for the pep.io mobile application 
+("App").
+
+2. DATA COLLECTION
+
+2.1 PERSONAL INFORMATION
+
+We do NOT collect any personal information. The App does not require:
+    - Email address
+    - Phone number
+    - Name (unless you voluntarily enter it for personalization)
+    - Account creation
+    - Login credentials
+
+2.2 HEALTH INFORMATION
+
+We do NOT collect or transmit any health information. All data you enter 
+(protocols, doses, notes) is stored locally on your device only.
+
+2.3 USAGE DATA
+
+We do NOT collect usage analytics, tracking data, or behavioral information.
+
+2.4 DEVICE INFORMATION
+
+We do NOT collect device identifiers, IP addresses, or location data.
+
+3. DATA STORAGE
+
+3.1 LOCAL STORAGE ONLY
+
+All data is stored locally on your device using:
+    - SQLite database
+    - Local file storage
+    - iOS secure storage (for sensitive settings)
+
+3.2 NO CLOUD STORAGE
+
+We do NOT:
+    - Transmit data to any servers
+    - Store data in the cloud
+    - Sync data across devices
+    - Back up data to our servers
+
+3.3 YOUR RESPONSIBILITY
+
+You are responsible for:
+    - Backing up your device (via iCloud or iTunes)
+    - Protecting your device with a passcode
+    - Securing your data
+
+4. DATA SHARING
+
+4.1 NO THIRD-PARTY SHARING
+
+We do NOT share, sell, rent, or disclose your data to any third parties.
+
+4.2 NO ADVERTISING
+
+We do NOT use your data for advertising purposes.
+
+4.3 NO ANALYTICS SERVICES
+
+We do NOT use third-party analytics services (e.g., Google Analytics, Firebase).
+
+5. PERMISSIONS
+
+5.1 CALENDAR ACCESS (OPTIONAL)
+
+If you enable Apple Calendar integration:
+    - We request permission to access your calendar
+    - We create events in your selected calendar
+    - We do NOT read or access other calendar events
+    - You can revoke this permission anytime in iOS Settings
+
+5.2 NOTIFICATIONS (OPTIONAL)
+
+If you enable notifications:
+    - We request permission to send local notifications
+    - Notifications are generated locally on your device
+    - No data is transmitted to any server
+    - You can revoke this permission anytime in iOS Settings
+
+5.3 NO OTHER PERMISSIONS
+
+We do NOT request:
+    - Location access
+    - Camera access
+    - Microphone access
+    - Contacts access
+    - Photo library access (except for profile avatar, optional)
+
+6. DATA RETENTION
+
+6.1 DURATION
+
+Data is retained on your device until you:
+    - Delete it manually within the App
+    - Delete the App from your device
+    - Use the "Delete All Data" feature in Settings
+
+6.2 NO SERVER RETENTION
+
+Since we do not collect data, we do not retain any data on servers.
+
+7. DATA SECURITY
+
+7.1 LOCAL SECURITY
+
+Your data security depends on:
+    - Your device security (passcode, Face ID, Touch ID)
+    - iOS security features
+    - Your device backup encryption
+
+7.2 OUR MEASURES
+
+We implement:
+    - Secure coding practices
+    - Data validation
+    - Protection against SQL injection
+    - Secure storage APIs
+
+7.3 LIMITATIONS
+
+We cannot guarantee absolute security. You use the App at your own risk.
+
+8. DATA EXPORT & PORTABILITY
+
+8.1 EXPORT FEATURES
+
+You can export your data at any time:
+    - Full data export (JSON format)
+    - Protocols export (CSV format)
+    - Progress report (PDF format)
+
+8.2 YOUR DATA, YOUR CONTROL
+
+You maintain complete control over your data. You can:
+    - Export it anytime
+    - Delete it anytime
+    - Transfer it to another device (via export/import)
+
+9. CHILDREN'S PRIVACY
+
+9.1 AGE RESTRICTION
+
+The App is rated 17+ and is not intended for children under 17.
+
+9.2 NO COLLECTION FROM CHILDREN
+
+We do not knowingly collect data from anyone under 17.
+
+10. CHANGES TO THIS POLICY
+
+10.1 UPDATES
+
+We may update this Privacy Policy from time to time.
+
+10.2 NOTIFICATION
+
+Changes will be posted in the App with an updated "Last Updated" date.
+
+10.3 YOUR ACCEPTANCE
+
+Your continued use of the App after changes constitutes acceptance of the 
+updated Privacy Policy.
+
+11. YOUR RIGHTS
+
+11.1 ACCESS
+
+You have full access to all your data within the App.
+
+11.2 DELETION
+
+You can delete any or all of your data at any time.
+
+11.3 EXPORT
+
+You can export your data at any time.
+
+11.4 NO DATA REQUESTS
+
+Since we do not collect or store your data, there is no need to request data 
+from us.
+
+12. COMPLIANCE
+
+12.1 GDPR COMPLIANCE
+
+Although we do not collect personal data, we respect GDPR principles:
+    - Data minimization (we collect nothing)
+    - User control (you control all data)
+    - Transparency (this policy)
+
+12.2 CCPA COMPLIANCE
+
+We do not sell personal information (we don't collect it).
+
+12.3 APPLE PRIVACY REQUIREMENTS
+
+We comply with Apple's App Store privacy requirements:
+    - Privacy nutrition label accurately reflects our practices
+    - No tracking
+    - No data collection
+
+13. CONTACT
+
+For questions about this Privacy Policy, contact: [Contact Email]
+
+14. SUMMARY
+
+IN SHORT:
+    - We do NOT collect any data
+    - All data stays on your device
+    - No cloud storage or transmission
+    - No tracking or analytics
+    - You control your data completely
+
+7.4 DISCLAIMER CONTENT (COMPREHENSIVE)
+--------------------------------------
+
+COMPREHENSIVE DISCLAIMER FOR PEP.IO
+
+IMPORTANT: PLEASE READ CAREFULLY
+
+This disclaimer applies to all information, features, and content provided by 
+the pep.io mobile application ("App").
+
+1. EDUCATIONAL PURPOSE ONLY
+
+This App is designed exclusively for educational, informational, and personal 
+tracking purposes. It is NOT intended to:
+    - Provide medical advice
+    - Diagnose any disease or condition
+    - Treat any disease or condition
+    - Prevent any disease or condition
+    - Replace consultation with licensed healthcare professionals
+
+2. NOT MEDICAL ADVICE
+
+NOTHING in this App constitutes medical advice. All information provided is for 
+educational purposes only and should NOT be used to make medical decisions.
+
+3. CONSULT A HEALTHCARE PROFESSIONAL
+
+ALWAYS consult a licensed healthcare professional before:
+    - Starting any peptide protocol
+    - Changing any peptide protocol
+    - Stopping any peptide protocol
+    - Making any health-related decisions
+    - Using any information from this App
+
+4. NO THERAPEUTIC CLAIMS
+
+We do NOT make any claims that peptides:
+    - Treat any disease
+    - Cure any condition
+    - Prevent any illness
+    - Improve any health outcome
+    - Are safe or effective for any purpose
+
+5. INFORMATION SOURCES
+
+5.1 All information in this App is compiled from:
+    - Publicly available sources
+    - Non-clinical research
+    - Community discussions
+    - General educational materials
+
+5.2 Information is NOT from:
+    - Clinical trials
+    - FDA-approved sources
+    - Medical professionals
+    - Peer-reviewed clinical studies (unless specifically cited)
+
+6. BENEFITS LISTED
+
+Benefits listed for peptides are:
+    - "Commonly researched" in preclinical studies
+    - "Community-discussed" in online forums
+    - NOT proven therapeutic effects
+    - NOT guaranteed outcomes
+    - NOT medical claims
+
+7. DOSAGE INFORMATION
+
+7.1 Dosage information shown is:
+    - From research contexts only
+    - For educational reference only
+    - NOT recommendations
+    - NOT prescriptions
+    - NOT medical guidance
+
+7.2 DO NOT use dosage information to:
+    - Determine your own dosage
+    - Administer peptides
+    - Make medical decisions
+
+8. DOSE CALCULATOR
+
+8.1 The dose calculator is:
+    - For educational and learning purposes only
+    - NOT for actual dosing decisions
+    - NOT medical guidance
+    - NOT a substitute for professional calculation
+
+8.2 ALWAYS verify calculations with a licensed healthcare professional.
+
+9. NO GUARANTEE OF ACCURACY
+
+9.1 We do NOT guarantee that information in the App is:
+    - Accurate
+    - Complete
+    - Current
+    - Error-free
+    - Suitable for any purpose
+
+9.2 Information may be outdated, incomplete, or incorrect.
+
+10. NO GUARANTEE OF RESULTS
+
+We do NOT guarantee:
+    - Any health outcomes
+    - Any benefits from peptides
+    - Safety of any peptide
+    - Effectiveness of any protocol
+    - Absence of side effects
+
+11. RISKS AND SIDE EFFECTS
+
+11.1 Peptides may have:
+    - Unknown risks
+    - Serious side effects
+    - Drug interactions
+    - Contraindications
+    - Long-term effects
+
+11.2 You assume ALL risks associated with peptide use.
+
+12. NOT FDA APPROVED
+
+12.1 Most peptides discussed in this App are:
+    - NOT FDA approved for any use
+    - NOT evaluated by the FDA
+    - NOT regulated as drugs
+    - Sold as research chemicals only
+
+12.2 We do NOT claim FDA approval or endorsement.
+
+13. NO PRODUCT SALES OR ENDORSEMENTS
+
+13.1 We do NOT:
+    - Sell peptides
+    - Recommend suppliers
+    - Endorse products
+    - Receive commissions from sales
+    - Affiliate with manufacturers
+
+13.2 Any peptide use is entirely your decision and responsibility.
+
+14. LEGAL STATUS
+
+14.1 Peptide legality varies by:
+    - Country
+    - State/province
+    - Intended use
+    - Prescription status
+
+14.2 You are responsible for:
+    - Knowing local laws
+    - Complying with regulations
+    - Obtaining prescriptions if required
+
+15. PERSONAL RESPONSIBILITY
+
+15.1 You are SOLELY responsible for:
+    - Your use of this App
+    - Your use of any information from this App
+    - Any actions taken based on this App
+    - Any health decisions you make
+    - Any outcomes, positive or negative
+
+15.2 You assume ALL risks.
+
+16. NO LIABILITY
+
+16.1 We are NOT liable for:
+    - Any health outcomes
+    - Any adverse effects
+    - Any injuries
+    - Any damages
+    - Any losses
+    - Any consequences of peptide use
+
+16.2 See Terms of Service for full limitation of liability.
+
+17. RESEARCH REFERENCES
+
+17.1 Research references provided are:
+    - For educational purposes only
+    - From publicly available databases
+    - NOT endorsements of findings
+    - NOT proof of efficacy or safety
+
+17.2 Inclusion of a reference does NOT imply:
+    - We endorse the study
+    - The study is conclusive
+    - The findings apply to humans
+    - The peptide is safe or effective
+
+18. INDIVIDUAL VARIATION
+
+18.1 Responses to peptides vary widely based on:
+    - Individual biology
+    - Health status
+    - Other medications
+    - Dosage
+    - Administration method
+    - Many other factors
+
+18.2 Information in this App may NOT apply to you.
+
+19. EMERGENCY SITUATIONS
+
+19.1 This App is NOT for emergencies.
+
+19.2 If you experience a medical emergency:
+    - Call emergency services immediately
+    - Do NOT rely on this App
+    - Seek immediate medical attention
+
+20. UPDATES AND CHANGES
+
+20.1 Information in this App may change without notice.
+
+20.2 We are NOT obligated to:
+    - Update information
+    - Correct errors
+    - Notify you of changes
+
+21. ACKNOWLEDGMENT
+
+By using this App, you acknowledge that:
+    - You have read this disclaimer
+    - You understand this disclaimer
+    - You agree to this disclaimer
+    - You accept all risks
+    - You will consult healthcare professionals
+    - You will not rely on this App for medical decisions
+
+IF YOU DO NOT AGREE, DO NOT USE THIS APP.
+
+7.5 APPLE APP STORE METADATA COMPLIANCE
+----------------------------------------
+
+App Name:
+pep.io - Peptide Tracker
+
+Subtitle:
+Educational Peptide Information & Protocol Tracking
+
+Description:
+
+pep.io is an educational companion app for learning about peptides and tracking 
+personal protocols for informational purposes.
+
+EDUCATIONAL PURPOSE ONLY
+This app is designed for educational and informational purposes only. It does 
+NOT provide medical advice, diagnosis, or treatment. Always consult a licensed 
+healthcare professional before making any health-related decisions.
+
+FEATURES:
+• Comprehensive Peptide Library - Learn about 60+ peptides across 9 categories
+• Protocol Tracking - Track personal peptide schedules privately
+• Educational Calculator - Learn reconstitution calculations
+• Apple Calendar Integration - Sync schedules to your calendar
+• Progress Visualization - View adherence and trends
+• Goal-Based Discovery - Find peptides based on wellness goals
+• Privacy-First - All data stored locally on your device only
+
+PRIVACY & DATA:
+• No account required
+• No cloud storage
+• No data collection
+• No tracking or analytics
+• Complete local storage
+• You control your data
+
+COMPLIANCE:
+• No medical claims
+• No therapeutic recommendations
+• No dosage prescriptions
+• Educational information only
+• Transparent data sources
+• Comprehensive disclaimers
+
+PERFECT FOR:
+• Fitness enthusiasts researching peptides
+• Biohacking community members
+• Individuals tracking wellness protocols
+• Anyone seeking educational peptide resources
+
+IMPORTANT:
+This app does not replace professional medical advice. Information provided is 
+from publicly available, non-clinical sources. Benefits listed are "commonly 
+researched" or "community-discussed" and are NOT proven therapeutic claims.
+
+Download pep.io today to start learning about peptides and tracking your 
+protocols privately and securely.
+
+Keywords:
+peptide, peptides, tracking, protocol, wellness, biohacking, fitness, health, 
+education, calculator, BPC-157, research
+
+Category:
+Health & Fitness
+
+Age Rating:
+17+ (Medical/Treatment Information)
+
+Privacy Nutrition Label:
+- Data Not Collected: All categories marked as "Data Not Collected"
+- Data Not Linked to You: N/A
+- Data Not Used to Track You: Yes
+
+================================================================================
+                          8. DATA ARCHITECTURE
+================================================================================
+
+8.1 DATA FLOW
+--------------
+
+User Input → ViewModel → Repository → Database → Repository → ViewModel → UI
+
+Example Flow: Creating a Protocol
+
+1. User fills protocol form in UI
+2. User taps "Save"
+3. ProtocolScreen calls ProtocolViewModel.saveProtocol()
+4. ViewModel validates data
+5. ViewModel calls ProtocolRepository.insertProtocol()
+6. Repository converts Protocol model to database map
+7. Repository calls DatabaseService.insert()
+8. DatabaseService executes SQL INSERT
+9. Database returns new protocol ID
+10. Repository returns success/failure
+11. ViewModel updates state
+12. ViewModel notifies listeners
+13. UI updates (shows success message, navigates back)
+14. If calendar sync enabled:
+    15. ViewModel calls CalendarService.createEvents()
+    16. CalendarService creates calendar events
+    17. ViewModel calls NotificationService.scheduleDoseReminders()
+    18. NotificationService schedules notifications
+
+8.2 LOCAL STORAGE STRATEGY
+---------------------------
+
+Primary Storage: SQLite Database
+- Structured data (protocols, doses, peptides, user profile)
+- Relational queries
+- Transactions for data integrity
+- Indexed for performance
+
+Secondary Storage: Shared Preferences
+- Simple key-value pairs
+- App settings
+- Onboarding completion flag
+- Last sync timestamps
+- UI preferences
+
+Tertiary Storage: File System
+- Exported data files (JSON, CSV, PDF)
+- Cached images (if any)
+- Temporary files
+
+Storage Locations:
+- Database: /data/data/com.pepio.app/databases/pep_io.db
+- Shared Preferences: /data/data/com.pepio.app/shared_prefs/
+- Files: /data/data/com.pepio.app/files/
+
+8.3 DATA MODELS SUMMARY
+------------------------
+
+Core Models:
+1. UserProfile - User information and preferences
+2. UserGoal - Selected wellness goals
+3. Protocol - Peptide protocol definition
+4. Dose - Individual dose instance
+5. Peptide - Peptide information
+6. Calculation - Dose calculation history
+7. AppSettings - App configuration
+8. OnboardingData - Onboarding responses
+
+Relationships:
+- UserProfile 1:N UserGoals
+- Protocol 1:N Doses
+- Peptide 1:N Protocols (soft reference)
+- Protocol 1:N Calculations (soft reference)
+
+8.4 DATA PERSISTENCE MECHANISMS
+--------------------------------
+
+Database Operations:
+
+Create (INSERT):
+```dart
+Future<int> insertProtocol(Protocol protocol) async {
+  final db = await database;
+  return await db.insert(
+    'protocols',
+    protocol.toMap(),
+    conflictAlgorithm: ConflictAlgorithm.replace,
+  );
+}
+```
+
+Read (SELECT):
+```dart
+Future<List<Protocol>> getAllProtocols() async {
+  final db = await database;
+  final List<Map<String, dynamic>> maps = await db.query(
+    'protocols',
+    where: 'active = ?',
+    whereArgs: [1],
+    orderBy: 'start_date DESC',
+  );
+  return List.generate(maps.length, (i) => Protocol.fromMap(maps[i]));
+}
+```
+
+Update (UPDATE):
+```dart
+Future<int> updateProtocol(Protocol protocol) async {
+  final db = await database;
+  return await db.update(
+    'protocols',
+    protocol.toMap(),
+    where: 'id = ?',
+    whereArgs: [protocol.id],
+  );
+}
+```
+
+Delete (DELETE):
+```dart
+Future<int> deleteProtocol(String id) async {
+  final db = await database;
+  return await db.delete(
+    'protocols',
+    where: 'id = ?',
+    whereArgs: [id],
+  );
+}
+```
+
+Transactions:
+```dart
+Future<void> createProtocolWithDoses(
+  Protocol protocol,
+  List<Dose> doses,
+) async {
+  final db = await database;
+  await db.transaction((txn) async {
+    await txn.insert('protocols', protocol.toMap());
+    for (var dose in doses) {
+      await txn.insert('doses', dose.toMap());
+    }
+  });
+}
+```
+
+8.5 DATA INTEGRITY & VALIDATION
+--------------------------------
+
+Validation Rules:
+
+Protocol Validation:
+- Peptide name: Required, non-empty
+- Dosage amount: Required, positive number
+- Dosage unit: Required, must be 'mcg' or 'mg'
+- Frequency: Required, must be valid frequency option
+- Times: Required, at least one time
+- Start date: Required, cannot be in past
+- End date: Optional, must be after start date if provided
+
+Dose Validation:
+- Protocol ID: Required, must exist in protocols table
+- Scheduled date: Required, valid date
+- Scheduled time: Required, valid time format
+- Status: Required, must be valid status enum
+
+User Profile Validation:
+- Name: Optional, max 100 characters
+- Weight: Optional, positive number
+- Weight unit: Required if weight provided, must be 'lbs' or 'kg'
+- Primary goal: Optional, max 200 characters
+
+Calculation Validation:
+- Vial quantity: Required, positive number
+- Water volume: Required, positive number, greater than 0
+- Desired dose: Required, positive number
+- Desired dose cannot exceed vial quantity
+
+Database Constraints:
+- Primary keys: NOT NULL, UNIQUE
+- Foreign keys: ON DELETE CASCADE or SET NULL
+- Check constraints: For valid enum values
+- Not null constraints: For required fields
+
+8.6 DATA EXPORT & PORTABILITY
+------------------------------
+
+Export Formats:
+
+1. Full Data Export (JSON)
+   - All protocols
+   - All doses
+   - User profile
+   - User goals
+   - Calculations
+   - Settings
+   - Format: Single JSON file
+   - Use case: Backup, transfer to new device
+
+2. Protocols Export (CSV)
+   - Protocol details
+   - Dosage information
+   - Schedule information
+   - Format: CSV file
+   - Use case: Spreadsheet analysis, sharing with healthcare provider
+
+3. Progress Report (PDF)
+   - Adherence statistics
+   - Charts and visualizations
+   - Protocol summaries
+   - Date range
+   - Format: PDF file
+   - Use case: Sharing progress, record keeping
+
+Export Implementation:
+
+JSON Export:
+```dart
+Future<File> exportFullData() async {
+  final data = {
+    'version': '1.0',
+    'exported_at': DateTime.now().toIso8601String(),
+    'user_profile': await _getUserProfile(),
+    'user_goals': await _getUserGoals(),
+    'protocols': await _getProtocols(),
+    'doses': await _getDoses(),
+    'calculations': await _getCalculations(),
+    'settings': await _getSettings(),
+  };
+
+  final json = jsonEncode(data);
+  final directory = await getApplicationDocumentsDirectory();
+  final file = File('${directory.path}/pep_io_export_${DateTime.now().millisecondsSinceEpoch}.json');
+  await file.writeAsString(json);
+  return file;
+}
+```
+
+CSV Export:
+```dart
+Future<File> exportProtocolsToCSV() async {
+  final protocols = await _getProtocols();
+  
+  List<List<dynamic>> rows = [
+    ['Peptide', 'Dosage', 'Unit', 'Frequency', 'Start Date', 'End Date', 'Active'],
+  ];
+
+  for (var protocol in protocols) {
+    rows.add([
+      protocol.peptideName,
+      protocol.dosageAmount,
+      protocol.dosageUnit,
+      protocol.frequency,
+      protocol.startDate.toIso8601String(),
+      protocol.endDate?.toIso8601String() ?? 'Ongoing',
+      protocol.active ? 'Yes' : 'No',
+    ]);
+  }
+
+  String csv = const ListToCsvConverter().convert(rows);
+  
+  final directory = await getApplicationDocumentsDirectory();
+  final file = File('${directory.path}/pep_io_protocols_${DateTime.now().millisecondsSinceEpoch}.csv');
+  await file.writeAsString(csv);
+  return file;
+}
+```
+
+PDF Export:
+```dart
+Future<File> exportProgressReport(DateTime startDate, DateTime endDate) async {
+  final pdf = pw.Document();
+
+  // Fetch data
+  final protocols = await _getProtocols();
+  final doses = await _getDosesInRange(startDate, endDate);
+  final adherence = _calculateAdherence(doses);
+
+  // Build PDF
+  pdf.addPage(
+    pw.Page(
+      build: (context) => pw.Column(
+        children: [
+          pw.Header(level: 0, text: 'pep.io Progress Report'),
+          pw.Text('Date Range: ${startDate.toString()} - ${endDate.toString()}'),
+          pw.Divider(),
+          pw.Text('Overall Adherence: ${adherence.toStringAsFixed(1)}%'),
+          // ... more content
+        ],
+      ),
+    ),
+  );
+
+  final directory = await getApplicationDocumentsDirectory();
+  final file = File('${directory.path}/pep_io_report_${DateTime.now().millisecondsSinceEpoch}.pdf');
+  await file.writeAsBytes(await pdf.save());
+  return file;
+}
+```
+
+Import Implementation:
+
+JSON Import:
+```dart
+Future<void> importFullData(File file) async {
+  final jsonString = await file.readAsString();
+  final data = jsonDecode(jsonString);
+
+  // Validate version
+  if (data['version'] != '1.0') {
+    throw Exception('Unsupported data version');
+  }
+
+  // Import in transaction
+  final db = await database;
+  await db.transaction((txn) async {
+    // Clear existing data (optional, with confirmation)
+    // await _clearAllData(txn);
+
+    // Import user profile
+    if (data['user_profile'] != null) {
+      await txn.insert('user_profile', data['user_profile']);
+    }
+
+    // Import protocols
+    for (var protocol in data['protocols']) {
+      await txn.insert('protocols', protocol);
+    }
+
+    // Import doses
+    for (var dose in data['doses']) {
+      await txn.insert('doses', dose);
+    }
+
+    // ... import other data
+  });
+}
+```
+
+8.7 DATA DELETION & PRIVACY
+----------------------------
+
+Deletion Levels:
+
+1. Individual Item Deletion
+   - Delete single protocol
+   - Delete single dose
+   - Delete single calculation
+   - Soft delete (mark as inactive) or hard delete
+
+2. Bulk Deletion
+   - Delete all protocols
+   - Delete all doses for a protocol
+   - Delete all calculations
+   - Clear history
+
+3. Complete Data Deletion
+   - Delete all user data
+   - Reset app to initial state
+   - Requires confirmation
+
+Deletion Implementation:
+
+Delete Protocol (with cascade):
+```dart
+Future<void> deleteProtocol(String protocolId) async {
+  final db = await database;
+  await db.transaction((txn) async {
+    // Delete associated doses
+    await txn.delete(
+      'doses',
+      where: 'protocol_id = ?',
+      whereArgs: [protocolId],
+    );
+
+    // Delete protocol
+    await txn.delete(
+      'protocols',
+      where: 'id = ?',
+      whereArgs: [protocolId],
+    );
+
+    // Cancel notifications
+    await _notificationService.cancelProtocolNotifications(protocolId);
+
+    // Delete calendar events
+    await _calendarService.deleteProtocolEvents(protocolId);
+  });
+}
+```
+
+Delete All Data:
+```dart
+Future<void> deleteAllData() async {
+  final db = await database;
+  await db.transaction((txn) async {
+    await txn.delete('doses');
+    await txn.delete('protocols');
+    await txn.delete('calculations');
+    await txn.delete('user_goals');
+    await txn.delete('user_profile');
+    await txn.delete('onboarding_data');
+    await txn.delete('app_settings');
+  });
+
+  // Cancel all notifications
+  await _notificationService.cancelAllNotifications();
+
+  // Delete all calendar events
+  await _calendarService.deleteAllPepioEvents();
+
+  // Clear shared preferences
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.clear();
+
+  // Delete exported files
+  final directory = await getApplicationDocumentsDirectory();
+  final files = directory.listSync();
+  for (var file in files) {
+    if (file is File) {
+      await file.delete();
+    }
+  }
+}
+```
+
+Privacy Considerations:
+- No data transmitted to servers
+- No data recovery after deletion
+- User must confirm destructive actions
+- Export option before deletion
+- Clear communication about permanence
+
+================================================================================
+                      9. APPLE CALENDAR INTEGRATION
+================================================================================
+
+9.1 PURPOSE & SCOPE
+-------------------
+
+Purpose:
+- Allow users to sync protocol schedules to Apple Calendar
+- Provide visual representation of doses in native calendar app
+- Enable calendar-based reminders and notifications
+- Integrate peptide tracking with existing calendar workflows
+
+Scope:
+- Create calendar events for scheduled doses
+- Update events when protocols change
+- Delete events when protocols are deleted or paused
+- Support multiple protocols with different schedules
+- Respect user's calendar preferences
+
+Out of Scope:
+- Reading existing calendar events
+- Modifying non-pep.io calendar events
+- Syncing calendar events back to app (one-way sync: app → calendar)
+- Cross-device calendar sync (handled by iCloud if user enables it)
+
+9.2 PERMISSION HANDLING
+------------------------
+
+Permission Request Flow:
+
+1. Initial Request
+   - Triggered when user enables "Sync to Calendar" toggle
+   - Show explanation dialog before system prompt:
+     
+     "Calendar Access
+     
+     pep.io would like to add your dose schedules to your calendar.
+     
+     This helps you:
+     • See doses in your calendar app
+     • Get calendar-based reminders
+     • Integrate with your daily schedule
+     
+     We will only create events for your protocols. We will not read or 
+     modify other calendar events.
+     
+     [Allow] [Not Now]"
+
+2. System Permission Prompt
+   - iOS native permission dialog
+   - "pep.io Would Like to Access Your Calendar"
+   - [Don't Allow] [OK]
+
+3. Permission Granted
+   - Enable calendar sync toggle
+   - Show calendar selection dropdown
+   - Create events for active protocols
+   - Show success message: "Calendar sync enabled"
+
+4. Permission Denied
+   - Disable calendar sync toggle
+   - Show explanation:
+     "Calendar access is required to sync your protocols. You can enable it 
+     in Settings > pep.io > Calendars."
+   - Provide button: "Open Settings"
+
+5. Permission Previously Denied
+   - Detect denied status on toggle attempt
+   - Show dialog:
+     "Calendar Access Required
+     
+     Calendar access was previously denied. To enable calendar sync, please 
+     allow calendar access in Settings.
+     
+     [Open Settings] [Cancel]"
+
+Permission Checking:
+
+```dart
+Future<bool> checkCalendarPermission() async {
+  var permissionsGranted = await _calendar.hasPermissions();
+  return permissionsGranted.isSuccess && permissionsGranted.data == true;
+}
+
+Future<bool> requestCalendarPermission() async {
+  var permissionsGranted = await _calendar.requestPermissions();
+  return permissionsGranted.isSuccess && permissionsGranted.data == true;
+}
+```
+
+9.3 CALENDAR CREATION & SELECTION
+----------------------------------
+
+Default Calendar: "pep.io"
+
+Creation Logic:
+1. On first calendar sync enable:
+   - Check if "pep.io" calendar exists
+   - If not, create it
+   - Set as default selection
+   - Use distinct color (Primary Blue)
+
+2. Calendar Properties:
+   - Name: "pep.io"
+   - Color: Primary Blue (#4A90E2)
+   - Account: Local (not synced to iCloud by default)
+   - Visible: Yes
+
+Calendar Selection:
+- User can choose different calendar from dropdown
+- Options: All writable calendars on device
+- Default: "pep.io" calendar
+- Per-protocol selection (optional enhancement)
+- Global default in settings
+
+Implementation:
+
+```dart
+Future<String?> createOrGetPepioCalendar() async {
+  final calendarsResult = await _calendar.retrieveCalendars();
+  
+  if (!calendarsResult.isSuccess || calendarsResult.data == null) {
+    return null;
+  }
+
+  // Find existing pep.io calendar
+  final existingCalendar = calendarsResult.data!.firstWhere(
+    (cal) => cal.name == 'pep.io',
+    orElse: () => null,
+  );
+
+  if (existingCalendar != null) {
+    return existingCalendar.id;
+  }
+
+  // Create new calendar
+  final newCalendar = Calendar(
+    name: 'pep.io',
+    color: Color(0xFF4A90E2),
+    accountName: 'Local',
+    accountType: 'Local',
+  );
+
+  final createResult = await _calendar.createCalendar(newCalendar);
+  
+  if (createResult.isSuccess && createResult.data != null) {
+    return createResult.data;
+  }
+
+  return null;
+}
+```
+
+9.4 EVENT CREATION SPECIFICATION
+---------------------------------
+
+Event Properties:
+
+Title Format:
+- "[Peptide Name] - [Dosage]"
+- Example: "BPC-157 - 250 mcg"
+
+Description:
+- "Scheduled dose for [Peptide Name] protocol"
+- "Dosage: [Amount] [Unit]"
+- "Protocol: [Protocol ID]" (for internal tracking)
+- "Tracked by pep.io"
+
+Start Time:
+- Scheduled dose time
+- Example: 10:00 AM
+
+Duration:
+- 15 minutes (default)
+- Configurable in settings (5, 10, 15, 30 minutes)
+
+End Time:
+- Start time + duration
+- Example: 10:15 AM
+
+Alert:
+- User-configurable
+- Options:
+  * None
+  * At time of event
+  * 5 minutes before
+  * 15 minutes before
+  * 30 minutes before
+  * 1 hour before
+- Default: 15 minutes before
+
+Recurrence:
+- Based on protocol frequency
+- Daily: Every day
+- Every Other Day: Every 2 days
+- Twice Weekly: Specific days of week
+- Weekly: Specific day of week
+- Bi-Weekly: Every 14 days
+- Monthly: Same day each month
+- Custom: Custom recurrence rule
+
+End Recurrence:
+- If protocol has end date: Use end date
+- If protocol is ongoing: No end date (until manually stopped)
+
+Location:
+- None (not applicable)
+
+URL:
+- None
+
+Notes:
+- User's protocol notes (optional)
+
+All-Day Event:
+- No (specific time)
+
+Availability:
+- Busy (default)
+- Configurable: Free / Busy
+
+Implementation:
+
+```dart
+Future<void> createDoseEvent(
+  Dose dose,
+  Protocol protocol,
+  String calendarId,
+) async {
+  final event = Event(
+    calendarId,
+    title: '${protocol.peptideName} - ${protocol.dosageAmount} ${protocol.dosageUnit}',
+    description: '''
+Scheduled dose for ${protocol.peptideName} protocol
+
+Dosage: ${protocol.dosageAmount} ${protocol.dosageUnit}
+Protocol ID: ${protocol.id}
+
+Tracked by pep.io
+''',
+    start: _combineDateAndTime(dose.scheduledDate, dose.scheduledTime),
+    end: _combineDateAndTime(dose.scheduledDate, dose.scheduledTime).add(
+      Duration(minutes: _getEventDuration()),
+    ),
+    allDay: false,
+    availability: Availability.Busy,
+    reminders: [
+      Reminder(minutes: _getAlertMinutes()),
+    ],
+  );
+
+  // Set recurrence if applicable
+  if (_shouldSetRecurrence(protocol)) {
+    event.recurrenceRule = _buildRecurrenceRule(protocol);
+  }
+
+  final createResult = await _calendar.createOrUpdateEvent(event);
+  
+  if (createResult.isSuccess && createResult.data != null) {
+    // Store event ID with dose for future updates/deletion
+    await _storeDoseEventId(dose.id, createResult.data!);
+  }
+}
+
+RecurrenceRule _buildRecurrenceRule(Protocol protocol) {
+  switch (protocol.frequency) {
+    case 'Daily':
+      return RecurrenceRule(RecurrenceFrequency.Daily);
+    
+    case 'Every Other Day':
+      return RecurrenceRule(
+        RecurrenceFrequency.Daily,
+        interval: 2,
+      );
+    
+    case 'Twice Weekly':
+      return RecurrenceRule(
+        RecurrenceFrequency.Weekly,
+        daysOfWeek: protocol.daysOfWeek!.map((day) => _dayToInt(day)).toList(),
+      );
+    
+    case 'Weekly':
+      return RecurrenceRule(
+        RecurrenceFrequency.Weekly,
+        daysOfWeek: [_dayToInt(protocol.daysOfWeek!.first)],
+      );
+    
+    case 'Bi-Weekly':
+      return RecurrenceRule(
+        RecurrenceFrequency.Weekly,
+        interval: 2,
+      );
+    
+    case 'Monthly':
+      return RecurrenceRule(RecurrenceFrequency.Monthly);
+    
+    default:
+      return RecurrenceRule(RecurrenceFrequency.Daily);
+  }
+}
+```
+
+9.5 EVENT UPDATES
+------------------
+
+Update Triggers:
+1. Protocol dosage changed
+2. Protocol schedule changed
+3. Protocol times changed
+4. Protocol paused/resumed
+5. Dose marked as taken (optional: update event color/status)
+
+Update Strategy:
+- Delete old events
+- Create new events with updated information
+- Maintain event IDs for tracking
+
+Implementation:
+
+```dart
+Future<void> updateProtocolEvents(
+  Protocol oldProtocol,
+  Protocol newProtocol,
+) async {
+  // Delete old events
+  await deleteProtocolEvents(oldProtocol.id);
+
+  // Create new events if calendar sync still enabled
+  if (newProtocol.syncToCalendar && newProtocol.calendarId != null) {
+    await createProtocolEvents(newProtocol);
+  }
+}
+
+Future<void> createProtocolEvents(Protocol protocol) async {
+  // Generate doses for next 60 days (iOS calendar event limit)
+  final doses = _generateDosesForPeriod(
+    protocol,
+    DateTime.now(),
+    DateTime.now().add(Duration(days: 60)),
+  );
+
+  for (var dose in doses) {
+    await createDoseEvent(dose, protocol, protocol.calendarId!);
+  }
+}
+```
+
+9.6 EVENT DELETION
+------------------
+
+Deletion Triggers:
+1. Protocol deleted
+2. Protocol paused
+3. Calendar sync disabled
+4. User switches to different calendar
+5. App uninstalled (automatic iOS cleanup)
+
+Deletion Strategy:
+- Delete all events associated with protocol
+- Use stored event IDs for precise deletion
+- Handle cases where events may have been manually deleted
+
+Implementation:
+
+```dart
+Future<void> deleteProtocolEvents(String protocolId) async {
+  // Retrieve all event IDs for this protocol
+  final eventIds = await _getProtocolEventIds(protocolId);
+
+  for (var eventId in eventIds) {
+    try {
+      await _calendar.deleteEvent(calendarId, eventId);
+    } catch (e) {
+      // Event may have been manually deleted, continue
+      print('Failed to delete event $eventId: $e');
+    }
+  }
+
+  // Clear stored event IDs
+  await _clearProtocolEventIds(protocolId);
+}
+
+Future<void> deleteAllPepioEvents() async {
+  final calendarId = await _getPepioCalendarId();
+  
+  if (calendarId == null) return;
+
+  // Retrieve all events from pep.io calendar
+  final eventsResult = await _calendar.retrieveEvents(
+    calendarId,
+    RetrieveEventsParams(
+      startDate: DateTime.now().subtract(Duration(days: 365)),
+      endDate: DateTime.now().add(Duration(days: 365)),
+    ),
+  );
+
+  if (eventsResult.isSuccess && eventsResult.data != null) {
+    for (var event in eventsResult.data!) {
+      // Check if event is from pep.io (by description or title pattern)
+      if (_isPepioEvent(event)) {
+        await _calendar.deleteEvent(calendarId, event.eventId);
+      }
+    }
+  }
+}
+
+bool _isPepioEvent(Event event) {
+  return event.description?.contains('Tracked by pep.io') ?? false;
+}
+```
+
+9.7 CALENDAR SETTINGS
+----------------------
+
+Settings Location: Settings > Calendar Integration
+
+Options:
+
+1. Enable Calendar Sync
+   - Master toggle
+   - Requests permission if not granted
+   - Default: Off
+
+2. Default Calendar
+   - Dropdown of available calendars
+   - Default: "pep.io" calendar
+   - Applies to new protocols
+
+3. Event Duration
+   - Dropdown: 5, 10, 15, 30 minutes
+   - Default: 15 minutes
+   - Affects all events
+
+4. Event Alert
+   - Dropdown: None, At time, 5 min, 15 min, 30 min, 1 hour before
+   - Default: 15 minutes before
+   - Affects all events
+
+5. Event Title Format
+   - Options:
+     * "[Peptide] - [Dosage]" (default)
+     * "[Peptide]"
+     * "Dose: [Peptide]"
+     * Custom format
+   - Affects new events
+
+6. Update Existing Events
+   - Button: "Apply Settings to Existing Events"
+   - Confirmation dialog
+   - Recreates all events with new settings
+
+7. Remove All Events
+   - Button: "Remove All Calendar Events"
+   - Confirmation dialog
+   - Deletes all pep.io events from calendar
+   - Does not disable sync
+
+UI:
+
+```
+Settings > Calendar Integration
+
+┌─────────────────────────────────────┐
+│ Enable Calendar Sync        [Toggle]│
+├─────────────────────────────────────┤
+│ Default Calendar                    │
+│ [pep.io                          ▼] │
+├─────────────────────────────────────┤
+│ Event Duration                      │
+│ [15 minutes                      ▼] │
+├─────────────────────────────────────┤
+│ Event Alert                         │
+│ [15 minutes before               ▼] │
+├─────────────────────────────────────┤
+│ Event Title Format                  │
+│ [[Peptide] - [Dosage]            ▼] │
+├─────────────────────────────────────┤
+│ [Apply Settings to Existing Events] │
+├─────────────────────────────────────┤
+│ [Remove All Calendar Events]        │
+└─────────────────────────────────────┘
+```
+
+9.8 TECHNICAL IMPLEMENTATION
+-----------------------------
+
+Package: device_calendar
+
+Dependencies:
+```yaml
+dependencies:
+  device_calendar: ^4.5.0
+```
+
+Permissions (Info.plist):
+```xml
+<key>NSCalendarsUsageDescription</key>
+<string>pep.io needs calendar access to sync your protocol schedules. We will only create events for your doses and will not read or modify other calendar events.</string>
+```
+
+Service Class:
+
+```dart
+class CalendarService {
+  final DeviceCalendarPlugin _calendar = DeviceCalendarPlugin();
+  
+  // Permission methods
+  Future<bool> hasPermission() async { ... }
+  Future<bool> requestPermission() async { ... }
+  
+  // Calendar methods
+  Future<String?> createOrGetPepioCalendar() async { ... }
+  Future<List<Calendar>> getWritableCalendars() async { ... }
+  
+  // Event methods
+  Future<void> createDoseEvent(Dose dose, Protocol protocol, String calendarId) async { ... }
+  Future<void> updateDoseEvent(Dose dose, Protocol protocol) async { ... }
+  Future<void> deleteDoseEvent(String eventId, String calendarId) async { ... }
+  
+  // Bulk methods
+  Future<void> createProtocolEvents(Protocol protocol) async { ... }
+  Future<void> deleteProtocolEvents(String protocolId) async { ... }
+  Future<void> deleteAllPepioEvents() async { ... }
+  
+  // Helper methods
+  DateTime _combineDateAndTime(DateTime date, String time) { ... }
+  RecurrenceRule _buildRecurrenceRule(Protocol protocol) { ... }
+  int _dayToInt(String day) { ... }
+}
+```
+
+Error Handling:
+
+```dart
+try {
+  await _calendar.createOrUpdateEvent(event);
+} on PlatformException catch (e) {
+  if (e.code == 'PERMISSION_DENIED') {
+    // Handle permission denied
+    _showPermissionDeniedDialog();
+  } else if (e.code == 'CALENDAR_NOT_FOUND') {
+    // Handle calendar not found
+    _showCalendarNotFoundDialog();
+  } else {
+    // Handle other errors
+    _showGenericErrorDialog(e.message);
+  }
+}
+```
+
+9.9 USER EXPERIENCE CONSIDERATIONS
+-----------------------------------
+
+Onboarding:
+- Explain calendar integration during onboarding (optional step)
+- Show benefits: visual schedule, native reminders, integration
+- Make it easy to enable later if skipped
+
+First-Time Enable:
+- Clear explanation before permission request
+- Show example of what calendar events will look like
+- Confirm successful sync with count: "5 events added to Calendar"
+
+Ongoing Use:
+- Visual indicator in protocol list: Calendar icon if synced
+- Quick toggle in protocol detail view
+- Sync status in settings
+
+Conflicts:
+- If calendar is deleted: Detect and notify user, offer to recreate
+- If permission is revoked: Detect and prompt to re-enable
+- If events are manually deleted: Don't recreate automatically, respect user action
+
+Performance:
+- Batch event creation for multiple protocols
+- Limit event creation to next 60 days (iOS limit)
+- Background refresh to extend events as time passes
+
+Transparency:
+- Always show which calendar is being used
+- Show count of events created/deleted
+- Provide easy way to remove all events
+
+User Control:
+- Easy to enable/disable
+- Easy to switch calendars
+- Easy to remove all events
+- No automatic re-enabling
+
+================================================================================
+                        10. NOTIFICATION SYSTEM
+================================================================================
+
+10.1 NOTIFICATION TYPES & TRIGGERS
+-----------------------------------
+
+1. Dose Reminder
+   - Trigger: At scheduled dose time
+   - Title: "Time for [Peptide Name]"
+   - Body: "[Dosage] dose scheduled for now"
+   - Sound: Default notification sound
+   - Badge: Increment app badge count
+   - Actions:
+     * "Mark as Taken" - Quick action to log dose
+     * "Snooze 15 min" - Reschedule notification
+     * "View Protocol" - Open app to protocol detail
+
+2. Missed Dose Alert
+   - Trigger: X minutes after scheduled time (user setting: 15, 30, 60 min)
+   - Condition: Dose not marked as taken
+   - Title: "Missed Dose: [Peptide Name]"
+   - Body: "You missed your [Dosage] dose at [Time]"
+   - Sound: Default notification sound
+   - Badge: Increment app badge count
+   - Actions:
+     * "Mark as Taken" - Log dose as taken late
+     * "Skip This Dose" - Mark as intentionally skipped
+     * "View Protocol" - Open app to protocol detail
+
+3. Daily Summary
+   - Trigger: User-selected time (default: 8:00 AM)
+   - Condition: At least one dose scheduled today
+   - Title: "Today's Protocol Summary"
+   - Body: "You have [X] doses scheduled today"
+   - Sound: Default notification sound
+   - Badge: Set to count of today's pending doses
+   - Actions:
+     * "View Schedule" - Open app to calendar view
+     * "Dismiss"
+
+4. Streak Milestone
+   - Trigger: At midnight when milestone reached (7, 14, 30, 60, 90, 180, 365 days)
+   - Condition: All doses completed for consecutive days
+   - Title: "🔥 [X] Day Streak!"
+   - Body: "You've taken all doses for [X] days straight. Keep it up!"
+   - Sound: Celebration sound (if available)
+   - Badge: No change
+   - Actions:
+     * "View Progress" - Open app to progress screen
+     * "Share Achievement" - Share streak on social media (optional)
+
+5. Protocol Ending Soon
+   - Trigger: 3 days before protocol end date, at 9:00 AM
+   - Condition: Protocol has end date
+   - Title: "[Peptide Name] Protocol Ending Soon"
+   - Body: "Your protocol ends on [Date]. Extend or complete?"
+   - Sound: Default notification sound
+   - Badge: No change
+   - Actions:
+     * "Extend Protocol" - Open protocol edit screen
+     * "Mark Complete" - Complete protocol
+     * "View Details" - Open protocol detail screen
+
+10.2 NOTIFICATION SCHEDULING
+-----------------------------
+
+Scheduling Logic:
+
+Dose Reminders:
+- Scheduled when protocol is created
+- Scheduled when protocol is edited
+- Rescheduled when dose is marked taken (cancel notification)
+- Cancelled when protocol is paused or deleted
+- Recurring based on protocol frequency
+
+Implementation:
+
+```dart
+Future<void> scheduleDoseReminder(Dose dose, Protocol protocol) async {
+  final scheduledDate = _combineDateAndTime(
+    dose.scheduledDate,
+    dose.scheduledTime,
+  );
+
+  await _notifications.zonedSchedule(
+    dose.id.hashCode, // Unique notification ID
+    'Time for ${protocol.peptideName}',
+    '${protocol.dosageAmount} ${protocol.dosageUnit} dose scheduled for now',
+    tz.TZDateTime.from(scheduledDate, tz.local),
+    NotificationDetails(
+      android: AndroidNotificationDetails(
+        'dose_reminders',
+        'Dose Reminders',
+        channelDescription: 'Reminders for scheduled doses',
+        importance: Importance.high,
+        priority: Priority.high,
+        actions: [
+          AndroidNotificationAction(
+            'mark_taken',
+            'Mark as Taken',
+          ),
+          AndroidNotificationAction(
+            'snooze',
+            'Snooze 15 min',
+          ),
+        ],
+      ),
+      iOS: DarwinNotificationDetails(
+        categoryIdentifier: 'dose_reminder',
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+      ),
+    ),
+    androidAllowWhileIdle: true,
+    uiLocalNotificationDateInterpretation:
+        UILocalNotificationDateInterpretation.absoluteTime,
+    payload: jsonEncode({
+      'type': 'dose_reminder',
+      'dose_id': dose.id,
+      'protocol_id': protocol.id,
+    }),
+  );
+}
+```
+
+Missed Dose Alerts:
+- Scheduled X minutes after dose time
+- Only scheduled if dose reminder was scheduled
+- Cancelled if dose is marked taken before alert time
+
+Daily Summary:
+- Scheduled once daily at user-selected time
+- Recalculates dose count each day
+- Only sent if doses are scheduled for that day
+
+Streak Milestones:
+- Checked at midnight each day
+- Triggered if all previous day's doses completed
+- Only sent at milestone numbers
+
+Protocol Ending:
+- Scheduled 3 days before end date
+- Only for protocols with end dates
+- Cancelled if protocol extended or deleted
+
+Batch Scheduling:
+- iOS limit: 64 pending notifications
+- Strategy: Schedule next 64 notifications
+- Reschedule batch when count drops below 32
+- Prioritize: Dose reminders > Missed alerts > Others
+
+```dart
+Future<void> rescheduleNotifications() async {
+  // Cancel all pending notifications
+  await _notifications.cancelAll();
+
+  // Get all active protocols
+  final protocols = await _protocolRepository.getActiveProtocols();
+
+  // Generate doses for next 30 days
+  final doses = <Dose>[];
+  for (var protocol in protocols) {
+    doses.addAll(_generateDosesForPeriod(
+      protocol,
+      DateTime.now(),
+      DateTime.now().add(Duration(days: 30)),
+    ));
+  }
+
+  // Sort by scheduled time
+  doses.sort((a, b) => a.scheduledDate.compareTo(b.scheduledDate));
+
+  // Schedule first 60 dose reminders (leave room for other notification types)
+  for (var i = 0; i < min(60, doses.length); i++) {
+    final protocol = protocols.firstWhere((p) => p.id == doses[i].protocolId);
+    await scheduleDoseReminder(doses[i], protocol);
+  }
+
+  // Schedule other notification types
+  await _scheduleDailySummaries();
+  await _scheduleProtocolEndingNotifications();
+}
+```
+
+10.3 NOTIFICATION ACTIONS
+--------------------------
+
+Action Handling:
+
+Mark as Taken:
+- Update dose status to "taken"
+- Set actual time to current time
+- Cancel missed dose alert
+- Update app badge count
+- Show success notification (optional)
+
+Snooze:
+- Cancel current notification
+- Reschedule for 15 minutes later
+- Keep dose status as "scheduled"
+
+View Protocol / View Schedule / View Progress:
+- Open app to specific screen
+- Pass necessary data via payload
+
+Skip This Dose:
+- Update dose status to "skipped"
+- Cancel missed dose alert
+- Update app badge count
+- Do not affect adherence calculation (optional: count as missed)
+
+Extend Protocol:
+- Open protocol edit screen
+- Pre-fill end date with extended date (e.g., +30 days)
+
+Mark Complete:
+- Set protocol as inactive
+- Set end date to today
+- Cancel all future notifications for protocol
+
+Implementation:
+
+```dart
+void _onNotificationTap(NotificationResponse response) async {
+  final payload = jsonDecode(response.payload ?? '{}');
+  final type = payload['type'];
+
+  switch (response.actionId) {
+    case 'mark_taken':
+      await _handleMarkTaken(payload['dose_id'], payload['protocol_id']);
+      break;
+    
+    case 'snooze':
+      await _handleSnooze(payload['dose_id'], payload['protocol_id']);
+      break;
+    
+    case 'skip':
+      await _handleSkip(payload['dose_id']);
+      break;
+    
+    case 'extend':
+      _navigateToProtocolEdit(payload['protocol_id']);
+      break;
+    
+    case 'complete':
+      await _handleCompleteProtocol(payload['protocol_id']);
+      break;
+    
+    default:
+      // Default tap (no action button)
+      _handleDefaultTap(type, payload);
+      break;
+  }
+}
+
+Future<void> _handleMarkTaken(String doseId, String protocolId) async {
+  final dose = await _doseRepository.getDoseById(doseId);
+  if (dose == null) return;
+
+  final updatedDose = dose.copyWith(
+    status: DoseStatus.taken,
+    actualTime: TimeOfDay.now().format(context),
+    updatedAt: DateTime.now(),
+  );
+
+  await _doseRepository.updateDose(updatedDose);
+  
+  // Cancel missed dose alert
+  await _notifications.cancel(_getMissedAlertId(doseId));
+  
+  // Update badge
+  await _updateBadgeCount();
+  
+  // Show success notification (optional)
+  await _showSuccessNotification('Dose marked as taken');
+}
+
+Future<void> _handleSnooze(String doseId, String protocolId) async {
+  final dose = await _doseRepository.getDoseById(doseId);
+  final protocol = await _protocolRepository.getProtocolById(protocolId);
+  
+  if (dose == null || protocol == null) return;
+
+  // Cancel current notification
+  await _notifications.cancel(doseId.hashCode);
+
+  // Reschedule for 15 minutes later
+  final snoozeTime = DateTime.now().add(Duration(minutes: 15));
+  final snoozedDose = dose.copyWith(
+    scheduledTime: TimeOfDay.fromDateTime(snoozeTime).format(context),
+  );
+
+  await scheduleDoseReminder(snoozedDose, protocol);
+}
+```
+
+10.4 QUIET HOURS IMPLEMENTATION
+--------------------------------
+
+Purpose: Prevent notifications during user-specified hours (e.g., sleep time)
+
+Settings:
+- Enable Quiet Hours: Toggle
+- Start Time: Time picker (default: 10:00 PM)
+- End Time: Time picker (default: 7:00 AM)
+
+Behavior:
+- Notifications scheduled during quiet hours are queued
+- Queued notifications delivered at end of quiet hours
+- Urgent notifications (optional): Can override quiet hours
+
+Implementation:
+
+```dart
+Future<void> scheduleDoseReminder(Dose dose, Protocol protocol) async {
+  var scheduledDate = _combineDateAndTime(
+    dose.scheduledDate,
+    dose.scheduledTime,
+  );
+
+  // Check if scheduled time is during quiet hours
+  if (await _isQuietHours(scheduledDate)) {
+    // Reschedule to end of quiet hours
+    scheduledDate = await _getQuietHoursEndTime(scheduledDate);
+  }
+
+  // Schedule notification
+  await _notifications.zonedSchedule(
+    // ... notification details
+  );
+}
+
+Future<bool> _isQuietHours(DateTime dateTime) async {
+  final settings = await _settingsRepository.getNotificationSettings();
+  
+  if (!settings.quietHoursEnabled) return false;
+
+  final time = TimeOfDay.fromDateTime(dateTime);
+  final start = settings.quietHoursStart;
+  final end = settings.quietHoursEnd;
+
+  // Handle overnight quiet hours (e.g., 10 PM - 7 AM)
+  if (start.hour > end.hour) {
+    return time.hour >= start.hour || time.hour < end.hour;
+  } else {
+    return time.hour >= start.hour && time.hour < end.hour;
+  }
+}
+
+Future<DateTime> _getQuietHoursEndTime(DateTime originalTime) async {
+  final settings = await _settingsRepository.getNotificationSettings();
+  final endTime = settings.quietHoursEnd;
+
+  var adjustedTime = DateTime(
+    originalTime.year,
+    originalTime.month,
+    originalTime.day,
+    endTime.hour,
+    endTime.minute,
+  );
+
+  // If end time is earlier in the day than original time, it's next day
+  if (adjustedTime.isBefore(originalTime)) {
+    adjustedTime = adjustedTime.add(Duration(days: 1));
+  }
+
+  return adjustedTime;
+}
+```
+
+10.5 BADGE MANAGEMENT
+----------------------
+
+Badge Count Logic:
+- Badge shows count of pending doses for today
+- Updated when:
+  * Dose is marked taken (decrement)
+  * Dose is marked missed (no change)
+  * New day starts (recalculate)
+  * Protocol is added/edited/deleted (recalculate)
+
+Implementation:
+
+```dart
+Future<void> _updateBadgeCount() async {
+  final today = DateTime.now();
+  final startOfDay = DateTime(today.year, today.month, today.day);
+  final endOfDay = startOfDay.add(Duration(days: 1));
+
+  final pendingDoses = await _doseRepository.getDosesInRange(
+    startOfDay,
+    endOfDay,
+    status: DoseStatus.scheduled,
+  );
+
+  final count = pendingDoses.length;
+
+  await _notifications.cancelAll(); // Clear badge
+  
+  if (count > 0) {
+    // Set badge (iOS)
+    await FlutterAppBadger.updateBadgeCount(count);
+  } else {
+    // Clear badge
+    await FlutterAppBadger.removeBadge();
+  }
+}
+
+// Call this at midnight each day
+Future<void> _dailyBadgeUpdate() async {
+  await _updateBadgeCount();
+}
+```
+
+10.6 NOTIFICATION PERMISSIONS
+------------------------------
+
+Permission Request:
+- Requested when user enables notifications in settings
+- Explanation shown before system prompt
+- Graceful handling of denial
+
+Permission States:
+1. Not Determined: User hasn't been asked yet
+2. Denied: User denied permission
+3. Authorized: User granted permission
+4. Provisional (iOS 12+): Quiet notifications allowed
+
+Handling Denial:
+- Show explanation dialog
+- Provide button to open system settings
+- Disable notification toggle
+- Show alternative: Calendar integration
+
+Implementation:
+
+```dart
+Future<bool> requestNotificationPermission() async {
+  final settings = await _notifications
+      .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin>()
+      ?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+
+  return settings?.isEnabled ?? false;
+}
+
+Future<void> _handlePermissionDenied() async {
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Notification Permission Required'),
+      content: Text(
+        'Notifications are disabled. To receive dose reminders, please enable '
+        'notifications in Settings.\n\n'
+        'Alternatively, you can use Calendar Integration to get reminders.',
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text('Cancel'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _openAppSettings();
+          },
+          child: Text('Open Settings'),
+        ),
+        TextButton(
+          onPressed: () {
+            Navigator.pop(context);
+            _navigateToCalendarSettings();
+          },
+          child: Text('Use Calendar Instead'),
+        ),
+      ],
+    ),
+  );
+}
+```
+
+10.7 NOTIFICATION CONTENT & FORMATTING
+---------------------------------------
+
+Content Guidelines:
+- Clear and concise
+- Action-oriented
+- Personalized with peptide name and dosage
+- Positive tone for milestones
+- Neutral tone for reminders
+- Urgent tone for missed doses (but not alarming)
+
+Formatting:
+- Title: Bold, short (max 50 characters)
+- Body: Regular, descriptive (max 150 characters)
+- Emoji: Use sparingly, only for milestones (🔥 for streaks)
+
+Examples:
+
+Dose Reminder:
+- Title: "Time for BPC-157"
+- Body: "250 mcg dose scheduled for now"
+
+Missed Dose:
+- Title: "Missed Dose: BPC-157"
+- Body: "You missed your 250 mcg dose at 10:00 AM"
+
+Daily Summary:
+- Title: "Today's Protocol Summary"
+- Body: "You have 3 doses scheduled today"
+
+Streak Milestone:
+- Title: "🔥 30 Day Streak!"
+- Body: "You've taken all doses for 30 days straight. Keep it up!"
+
+Protocol Ending:
+- Title: "BPC-157 Protocol Ending Soon"
+- Body: "Your protocol ends on Dec 20. Extend or complete?"
+
+10.8 TESTING NOTIFICATIONS
+---------------------------
+
+Test Scenarios:
+1. Schedule notification for 1 minute in future
+2. Test "Mark as Taken" action
+3. Test "Snooze" action
+4. Test missed dose alert trigger
+5. Test quiet hours behavior
+6. Test badge count updates
+7. Test notification cancellation
+8. Test batch rescheduling
+
+Test Implementation:
+
+```dart
+// Developer mode feature
+Future<void> testDoseReminder() async {
+  final testDose = Dose(
+    id: 'test_dose',
+    protocolId: 'test_protocol',
+    scheduledDate: DateTime.now().add(Duration(minutes: 1)),
+    scheduledTime: TimeOfDay.now().format(context),
+    status: DoseStatus.scheduled,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  );
+
+  final testProtocol = Protocol(
+    id: 'test_protocol',
+    peptideId: 'test_peptide',
+    peptideName: 'Test Peptide',
+    dosageAmount: 100,
+    dosageUnit: 'mcg',
+    frequency: 'Daily',
+    times: [TimeOfDay.now().format(context)],
+    startDate: DateTime.now(),
+    syncToCalendar: false,
+    active: true,
+    createdAt: DateTime.now(),
+    updatedAt: DateTime.now(),
+  );
+
+  await scheduleDoseReminder(testDose, testProtocol);
+  
+  print('Test notification scheduled for 1 minute from now');
+}
+```
+
+================================================================================
+                          11. SUCCESS METRICS
+================================================================================
+
+11.1 KEY PERFORMANCE INDICATORS (KPIs)
+---------------------------------------
+
+User Acquisition:
+- App Store downloads
+- Daily active users (DAU)
+- Monthly active users (MAU)
+- DAU/MAU ratio (stickiness)
+
+User Engagement:
+- Average session duration
+- Sessions per user per day
+- Feature usage rates:
+  * Protocol creation rate
+  * Library views per user
+  * Calculator usage rate
+  * Calendar sync adoption rate
+  * Notification opt-in rate
+
+User Retention:
+- Day 1 retention
+- Day 7 retention
+- Day 30 retention
+- Churn rate
+
+Feature Adoption:
+- % users with at least 1 protocol
+- % users with calendar sync enabled
+- % users with notifications enabled
+- % users who completed onboarding
+- % users who set goals
+
+Protocol Adherence:
+- Average adherence rate across all users
+- % users with >80% adherence
+- Average streak length
+- % users who reach 30-day streak
+
+App Store Performance:
+- App Store rating (target: 4.5+)
+- Number of reviews
+- Crash-free rate (target: 99.5%+)
+- App Store search ranking for "peptide"
+
+11.2 ANALYTICS STRATEGY
+------------------------
+
+Privacy-First Analytics:
+- No third-party analytics services (respects privacy policy)
+- Local-only event logging
+- Aggregated, anonymized data only
+- Optional analytics opt-in (future enhancement)
+
+Events to Track (Locally):
+
+Onboarding:
+- Onboarding started
+- Onboarding completed
+- Onboarding abandoned (at which step)
+- TOS accepted
+- Goals selected (which goals)
+
+Protocols:
+- Protocol created
+- Protocol edited
+- Protocol deleted
+- Protocol paused
+- Protocol resumed
+- Dose marked taken
+- Dose marked missed
+- Dose snoozed
+
+Library:
+- Library viewed
+- Peptide detail viewed (which peptide)
+- Peptide favorited
+- Search performed (query not logged)
+- Filter applied (which category)
+
+Calculator:
+- Calculator opened
+- Calculation performed
+- Calculation saved
+- Calculation shared
+
+Calendar:
+- Calendar sync enabled
+- Calendar sync disabled
+- Calendar selected
+- Events created (count)
+
+Progress:
+- Progress screen viewed
+- Data exported (format)
+- Streak milestone reached (which milestone)
+
+Settings:
+- Settings viewed
+- Notification settings changed
+- Theme changed
+- Data deleted
+
+Implementation:
+
+```dart
+class AnalyticsService {
+  final DatabaseService _db;
+
+  Future<void> logEvent(String eventName, Map<String, dynamic>? parameters) async {
+    // Store event locally
+    await _db.insertEvent({
+      'event_name': eventName,
+      'parameters': jsonEncode(parameters ?? {}),
+      'timestamp': DateTime.now().millisecondsSinceEpoch,
+    });
+  }
+
+  Future<Map<String, dynamic>> getAggregatedStats() async {
+    // Calculate aggregated stats from local events
+    // This can be shown to user in a "Stats" screen
+    return {
+      'total_protocols_created': await _getTotalProtocolsCreated(),
+      'total_doses_taken': await _getTotalDosesTaken(),
+      'average_adherence': await _getAverageAdherence(),
+      'longest_streak': await _getLongestStreak(),
+      // ... more stats
+    };
+  }
+}
+```
+
+11.3 USER FEEDBACK COLLECTION
+------------------------------
+
+In-App Feedback:
+- Settings > Send Feedback
+- Opens email composer (if available)
+- Or copies email address to clipboard
+- Pre-fills subject: "pep.io Feedback"
+
+App Store Reviews:
+- Prompt for review after positive milestones:
+  * 7-day streak reached
+  * 30-day streak reached
+  * 10 protocols created
+- Use StoreKit for in-app review (iOS 14+)
+- Limit prompts: Max 3 times per year
+
+Feedback Channels:
+- Email: feedback@pepio.app (example)
+- App Store reviews
+- Social media (if applicable)
+
+Implementation:
+
+```dart
+Future<void> requestAppStoreReview() async {
+  final settings = await _settingsRepository.getAppSettings();
+  
+  // Check if we should prompt
+  if (_shouldPromptForReview(settings)) {
+    final inAppReview = InAppReview.instance;
+    
+    if (await inAppReview.isAvailable()) {
+      await inAppReview.requestReview();
+      
+      // Update last prompt date
+      await _settingsRepository.updateLastReviewPromptDate(DateTime.now());
+    }
+  }
+}
+
+bool _shouldPromptForReview(AppSettings settings) {
+  // Don't prompt if prompted in last 120 days
+  if (settings.lastReviewPromptDate != null) {
+    final daysSinceLastPrompt = DateTime.now()
+        .difference(settings.lastReviewPromptDate!)
+        .inDays;
+    
+    if (daysSinceLastPrompt < 120) return false;
+  }
+
+  // Don't prompt more than 3 times total
+  if (settings.reviewPromptCount >= 3) return false;
+
+  return true;
+}
+```
+
+11.4 SUCCESS CRITERIA FOR MVP
+------------------------------
+
+App Store Approval:
+- ✓ Approved on first submission
+- ✓ No guideline violations
+- ✓ All disclaimers in place
+
+User Acquisition (First 3 Months):
+- 1,000+ downloads
+- 100+ active users (DAU)
+- 500+ monthly active users (MAU)
+
+User Engagement:
+- 60%+ onboarding completion rate
+- 70%+ users create at least 1 protocol
+- 40%+ users enable calendar sync or notifications
+- 50%+ users view library at least once
+
+User Retention:
+- 50%+ Day 1 retention
+- 30%+ Day 7 retention
+- 20%+ Day 30 retention
+
+App Quality:
+- 4.0+ App Store rating
+- 99%+ crash-free rate
+- <1% uninstall rate in first week
+
+Feature Usage:
+- 80%+ of protocols have calendar sync enabled
+- 60%+ of users use calculator at least once
+- 50%+ of users view progress screen
+
+Protocol Adherence:
+- 70%+ average adherence rate
+- 30%+ users reach 7-day streak
+- 10%+ users reach 30-day streak
+
+11.5 FAILURE INDICATORS & MITIGATION
+-------------------------------------
+
+Failure Indicators:
+
+1. App Store Rejection
+   - Indicator: Rejection for medical claims or guideline violations
+   - Mitigation: Review and strengthen disclaimers, remove any therapeutic language
+
+2. Low Onboarding Completion
+   - Indicator: <40% onboarding completion rate
+   - Mitigation: Simplify onboarding, make steps skippable, reduce friction
+
+3. Low Protocol Creation
+   - Indicator: <50% users create a protocol
+   - Mitigation: Improve onboarding flow, add protocol templates, simplify creation
+
+4. High Churn
+   - Indicator: <20% Day 7 retention
+   - Mitigation: Improve notifications, add value in first week, enhance UX
+
+5. Low Feature Adoption
+   - Indicator: <30% calendar sync or notification adoption
+   - Mitigation: Better explain benefits, improve permission flows, add tutorials
+
+6. Poor App Store Rating
+   - Indicator: <3.5 rating
+   - Mitigation: Fix bugs, improve UX, respond to reviews, add requested features
+
+7. High Crash Rate
+   - Indicator: <98% crash-free rate
+   - Mitigation: Improve error handling, add more testing, fix critical bugs
+
+8. Low Adherence
+   - Indicator: <50% average adherence rate
+   - Mitigation: Improve reminders, add motivational features, enhance progress tracking
+
+Monitoring Plan:
+- Weekly review of key metrics
+- Monthly deep dive into user behavior
+- Quarterly feature usage analysis
+- Continuous App Store review monitoring
+- Crash reporting and bug tracking
+
+================================================================================
+                          12. FUTURE ROADMAP
+================================================================================
+
+12.1 POST-MVP FEATURES (VERSIONS 1.1-1.5)
+------------------------------------------
+
+Version 1.1 (1-2 months post-launch):
+- Protocol templates (pre-made stacks)
+- Enhanced progress charts (more visualizations)
+- Export improvements (more formats)
+- Dark mode refinements
+- Bug fixes and performance improvements
+
+Version 1.2 (3-4 months post-launch):
+- Dose history notes (add notes to individual doses)
+- Protocol tags and categories
+- Advanced filtering and sorting
+- Customizable home screen widgets
+- Siri shortcuts integration
+
+Version 1.3 (5-6 months post-launch):
+- Photo tracking (progress photos)
+- Weight tracking integration
+- Custom metrics tracking (energy, mood, etc.)
+- Enhanced streak features (badges, achievements)
+- Social sharing (optional, privacy-respecting)
+
+Version 1.4 (7-8 months post-launch):
+- Apple Health integration (read weight, activity)
+- Apple Watch companion app
+- Complications for Watch faces
+- Quick actions from Watch
+- Haptic feedback improvements
+
+Version 1.5 (9-12 months post-launch):
+- Advanced analytics and insights
+- Predictive adherence alerts
+- Personalized recommendations (based on goals)
+- Enhanced peptide library (more peptides, more info)
+- Community features (optional, privacy-first)
+
+12.2 ANDROID VERSION
+--------------------
+
+Timeline: 6-12 months post-iOS launch
+
+Considerations:
+- Material Design 3
+- Google Calendar integration
+- Android-specific notifications
+- Play Store compliance
+- Cross-platform data export/import (no cloud sync)
+
+Approach:
+- Leverage Flutter for code reuse
+- Platform-specific UI adjustments
+- Separate App Store and Play Store listings
+- Maintain feature parity with iOS
+
+12.3 EXPANDED PEPTIDE LIBRARY
+------------------------------
+
+Additions:
+- More peptides (target: 100+)
+- More detailed information
+- More research references
+- Video explanations (optional)
+- Community-contributed notes (moderated)
+
+Categories to Add:
+- Immune Support
+- Sleep & Recovery
+- Joint & Bone Health
+- Cardiovascular Support
+- Hormone Optimization
+
+12.4 PREMIUM FEATURES (OPTIONAL MONETIZATION)
+----------------------------------------------
+
+Free Tier (Current MVP):
+- Unlimited protocols
+- Full peptide library
+- Basic progress tracking
+- Calendar integration
+- Notifications
+- Data export
+
+Premium Tier ($4.99/month or $39.99/year):
+- Advanced analytics and insights
+- Unlimited photo tracking
+- Custom metrics tracking
+- Priority support
+- Early access to new features
+- Ad-free (if ads added to free tier)
+- Cloud backup (optional, with explicit consent)
+
+One-Time Purchases:
+- Protocol template packs ($1.99 each)
+- Advanced calculator features ($2.99)
+- Custom themes ($0.99 each)
+
+Approach:
+- Freemium model
+- No features locked behind paywall that affect core tracking
+- Premium enhances experience, doesn't gate functionality
+- Transparent pricing
+- No subscriptions required for basic use
+
+12.5 COMMUNITY & CONTENT
+-------------------------
+
+Community Features (Privacy-First):
+- Optional anonymous protocol sharing
+- Community-voted protocol templates
+- Success stories (user-submitted, moderated)
+- Q&A forum (moderated, no medical advice)
+
+Content Features:
+- Educational blog posts
+- Peptide deep-dives
+- Research summaries
+- Expert interviews (with disclaimers)
+- Video tutorials
+
+Moderation:
+- Strict moderation to prevent medical advice
+- Clear community guidelines
+- Report and flag system
+- No therapeutic claims allowed
+
+12.6 PARTNERSHIPS
+------------------
+
+Potential Partners:
+- Peptide education platforms
+- Biohacking communities
+- Fitness and wellness apps
+- Research institutions (for educational content)
+- Healthcare providers (for referrals, not endorsements)
+
+Partnership Goals:
+- Expand educational content
+- Increase user base
+- Improve credibility
+- Access to research
+- Cross-promotion
+
+Boundaries:
+- No partnerships with peptide suppliers
+- No affiliate commissions
+- No product endorsements
+- Maintain independence and objectivity
+
+12.7 LONG-TERM VISION (2-3 YEARS)
+----------------------------------
+
+Platform Evolution:
+- Comprehensive wellness tracking platform
+- Beyond peptides: supplements, medications, habits
+- Holistic health optimization
+- AI-powered insights (privacy-respecting)
+- Personalized recommendations
+
+Technology:
+- Machine learning for adherence prediction
+- Natural language processing for research summaries
+- Advanced data visualization
+- Wearable device integration
+- Voice assistant integration
+
+Scale:
+- 100,000+ users
+- 100+ peptides in library
+- 1,000+ protocol templates
+- Multi-language support
+- Global community
+
+Mission:
+- Empower individuals to take control of their health
+- Provide trustworthy, evidence-based information
+- Respect privacy and user autonomy
+- Promote responsible peptide use
+- Bridge gap between research and practice
+
+================================================================================
+                              13. APPENDIX
+================================================================================
+
+13.1 GLOSSARY OF TERMS
+-----------------------
+
+Adherence: The percentage of scheduled doses that are taken on time.
+
+BAC Water: Bacteriostatic water, used to reconstitute peptide powders.
+
+Biohacking: The practice of using science and technology to optimize one's 
+biology and health.
+
+Dose: A single instance of taking a peptide at a scheduled time.
+
+Frequency: How often a peptide is taken (e.g., daily, weekly).
+
+GH: Growth Hormone.
+
+GHRP: Growth Hormone Releasing Peptide.
+
+mcg: Microgram, a unit of measurement (1/1000 of a milligram).
+
+mg: Milligram, a unit of measurement.
+
+mL: Milliliter, a unit of volume.
+
+Peptide: A short chain of amino acids, the building blocks of proteins.
+
+PMID: PubMed ID, a unique identifier for research articles in the PubMed 
+database.
+
+Protocol: A defined schedule for taking a specific peptide, including dosage, 
+frequency, and duration.
+
+Reconstitution: The process of mixing a peptide powder with BAC water to create 
+an injectable solution.
+
+Stack: A combination of multiple peptides taken together for synergistic effects.
+
+Streak: Consecutive days of completing all scheduled doses.
+
+Subcutaneous: Under the skin, a common route of peptide administration.
+
+Vial: A small bottle containing peptide powder.
+
+13.2 PEPTIDE DATABASE JSON STRUCTURE (SAMPLE)
+----------------------------------------------
+
+```json
+{
+  "id": "bpc-157",
+  "name": "BPC-157",
+  "alternative_names": ["Body Protection Compound 157", "PL 14736"],
+  "category": "Regenerative / Soft Tissue Support",
+  "category_color": "#27AE60",
+  "description": "BPC-157 is a synthetic peptide derived from a protective protein found in gastric juice. It consists of 15 amino acids and has been the subject of research for its potential effects on tissue repair and healing processes.",
+  "benefits": [
+    "Tissue support",
+    "Gut balance",
+    "Recovery support"
+  ],
+  "research_protocols": {
+    "dosage_range": "200-500 mcg",
+    "administration": "Subcutaneous injection in studies",
+    "duration": "4-12 weeks",
+    "frequency": "Once or twice daily in research"
+  },
+  "reconstitution": {
+    "common_vial_sizes": [2, 5, 10],
+    "typical_water_volume": "1-3 mL",
+    "concentration_example": "5 mg vial + 2 mL water = 2.5 mg/mL concentration"
+  },
+  "considerations": "Often researched alongside TB-500 for synergistic effects. Requires refrigeration after reconstitution. Sensitive to light exposure. Typical shelf life after reconstitution: 30 days refrigerated.",
+  "storage": "Store lyophilized powder at room temperature. After reconstitution, store at 2-8°C (refrigerated) for up to 30 days. Protect from light.",
+  "stacks_well_with": ["tb-500", "ghk-cu"],
+  "research_references": [
+    {
+      "pmid": "31384691",
+      "title": "Effects on tendon healing",
+      "year": 2020,
+      "study_type": "Animal model (rat)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/31384691/"
+    },
+    {
+      "pmid": "28974356",
+      "title": "Gastric ulcer study",
+      "year": 2019,
+      "study_type": "Animal model (rat)",
+      "url": "https://pubmed.ncbi.nlm.nih.gov/28974356/"
+    }
+  ],
+  "user_notes": "",
+  "is_favorite": false,
+  "view_count": 0,
+  "last_viewed": null,
+  "created_at": "2025-12-17T00:00:00Z",
+  "updated_at": "2025-12-17T00:00:00Z"
+}
+```
+
+13.3 COMPLETE PEPTIDE LIST WITH CATEGORIES
+-------------------------------------------
+
+GROWTH HORMONE RELEASING / GH SECRETAGOGUES (10)
+1. CJC-1295
+2. CJC-1295 DAC
+3. Ipamorelin
+4. GHRP-2
+5. GHRP-6
+6. Hexarelin
+7. Tesamorelin
+8. Sermorelin
+9. MK-677 (Ibutamoren)
+10. GHS-R Peptides
+
+BODY COMPOSITION / METABOLISM (9)
+1. AOD-9604
+2. 5-Amino-1MQ
+3. MOTS-c
+4. Lipo-C Peptides
+5. GLP-1 Analogs
+6. Retatrutide
+7. Semaglutide
+8. Tirzepatide
+9. ARA-290
+
+REGENERATIVE / SOFT TISSUE SUPPORT (9)
+1. BPC-157
+2. TB-500 / Thymosin Beta-4
+3. Thymosin Alpha-1 (TA1)
+4. GHK-Cu
+5. Epitalon
+6. KPV Peptide
+7. Palmitoyl Tripeptide-1
+8. Palmitoyl Tetrapeptide-7
+9. Matrixyl
+
+NEURO / COGNITIVE SUPPORT (8)
+1. Selank
+2. Semax
+3. N-Acetyl Selank
+4. N-Acetyl Semax
+5. Cerebrolysin Peptides
+6. DSIP (Delta Sleep Peptide)
+7. Pinealon
+8. Cortagen
+
+ENERGY / PERFORMANCE / ENDURANCE (4)
+1. AICAR
+2. GW-501516 (Cardarine)
+3. SR-9009 (Stenabolic)
+4. PGC-1 Modulators
+
+SKIN, HAIR, BEAUTY (5)
+1. Melanotan II
+2. Melanotan I
+3. PT-141 (Bremelanotide)
+4. Copper Tripeptide-1
+5. Argireline (Acetyl Hexapeptide-8)
+
+MUSCLE / STRENGTH / RECOVERY (7)
+1. IGF-1 LR3
+2. IGF-1 DES
+3. Follistatin 344
+4. Follistatin 315
+5. Myostatin Inhibitors
+6. PEG-MGF
+7. MGF (Mechano Growth Factor)
+
+LONGEVITY / SYSTEMIC PEPTIDES (5)
+1. FOX04-DRI
+2. Humanin
+3. Klotho-Modulating Peptides
+4. Thymulin
+5. Thymalfasin
+
+GUT / METABOLIC SUPPORT (3)
+1. PYY Analogs
+2. OXM Analogs
+3. Ghrelin Analogs
+
+TOTAL: 60 PEPTIDES
+
+13.4 TECHNICAL DEPENDENCIES
+----------------------------
+
+Flutter Packages:
+
+Core:
+- flutter_sdk: ^3.16.0
+- dart: ^3.2.0
+
+State Management:
+- provider: ^6.1.0
+
+Database:
+- sqflite: ^2.3.0
+- path: ^1.8.3
+
+Local Storage:
+- shared_preferences: ^2.2.2
+- flutter_secure_storage: ^9.0.0
+
+Calendar Integration:
+- device_calendar: ^4.5.0
+
+Notifications:
+- flutter_local_notifications: ^16.3.0
+- timezone: ^0.9.2
+
+Date/Time:
+- intl: ^0.18.1
+
+Charts:
+- fl_chart: ^0.66.0
+
+File Operations:
+- path_provider: ^2.1.1
+- csv: ^5.1.1
+- pdf: ^3.10.7
+
+Sharing:
+- share_plus: ^7.2.1
+
+App Review:
+- in_app_review: ^2.0.8
+
+Badge:
+- flutter_app_badger: ^1.5.0
+
+UI:
+- cupertino_icons: ^1.0.6
+
+Dev Dependencies:
+- flutter_test: sdk: flutter
+- flutter_lints: ^3.0.1
+- mockito: ^5.4.4
+- build_runner: ^2.4.7
+
+iOS Dependencies:
+- iOS 12.0+
+- Xcode 15.0+
+- CocoaPods
+
+Permissions (Info.plist):
+- NSCalendarsUsageDescription
+- NSRemindersUsageDescription (if using reminders)
+- NSUserNotificationsUsageDescription (iOS 10+)
+
+13.5 DEVELOPMENT TIMELINE ESTIMATE
+-----------------------------------
+
+Phase 1: Foundation (Weeks 1-2)
+- Project setup
+- Database schema implementation
+- Core data models
+- State management setup
+- Navigation structure
+
+Phase 2: Onboarding & Auth (Weeks 3-4)
+- Disclaimer screens
+- Onboarding flow
+- Goal selection
+- User profile setup
+- Onboarding data persistence
+
+Phase 3: Protocol Management (Weeks 5-7)
+- Protocol creation screen
+- Protocol list view
+- Protocol detail view
+- Dose tracking
+- Protocol templates
+
+Phase 4: Peptide Library (Weeks 8-9)
+- Library home screen
+- Peptide detail view
+- Search and filter
+- Favorites
+- Peptide data population
+
+Phase 5: Calculator (Week 10)
+- Calculator UI
+- Calculation logic
+- Results display
+- Calculation history
+- Save and share
+
+Phase 6: Calendar & Progress (Weeks 11-12)
+- Calendar view
+- Apple Calendar integration
+- Progress tracking
+- Charts and visualizations
+- Data export
+
+Phase 7: Home Dashboard (Week 13)
+- Home screen layout
+- Metric cards
+- Today's doses
+- Weekly progress
+- Quick actions
+
+Phase 8: Settings & Notifications (Weeks 14-15)
+- Settings screen
+- Notification system
+- Calendar settings
+- Data management
+- Theme and appearance
+
+Phase 9: Polish & Testing (Weeks 16-17)
+- UI/UX refinements
+- Bug fixes
+- Performance optimization
+- Unit tests
+- Integration tests
+
+Phase 10: App Store Preparation (Week 18)
+- App Store assets (screenshots, icon, etc.)
+- App Store metadata
+- Legal documents finalization
+- TestFlight beta testing
+- Final QA
+
+Phase 11: Launch (Week 19)
+- App Store submission
+- Review process
+- Launch day preparations
+- Marketing materials
+- Support setup
+
+TOTAL: 19 weeks (approximately 4.5 months)
+
+Note: Timeline assumes 1 full-time developer. Adjust accordingly for team size.
+
+13.6 TEAM ROLES (RECOMMENDED)
+------------------------------
+
+For MVP Development:
+
+1. Flutter Developer (Full-time)
+   - Implement all features
+   - Database design and implementation
+   - State management
+   - UI/UX implementation
+   - Testing
+   - Bug fixes
+
+2. UI/UX Designer (Part-time or Contract)
+   - Design system creation
+   - Screen mockups
+   - User flow diagrams
+   - Icon design
+   - App Store assets
+
+3. Content Writer (Contract)
+   - Peptide descriptions
+   - Legal documents (TOS, Privacy Policy, Disclaimers)
+   - App Store description
+   - In-app copy
+   - Help documentation
+
+4. QA Tester (Part-time)
+   - Manual testing
+   - Test case creation
+   - Bug reporting
+   - Regression testing
+   - Device compatibility testing
+
+5. Project Manager (Part-time)
+   - Timeline management
+   - Stakeholder communication
+   - Requirements clarification
+   - Risk management
+   - Launch coordination
+
+Optional:
+
+6. Backend Developer (If cloud features added)
+   - API development
+   - Database management
+   - Authentication
+   - Data sync
+
+7. Marketing Specialist (Post-launch)
+   - App Store optimization
+   - Social media
+   - Content marketing
+   - User acquisition
+
+13.7 RESOURCES & REFERENCES
+----------------------------
+
+Flutter Resources:
+- Flutter Documentation: https://docs.flutter.dev/
+- Flutter Cookbook: https://docs.flutter.dev/cookbook
+- Dart Language Tour: https://dart.dev/guides/language/language-tour
+- Flutter Packages: https://pub.dev/
+
+Design Resources:
+- Apple Human Interface Guidelines: https://developer.apple.com/design/human-interface-guidelines/
+- Material Design 3: https://m3.material.io/
+- SF Symbols: https://developer.apple.com/sf-symbols/
+- iOS Design Resources: https://developer.apple.com/design/resources/
+
+App Store Resources:
+- App Store Review Guidelines: https://developer.apple.com/app-store/review/guidelines/
+- App Store Connect: https://appstoreconnect.apple.com/
+- TestFlight: https://developer.apple.com/testflight/
+
+Legal Resources:
+- FDA Guidance on Mobile Medical Apps: https://www.fda.gov/medical-devices/digital-health-center-excellence/mobile-medical-applications
+- HIPAA Compliance (if applicable): https://www.hhs.gov/hipaa/
+- Terms of Service Generator: https://www.termsfeed.com/
+- Privacy Policy Generator: https://www.privacypolicies.com/
+
+Peptide Research:
+- PubMed: https://pubmed.ncbi.nlm.nih.gov/
+- Google Scholar: https://scholar.google.com/
+- Research Gate: https://www.researchgate.net/
+
+Community:
+- r/Peptides (Reddit): https://www.reddit.com/r/Peptides/
+- Biohacking forums
+- Fitness and wellness communities
+
+13.8 LEGAL DISCLAIMERS FOR APP STORE SUBMISSION
+------------------------------------------------
+
+App Description Disclaimer:
+"IMPORTANT: This app is for educational purposes only and does not provide 
+medical advice. Always consult a licensed healthcare professional before making 
+any health-related decisions."
+
+Screenshot Disclaimers:
+- Include "For educational purposes only" on relevant screenshots
+- Show disclaimers prominently in UI screenshots
+
+App Preview Video Disclaimer:
+- Include disclaimer at beginning: "Educational purposes only. Not medical advice."
+- Show disclaimer screens in video
+
+App Store Review Notes:
+"This app is designed for educational purposes only and complies with App Store 
+guidelines 5.1.1(ix) and 1.4.4. All information is from publicly available, 
+non-clinical sources. No medical claims are made. Comprehensive disclaimers are 
+presented to users before app access. No prescription services, product sales, 
+or medical advice are provided."
+
+13.9 MARKETING & LAUNCH STRATEGY
+---------------------------------
+
+Pre-Launch (4 weeks before):
+- Create landing page
+- Build email list
+- Engage with peptide communities
+- Create teaser content
+- Reach out to influencers
+- Prepare press kit
+
+Launch Week:
+- Submit to App Store
+- Announce on social media
+- Email list announcement
+- Post in relevant communities
+- Reach out to press/blogs
+- Monitor reviews and feedback
+
+Post-Launch (First month):
+- Respond to all reviews
+- Fix critical bugs quickly
+- Engage with users
+- Create tutorial content
+- Gather feedback
+- Plan first update
+
+Marketing Channels:
+- Reddit (r/Peptides, r/Biohacking, r/Fitness)
+- Twitter/X (biohacking community)
+- Instagram (fitness influencers)
+- YouTube (peptide education channels)
+- Podcasts (health and wellness)
+- Blogs (guest posts)
+
+Content Marketing:
+- Educational blog posts about peptides
+- How-to guides for app features
+- Success stories (with permission)
+- Research summaries
+- Comparison guides
+
+App Store Optimization:
+- Keyword research ("peptide", "peptide tracker", "biohacking", etc.)
+- Compelling screenshots
+- Engaging app preview video
+- Regular updates with new features
+- Encourage positive reviews
+
+13.10 MAINTENANCE & SUPPORT PLAN
+---------------------------------
+
+Ongoing Maintenance:
+
+Weekly:
+- Monitor crash reports
+- Review user feedback
+- Respond to App Store reviews
+- Check for critical bugs
+
+Monthly:
+- Performance analysis
+- Feature usage review
+- User retention analysis
+- Plan next update
+
+Quarterly:
+- Major feature releases
+- Peptide library updates
+- iOS version compatibility
+- Security updates
+
+Support Channels:
+- Email: support@pepio.app (example)
+- In-app feedback form
+- App Store review responses
+- FAQ/Help center (future)
+
+Support Response Times:
+- Critical bugs: 24 hours
+- General inquiries: 48 hours
+- Feature requests: Acknowledged within 1 week
+
+Bug Prioritization:
+- P0 (Critical): App crashes, data loss - Fix immediately
+- P1 (High): Major features broken - Fix within 1 week
+- P2 (Medium): Minor features broken - Fix in next update
+- P3 (Low): Cosmetic issues - Fix when convenient
+
+Update Cadence:
+- Bug fixes: As needed (hot fixes)
+- Minor updates: Every 4-6 weeks
+- Major updates: Every 3-4 months
+
+Version Numbering:
+- Major.Minor.Patch (e.g., 1.2.3)
+- Major: Significant new features or redesigns
+- Minor: New features, improvements
+- Patch: Bug fixes, small tweaks
+
+================================================================================
+                  END OF PRODUCT REQUIREMENTS DOCUMENT
+================================================================================
+
+This document is a living document and will be updated as the product evolves.
+
+Version: 1.0
+Last Updated: December 17, 2025
+Document Owner: pep.io Product Team
+
+For questions or clarifications, please contact: [Contact Information]
+
+================================================================================
