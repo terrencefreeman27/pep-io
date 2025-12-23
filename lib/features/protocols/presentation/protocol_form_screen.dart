@@ -4,8 +4,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/models/protocol.dart';
-import '../../../core/models/peptide.dart';
 import '../../library/presentation/peptide_provider.dart';
+import '../../settings/presentation/settings_provider.dart';
 import 'protocol_provider.dart';
 
 class ProtocolFormScreen extends StatefulWidget {
@@ -225,12 +225,47 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
 
             // Calendar Sync
             _SectionTitle(title: 'Integration'),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Sync to Calendar'),
-              subtitle: const Text('Add doses to your device calendar'),
-              value: _syncToCalendar,
-              onChanged: (v) => setState(() => _syncToCalendar = v),
+            Consumer<SettingsProvider>(
+              builder: (context, settings, _) {
+                return Column(
+                  children: [
+                    SwitchListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: const Text('Sync to Apple Calendar'),
+                      subtitle: Text(
+                        settings.calendarSyncEnabled && settings.selectedCalendarName != null
+                            ? 'Add doses to "${settings.selectedCalendarName}"'
+                            : 'Enable calendar sync in Settings first',
+                      ),
+                      value: _syncToCalendar,
+                      onChanged: settings.calendarSyncEnabled && settings.selectedCalendar != null
+                          ? (v) => setState(() => _syncToCalendar = v)
+                          : null,
+                    ),
+                    if (!settings.calendarSyncEnabled)
+                      Padding(
+                        padding: const EdgeInsets.only(left: AppSpacing.m),
+                        child: Row(
+                          children: [
+                            Icon(Icons.info_outline, 
+                              size: 16, 
+                              color: AppColors.mediumGray,
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: Text(
+                                'Go to Settings → Calendar Integration to enable',
+                                style: AppTypography.caption1.copyWith(
+                                  color: AppColors.mediumGray,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
             const SizedBox(height: AppSpacing.l),
 
@@ -345,8 +380,27 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
               Expanded(
                 child: ListView.builder(
                   controller: scrollController,
-                  itemCount: peptides.length,
+                  itemCount: peptides.length + 1, // +1 for "Other" option
                   itemBuilder: (context, index) {
+                    // "Other" option at the end
+                    if (index == peptides.length) {
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: AppColors.purple.withOpacity(0.1),
+                          child: const Icon(Icons.add, color: AppColors.purple),
+                        ),
+                        title: const Text('Other (Custom)'),
+                        subtitle: const Text('Enter your own peptide name'),
+                        trailing: _selectedPeptideId == 'custom'
+                            ? Icon(Icons.check, color: AppColors.primaryBlue)
+                            : null,
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showCustomPeptideDialog();
+                        },
+                      );
+                    }
+                    
                     final peptide = peptides[index];
                     final categoryColor =
                         AppColors.getCategoryColor(peptide.category);
@@ -377,6 +431,43 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
             ],
           );
         },
+      ),
+    );
+  }
+
+  void _showCustomPeptideDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enter Peptide Name'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            hintText: 'e.g., BPC-157, TB-500',
+            labelText: 'Peptide Name',
+          ),
+          textCapitalization: TextCapitalization.words,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () {
+              if (controller.text.trim().isNotEmpty) {
+                setState(() {
+                  _selectedPeptideId = 'custom';
+                  _peptideName = controller.text.trim();
+                });
+                Navigator.pop(context);
+              }
+            },
+            child: const Text('Add'),
+          ),
+        ],
       ),
     );
   }
@@ -433,6 +524,12 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
 
     if (!_formKey.currentState!.validate()) return;
 
+    // Get the calendar ID from settings if sync is enabled
+    final settings = context.read<SettingsProvider>();
+    final calendarId = _syncToCalendar && settings.calendarSyncEnabled 
+        ? settings.selectedCalendar 
+        : null;
+
     final protocol = Protocol(
       id: widget.protocolId ?? DateTime.now().millisecondsSinceEpoch.toString(),
       peptideId: _selectedPeptideId ?? '',
@@ -443,7 +540,8 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
       times: [_formatTime(_scheduledTime)],
       startDate: _startDate,
       endDate: _endDate,
-      syncToCalendar: _syncToCalendar,
+      syncToCalendar: _syncToCalendar && calendarId != null,
+      calendarId: calendarId,
       notes: _notesController.text.isNotEmpty ? _notesController.text : null,
       active: true,
       createdAt: DateTime.now(),

@@ -1,10 +1,13 @@
+import 'package:device_calendar/device_calendar.dart';
 import 'package:flutter/material.dart';
 import '../../../core/models/user_profile.dart';
+import '../../../core/services/calendar_service.dart';
 import '../data/settings_repository.dart';
 
 /// Provider for settings state management
 class SettingsProvider extends ChangeNotifier {
   final SettingsRepository _repository;
+  final CalendarService _calendarService;
 
   UserProfile? _userProfile;
   List<String> _userGoals = [];
@@ -23,14 +26,16 @@ class SettingsProvider extends ChangeNotifier {
   int _missedDoseDelay = 30;
   bool _calendarSyncEnabled = false;
   String? _selectedCalendar;
+  String? _selectedCalendarName;
   String? _defaultCalendarId;
   bool _useMetricUnits = true;
   String? _userName;
   double? _userWeight;
   bool _isLoading = false;
   String? _error;
+  List<Calendar> _availableCalendars = [];
 
-  SettingsProvider(this._repository);
+  SettingsProvider(this._repository, this._calendarService);
 
   // Getters
   UserProfile? get userProfile => _userProfile;
@@ -50,12 +55,15 @@ class SettingsProvider extends ChangeNotifier {
   int get missedDoseDelay => _missedDoseDelay;
   bool get calendarSyncEnabled => _calendarSyncEnabled;
   String? get selectedCalendar => _selectedCalendar;
+  String? get selectedCalendarName => _selectedCalendarName;
   String? get defaultCalendarId => _defaultCalendarId;
   bool get useMetricUnits => _useMetricUnits;
   String? get userName => _userName;
   double? get userWeight => _userWeight;
   bool get isLoading => _isLoading;
   String? get error => _error;
+  List<Calendar> get availableCalendars => _availableCalendars;
+  CalendarService get calendarService => _calendarService;
 
   /// Initialize settings from storage
   Future<void> initialize() async {
@@ -76,6 +84,16 @@ class SettingsProvider extends ChangeNotifier {
       _missedDoseDelay = _repository.missedDoseDelay;
       _calendarSyncEnabled = _repository.calendarSyncEnabled;
       _defaultCalendarId = _repository.defaultCalendarId;
+      _selectedCalendar = _defaultCalendarId;
+      
+      // If calendar sync is enabled, load calendars and get the name
+      if (_calendarSyncEnabled && _selectedCalendar != null) {
+        await loadAvailableCalendars();
+        final calendar = _calendarService.getCalendarById(_selectedCalendar!);
+        if (calendar != null) {
+          _selectedCalendarName = calendar.name;
+        }
+      }
     } catch (e) {
       _error = e.toString();
     } finally {
@@ -289,8 +307,48 @@ class SettingsProvider extends ChangeNotifier {
   }
 
   /// Set calendar sync
-  void setCalendarSync(bool enabled) {
+  Future<void> setCalendarSync(bool enabled) async {
+    if (enabled) {
+      // Request calendar permission when enabling
+      final hasPermission = await _calendarService.requestPermissions();
+      if (!hasPermission) {
+        _error = 'Calendar permission denied. Please enable in Settings.';
+        notifyListeners();
+        return;
+      }
+      // Load available calendars
+      await loadAvailableCalendars();
+    }
     _calendarSyncEnabled = enabled;
+    await setCalendarSyncEnabled(enabled);
+    notifyListeners();
+  }
+
+  /// Load available calendars from device
+  Future<void> loadAvailableCalendars() async {
+    try {
+      _availableCalendars = await _calendarService.retrieveCalendars();
+      
+      // If we have calendars and none selected, try to set default
+      if (_availableCalendars.isNotEmpty && _selectedCalendar == null) {
+        final defaultCal = await _calendarService.getDefaultCalendar();
+        if (defaultCal != null) {
+          _selectedCalendar = defaultCal.id;
+          _selectedCalendarName = defaultCal.name;
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      _error = 'Error loading calendars: $e';
+      notifyListeners();
+    }
+  }
+
+  /// Select a calendar for syncing
+  Future<void> selectCalendar(Calendar calendar) async {
+    _selectedCalendar = calendar.id;
+    _selectedCalendarName = calendar.name;
+    await setDefaultCalendarId(calendar.id);
     notifyListeners();
   }
 

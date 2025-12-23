@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCalendarsUsageDescription</key>
+	<string>pep.io uses calendar access to sync your protocol schedules and dose reminders with your Apple Calendar.</string>
+	<key>NSCalendarsWriteUsageDescription</key>
+	<string>pep.io needs write access to add your protocol schedules and dose reminders to your Apple Calendar.</string>
+	<key>NSCalendarsFullAccessUsageDescription</key>
+	<string>pep.io needs full calendar access to sync your protocol schedules and dose reminders with your Apple Calendar.</string>
 </dict>
 </plist>

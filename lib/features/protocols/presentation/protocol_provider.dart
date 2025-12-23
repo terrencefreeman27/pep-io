@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../../core/models/protocol.dart';
 import '../../../core/models/dose.dart';
+import '../../../core/services/calendar_service.dart';
 import '../../../core/services/notification_service.dart';
 import '../data/protocol_repository.dart';
 
@@ -8,6 +9,7 @@ import '../data/protocol_repository.dart';
 class ProtocolProvider extends ChangeNotifier {
   final ProtocolRepository _repository;
   final NotificationService _notificationService;
+  final CalendarService _calendarService;
 
   List<Protocol> _protocols = [];
   List<Dose> _todaysDoses = [];
@@ -17,8 +19,11 @@ class ProtocolProvider extends ChangeNotifier {
   int _activeCount = 0;
   double _adherenceRate = 0.0;
   int _currentStreak = 0;
+  
+  // Store calendar event IDs for each protocol
+  final Map<String, List<String>> _protocolCalendarEvents = {};
 
-  ProtocolProvider(this._repository, this._notificationService);
+  ProtocolProvider(this._repository, this._notificationService, this._calendarService);
 
   // Getters
   List<Protocol> get protocols => _protocols;
@@ -111,15 +116,22 @@ class ProtocolProvider extends ChangeNotifier {
         end: DateTime.now().add(const Duration(days: 30)),
       );
       
-      // Insert doses
+      // Insert doses and collect inserted doses
+      final insertedDoses = <Dose>[];
       for (final dose in doses) {
         final insertedDose = await _repository.insertDose(dose);
+        insertedDoses.add(insertedDose);
         
         // Schedule notifications
         await _notificationService.scheduleDoseReminder(
           dose: insertedDose,
           protocol: newProtocol,
         );
+      }
+      
+      // Sync to Apple Calendar if enabled
+      if (newProtocol.syncToCalendar && newProtocol.calendarId != null) {
+        await _syncProtocolToCalendar(newProtocol, insertedDoses);
       }
       
       // Schedule protocol ending notification if has end date
@@ -138,6 +150,46 @@ class ProtocolProvider extends ChangeNotifier {
       notifyListeners();
     }
   }
+  
+  /// Sync protocol doses to Apple Calendar
+  Future<void> _syncProtocolToCalendar(Protocol protocol, List<Dose> doses) async {
+    try {
+      if (protocol.calendarId == null) return;
+      
+      final eventIds = await _calendarService.syncProtocolToCalendar(
+        protocol: protocol,
+        doses: doses,
+        calendarId: protocol.calendarId!,
+      );
+      
+      if (eventIds.isNotEmpty) {
+        _protocolCalendarEvents[protocol.id] = eventIds;
+        debugPrint('Synced ${eventIds.length} events to calendar for protocol ${protocol.id}');
+      }
+    } catch (e) {
+      debugPrint('Error syncing to calendar: $e');
+      // Don't fail the whole operation if calendar sync fails
+    }
+  }
+  
+  /// Remove calendar events for a protocol
+  Future<void> _removeCalendarEvents(Protocol protocol) async {
+    try {
+      if (protocol.calendarId == null) return;
+      
+      final eventIds = _protocolCalendarEvents[protocol.id];
+      if (eventIds != null && eventIds.isNotEmpty) {
+        await _calendarService.deleteProtocolEvents(
+          calendarId: protocol.calendarId!,
+          eventIds: eventIds,
+        );
+        _protocolCalendarEvents.remove(protocol.id);
+        debugPrint('Removed calendar events for protocol ${protocol.id}');
+      }
+    } catch (e) {
+      debugPrint('Error removing calendar events: $e');
+    }
+  }
 
   /// Update a protocol
   Future<void> updateProtocol(Protocol protocol) async {
@@ -145,6 +197,9 @@ class ProtocolProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Get the old protocol to check for calendar changes
+      final oldProtocol = await _repository.getProtocolById(protocol.id);
+      
       await _repository.updateProtocol(protocol);
       
       // Cancel existing notifications and reschedule
@@ -158,11 +213,25 @@ class ProtocolProvider extends ChangeNotifier {
         end: DateTime.now().add(const Duration(days: 30)),
       );
       
+      final insertedDoses = <Dose>[];
       for (final dose in doses) {
+        insertedDoses.add(dose);
         await _notificationService.scheduleDoseReminder(
           dose: dose,
           protocol: protocol,
         );
+      }
+      
+      // Handle calendar sync changes
+      if (oldProtocol != null && oldProtocol.syncToCalendar && !protocol.syncToCalendar) {
+        // Calendar sync was disabled, remove events
+        await _removeCalendarEvents(oldProtocol);
+      } else if (protocol.syncToCalendar && protocol.calendarId != null) {
+        // Calendar sync is enabled, update events
+        if (oldProtocol != null) {
+          await _removeCalendarEvents(oldProtocol);
+        }
+        await _syncProtocolToCalendar(protocol, insertedDoses);
       }
       
       await loadProtocols();
@@ -181,6 +250,9 @@ class ProtocolProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
+      // Get protocol to check for calendar sync
+      final protocol = await _repository.getProtocolById(id);
+      
       // Cancel notifications
       await _notificationService.cancelProtocolNotifications(id);
       
@@ -188,6 +260,11 @@ class ProtocolProvider extends ChangeNotifier {
       final doses = await _repository.getDosesForProtocol(id);
       for (final dose in doses) {
         await _notificationService.cancelDoseNotifications(dose.id);
+      }
+      
+      // Remove calendar events if protocol had calendar sync
+      if (protocol != null && protocol.syncToCalendar) {
+        await _removeCalendarEvents(protocol);
       }
       
       await _repository.deleteProtocol(id);

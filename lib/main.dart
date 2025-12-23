@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
 
 import 'app.dart';
+import 'core/services/calendar_service.dart';
 import 'core/services/database_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
@@ -41,6 +42,8 @@ void main() async {
   final notificationService = NotificationService();
   await notificationService.initialize();
   
+  final calendarService = CalendarService();
+  
   // Initialize repositories
   final protocolRepository = ProtocolRepository(databaseService);
   final peptideRepository = PeptideRepository(databaseService);
@@ -54,6 +57,7 @@ void main() async {
         Provider<DatabaseService>.value(value: databaseService),
         Provider<StorageService>.value(value: storageService),
         Provider<NotificationService>.value(value: notificationService),
+        Provider<CalendarService>.value(value: calendarService),
         
         // Repositories
         Provider<ProtocolRepository>.value(value: protocolRepository),
@@ -66,7 +70,7 @@ void main() async {
           create: (_) => OnboardingProvider(onboardingRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) => ProtocolProvider(protocolRepository, notificationService),
+          create: (_) => ProtocolProvider(protocolRepository, notificationService, calendarService),
         ),
         ChangeNotifierProvider(
           create: (_) => PeptideProvider(peptideRepository),
@@ -78,7 +82,7 @@ void main() async {
           create: (_) => ProgressProvider(protocolRepository),
         ),
         ChangeNotifierProvider(
-          create: (_) => SettingsProvider(settingsRepository),
+          create: (_) => SettingsProvider(settingsRepository, calendarService),
         ),
       ],
       child: const PepIoApp(),

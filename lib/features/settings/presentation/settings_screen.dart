@@ -108,17 +108,36 @@ class SettingsScreen extends StatelessWidget {
                     SwitchListTile(
                       secondary: const Icon(Icons.calendar_month_outlined),
                       title: const Text('Apple Calendar Sync'),
-                      subtitle: const Text('Sync doses to your calendar'),
+                      subtitle: const Text('Sync protocol doses to your calendar'),
                       value: settings.calendarSyncEnabled,
-                      onChanged: (value) =>
-                          settings.setCalendarSync(value),
+                      onChanged: (value) async {
+                        await settings.setCalendarSync(value);
+                        if (settings.error != null) {
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(settings.error!),
+                                backgroundColor: AppColors.error,
+                              ),
+                            );
+                            settings.clearError();
+                          }
+                        }
+                      },
                     ),
                     if (settings.calendarSyncEnabled) ...[
                       const Divider(height: 1),
                       ListTile(
                         leading: const SizedBox(width: 24),
                         title: const Text('Calendar'),
-                        subtitle: Text(settings.selectedCalendar ?? 'Select a calendar'),
+                        subtitle: Text(
+                          settings.selectedCalendarName ?? 'Select a calendar',
+                          style: TextStyle(
+                            color: settings.selectedCalendarName == null
+                                ? AppColors.mediumGray
+                                : null,
+                          ),
+                        ),
                         trailing: const Icon(Icons.chevron_right),
                         onTap: () => _showCalendarPicker(context, settings),
                       ),
@@ -393,10 +412,116 @@ class SettingsScreen extends StatelessWidget {
     }
   }
 
-  void _showCalendarPicker(BuildContext context, SettingsProvider settings) {
-    // Would show calendar selection from device_calendar
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Calendar selection coming soon')),
+  void _showCalendarPicker(BuildContext context, SettingsProvider settings) async {
+    // Ensure calendars are loaded
+    if (settings.availableCalendars.isEmpty) {
+      await settings.loadAvailableCalendars();
+    }
+
+    if (!context.mounted) return;
+
+    if (settings.availableCalendars.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No calendars available. Please check calendar permissions.'),
+        ),
+      );
+      return;
+    }
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.5,
+        minChildSize: 0.3,
+        maxChildSize: 0.8,
+        expand: false,
+        builder: (context, scrollController) {
+          return Column(
+            children: [
+              // Handle
+              Container(
+                margin: const EdgeInsets.only(top: AppSpacing.s),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.lightGray,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.all(AppSpacing.m),
+                child: Row(
+                  children: [
+                    Text('Select Calendar', style: AppTypography.headline),
+                    const Spacer(),
+                    IconButton(
+                      icon: const Icon(Icons.close),
+                      onPressed: () => Navigator.pop(context),
+                    ),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: settings.availableCalendars.length,
+                  itemBuilder: (context, index) {
+                    final calendar = settings.availableCalendars[index];
+                    final isSelected = calendar.id == settings.selectedCalendar;
+                    
+                    // Get calendar color
+                    Color calendarColor = AppColors.primaryBlue;
+                    if (calendar.color != null) {
+                      calendarColor = Color(calendar.color!);
+                    }
+                    
+                    return ListTile(
+                      leading: Container(
+                        width: 24,
+                        height: 24,
+                        decoration: BoxDecoration(
+                          color: calendarColor,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                      title: Text(calendar.name ?? 'Unknown'),
+                      subtitle: calendar.accountName != null
+                          ? Text(
+                              calendar.accountName!,
+                              style: AppTypography.caption1.copyWith(
+                                color: AppColors.mediumGray,
+                              ),
+                            )
+                          : null,
+                      trailing: isSelected
+                          ? Icon(Icons.check_circle, color: AppColors.primaryBlue)
+                          : null,
+                      onTap: () {
+                        settings.selectCalendar(calendar);
+                        Navigator.pop(context);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              'Calendar "${calendar.name}" selected for syncing',
+                            ),
+                            backgroundColor: AppColors.green,
+                          ),
+                        );
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
