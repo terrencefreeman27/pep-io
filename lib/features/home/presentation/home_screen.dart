@@ -1,6 +1,10 @@
+import 'dart:convert';
+import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../../../core/navigation/app_router.dart';
+import '../../../core/services/storage_service.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
@@ -31,12 +35,16 @@ class _HomeScreenState extends State<HomeScreen> {
     return 'Good evening';
   }
 
+  Future<void> _handleRefresh() async {
+    await context.read<ProtocolProvider>().loadProtocols();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => context.read<ProtocolProvider>().loadProtocols(),
+          onRefresh: _handleRefresh,
           child: CustomScrollView(
             slivers: [
               // Header
@@ -59,9 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _buildQuickActions(context),
               ),
               
-              // Library Card
+              // Resume Draft Card
               SliverToBoxAdapter(
-                child: _buildLibraryCard(context),
+                child: _buildResumeDraftCard(context),
               ),
               
               // Bottom padding
@@ -305,69 +313,169 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildLibraryCard(BuildContext context) {
+  Widget _buildResumeDraftCard(BuildContext context) {
+    final storage = context.read<StorageService>();
+    
+    if (!storage.hasDraftProtocol) {
+      return const SizedBox.shrink();
+    }
+    
+    // Parse draft to get peptide name for display
+    String draftPeptideName = 'Unnamed Protocol';
+    final draftJson = storage.draftProtocol;
+    if (draftJson != null) {
+      try {
+        final draft = jsonDecode(draftJson) as Map<String, dynamic>;
+        final peptideName = draft['peptideName'] as String?;
+        if (peptideName != null && peptideName.isNotEmpty) {
+          draftPeptideName = peptideName;
+        }
+      } catch (e) {
+        // Ignore parse errors
+      }
+    }
+    
+    // Format timestamp
+    String timeAgo = '';
+    final timestamp = storage.draftProtocolTimestamp;
+    if (timestamp != null) {
+      final diff = DateTime.now().difference(timestamp);
+      if (diff.inMinutes < 60) {
+        timeAgo = '${diff.inMinutes}m ago';
+      } else if (diff.inHours < 24) {
+        timeAgo = '${diff.inHours}h ago';
+      } else {
+        timeAgo = '${diff.inDays}d ago';
+      }
+    }
+    
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.m),
-      child: InkWell(
-        onTap: () => Navigator.pushNamed(context, AppRoutes.library),
-        borderRadius: AppRadius.mediumRadius,
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.m),
-          decoration: BoxDecoration(
-            borderRadius: AppRadius.mediumRadius,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                AppColors.teal.withOpacity(0.1),
-                AppColors.teal.withOpacity(0.05),
-              ],
-            ),
-            border: Border.all(color: AppColors.teal.withOpacity(0.3)),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: AppColors.teal.withOpacity(0.2),
-                ),
-                child: Icon(
-                  Icons.menu_book_outlined,
-                  color: AppColors.teal,
-                ),
-              ),
-              const SizedBox(width: AppSpacing.m),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Peptide Library',
-                      style: AppTypography.headline,
-                    ),
-                    Text(
-                      'Explore 60+ peptides',
-                      style: AppTypography.footnote.copyWith(
-                        color: AppColors.mediumGray,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: AppColors.mediumGray,
-              ),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.m),
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.mediumRadius,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.orange.withOpacity(0.12),
+              AppColors.orange.withOpacity(0.04),
             ],
           ),
+          border: Border.all(
+            color: AppColors.orange.withOpacity(0.3),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Icon
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.orange.withOpacity(0.15),
+              ),
+              child: const Icon(
+                Icons.edit_note_rounded,
+                color: AppColors.orange,
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: AppSpacing.m),
+            
+            // Text content
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Unfinished Protocol',
+                    style: AppTypography.headline.copyWith(
+                      color: AppColors.orange,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    '$draftPeptideName • $timeAgo',
+                    style: AppTypography.caption1.copyWith(
+                      color: AppColors.mediumGray,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            
+            // Actions
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Discard button
+                IconButton(
+                  onPressed: () async {
+                    final confirm = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Discard Draft?'),
+                        content: const Text('Are you sure you want to discard this unfinished protocol?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(context, true),
+                            child: Text(
+                              'Discard',
+                              style: TextStyle(color: AppColors.error),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                    
+                    if (confirm == true) {
+                      await storage.clearDraftProtocol();
+                      if (context.mounted) {
+                        setState(() {});
+                      }
+                    }
+                  },
+                  icon: Icon(
+                    Icons.delete_outline,
+                    color: AppColors.mediumGray,
+                    size: 22,
+                  ),
+                  tooltip: 'Discard draft',
+                ),
+                
+                // Resume button
+                FilledButton.icon(
+                  onPressed: () {
+                    Navigator.pushNamed(context, AppRoutes.protocolCreate).then((_) {
+                      // Refresh when returning to check if draft was cleared
+                      setState(() {});
+                    });
+                  },
+                  icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                  label: const Text('Resume'),
+                  style: FilledButton.styleFrom(
+                    backgroundColor: AppColors.orange,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.m,
+                      vertical: AppSpacing.xs,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
   }
+
 }
 
 class _MetricCard extends StatelessWidget {
@@ -438,7 +546,7 @@ class _MetricCard extends StatelessWidget {
   }
 }
 
-class _DoseCard extends StatelessWidget {
+class _DoseCard extends StatefulWidget {
   final Dose dose;
   final dynamic protocol;
   final VoidCallback onMarkTaken;
@@ -450,10 +558,75 @@ class _DoseCard extends StatelessWidget {
   });
 
   @override
+  State<_DoseCard> createState() => _DoseCardState();
+}
+
+class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixin {
+  bool _showCelebration = false;
+  bool _justTaken = false;
+  late AnimationController _animationController;
+  final List<_ConfettiParticle> _particles = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 1000),
+      vsync: this,
+    );
+
+    // Generate confetti particles
+    final random = Random();
+    for (int i = 0; i < 12; i++) {
+      _particles.add(_ConfettiParticle(
+        angle: (i / 12) * 2 * pi,
+        speed: 60 + random.nextDouble() * 40,
+        color: [
+          AppColors.green,
+          AppColors.primaryBlue,
+          AppColors.yellow,
+          AppColors.purple,
+          AppColors.orange,
+        ][random.nextInt(5)],
+        size: 4 + random.nextDouble() * 4,
+      ));
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  void _handleTake() async {
+    // Haptic feedback
+    HapticFeedback.mediumImpact();
+    
+    setState(() {
+      _showCelebration = true;
+      _justTaken = true;
+    });
+    
+    _animationController.forward();
+    
+    // Call the actual take action
+    widget.onMarkTaken();
+    
+    // Wait for animation to complete
+    await Future.delayed(const Duration(milliseconds: 1000));
+    
+    if (mounted) {
+      setState(() => _showCelebration = false);
+      _animationController.reset();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final isOverdue = dose.isOverdue;
-    final isDueSoon = dose.isDueSoon;
-    final isTaken = dose.status == DoseStatus.taken;
+    final isOverdue = widget.dose.isOverdue;
+    final isDueSoon = widget.dose.isDueSoon;
+    final isTaken = widget.dose.status == DoseStatus.taken || _justTaken;
     
     Color statusColor = AppColors.mediumGray;
     String statusText = 'Upcoming';
@@ -473,83 +646,182 @@ class _DoseCard extends StatelessWidget {
       statusIcon = Icons.access_time;
     }
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: AppSpacing.s),
-      padding: const EdgeInsets.all(AppSpacing.m),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.mediumRadius,
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-        ),
-        boxShadow: AppShadows.level1,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: statusColor.withOpacity(0.1),
-            ),
-            child: Icon(statusIcon, color: statusColor),
-          ),
-          const SizedBox(width: AppSpacing.m),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  protocol.peptideName,
-                  style: AppTypography.headline,
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        // Simple scale animation using sin for bounce effect
+        final progress = _animationController.value;
+        final scaleValue = _showCelebration 
+            ? 1.0 + (sin(progress * pi) * 0.05) 
+            : 1.0;
+        final checkScale = _showCelebration 
+            ? Curves.elasticOut.transform(progress.clamp(0.0, 1.0))
+            : 1.0;
+            
+        return Transform.scale(
+          scale: scaleValue,
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              // Main card
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                margin: const EdgeInsets.only(bottom: AppSpacing.s),
+                padding: const EdgeInsets.all(AppSpacing.m),
+                decoration: BoxDecoration(
+                  borderRadius: AppRadius.mediumRadius,
+                  color: _showCelebration 
+                      ? AppColors.green.withOpacity(0.08)
+                      : Theme.of(context).colorScheme.surface,
+                  border: Border.all(
+                    color: _showCelebration 
+                        ? AppColors.green
+                        : isTaken
+                            ? AppColors.green.withOpacity(0.3)
+                            : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    width: _showCelebration ? 2 : 1,
+                  ),
+                  boxShadow: _showCelebration 
+                      ? [
+                          BoxShadow(
+                            color: AppColors.green.withOpacity(0.3),
+                            blurRadius: 12,
+                            spreadRadius: 2,
+                          )
+                        ]
+                      : AppShadows.level1,
                 ),
-                Row(
+                child: Row(
                   children: [
-                    Text(
-                      protocol.formattedDosage,
-                      style: AppTypography.caption1.copyWith(
-                        color: AppColors.mediumGray,
+                    // Status icon with celebration animation
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: statusColor.withOpacity(0.1),
+                      ),
+                      child: _showCelebration
+                          ? Transform.scale(
+                              scale: checkScale.clamp(0.0, 1.5),
+                              child: const Icon(Icons.check_circle, color: AppColors.green, size: 28),
+                            )
+                          : Icon(statusIcon, color: statusColor),
+                    ),
+                    const SizedBox(width: AppSpacing.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            widget.protocol.peptideName,
+                            style: AppTypography.headline,
+                          ),
+                          Row(
+                            children: [
+                              Text(
+                                widget.protocol.formattedDosage,
+                                style: AppTypography.caption1.copyWith(
+                                  color: AppColors.mediumGray,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.s),
+                              Text(
+                                '• ${widget.dose.scheduledTime}',
+                                style: AppTypography.caption1.copyWith(
+                                  color: AppColors.mediumGray,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(width: AppSpacing.s),
-                    Text(
-                      '• ${dose.scheduledTime}',
-                      style: AppTypography.caption1.copyWith(
-                        color: AppColors.mediumGray,
+                    if (!isTaken)
+                      TextButton(
+                        onPressed: _handleTake,
+                        child: const Text('Take'),
+                      )
+                    else
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.s,
+                          vertical: AppSpacing.xxs,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.green.withOpacity(0.1),
+                          borderRadius: AppRadius.smallRadius,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_showCelebration)
+                              const Padding(
+                                padding: EdgeInsets.only(right: 4),
+                                child: Icon(Icons.celebration, color: AppColors.green, size: 14),
+                              ),
+                            Text(
+                              _showCelebration ? 'Nice!' : statusText,
+                              style: AppTypography.caption1.copyWith(
+                                color: AppColors.green,
+                                fontWeight: _showCelebration ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 ),
-              ],
-            ),
+              ),
+              
+              // Confetti particles
+              if (_showCelebration)
+                ..._particles.map((particle) {
+                  final distance = particle.speed * progress;
+                  final opacity = (1 - progress).clamp(0.0, 1.0);
+                  final dx = cos(particle.angle) * distance;
+                  final dy = sin(particle.angle) * distance - (progress * 30);
+                  
+                  return Positioned(
+                    left: 24 + dx,
+                    top: 24 + dy,
+                    child: Opacity(
+                      opacity: opacity,
+                      child: Transform.rotate(
+                        angle: progress * 3 * pi,
+                        child: Container(
+                          width: particle.size,
+                          height: particle.size,
+                          decoration: BoxDecoration(
+                            color: particle.color,
+                            borderRadius: BorderRadius.circular(particle.size / 4),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+            ],
           ),
-          if (!isTaken)
-            TextButton(
-              onPressed: onMarkTaken,
-              child: const Text('Take'),
-            )
-          else
-            Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.s,
-                vertical: AppSpacing.xxs,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.green.withOpacity(0.1),
-                borderRadius: AppRadius.smallRadius,
-              ),
-              child: Text(
-                statusText,
-                style: AppTypography.caption1.copyWith(
-                  color: AppColors.green,
-                ),
-              ),
-            ),
-        ],
-      ),
+        );
+      },
     );
   }
+}
+
+class _ConfettiParticle {
+  final double angle;
+  final double speed;
+  final Color color;
+  final double size;
+
+  _ConfettiParticle({
+    required this.angle,
+    required this.speed,
+    required this.color,
+    required this.size,
+  });
 }
 
 class _QuickActionButton extends StatelessWidget {

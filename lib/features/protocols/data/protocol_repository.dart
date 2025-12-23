@@ -371,15 +371,19 @@ class ProtocolRepository {
   Future<int> calculateCurrentStreak() async {
     var streak = 0;
     var checkDate = DateTime.now();
+    var daysChecked = 0;
+    const maxDaysToCheck = 365;
     
-    while (true) {
+    while (daysChecked < maxDaysToCheck) {
       final dayDoses = await getDosesInRange(
         DateTime(checkDate.year, checkDate.month, checkDate.day),
         DateTime(checkDate.year, checkDate.month, checkDate.day, 23, 59, 59),
       );
       
+      daysChecked++;
+      
       if (dayDoses.isEmpty) {
-        // No doses scheduled, continue streak
+        // No doses scheduled, continue checking but limit iterations
         checkDate = checkDate.subtract(const Duration(days: 1));
         continue;
       }
@@ -393,7 +397,7 @@ class ProtocolRepository {
         break;
       }
       
-      // Limit check to 365 days
+      // Limit streak to 365 days
       if (streak >= 365) break;
     }
     

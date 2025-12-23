@@ -23,6 +23,8 @@ class StorageService {
   static const String keyMissedDoseDelay = 'missed_dose_delay';
   static const String keyLastReviewPrompt = 'last_review_prompt';
   static const String keyReviewPromptCount = 'review_prompt_count';
+  static const String keyDraftProtocol = 'draft_protocol';
+  static const String keyDraftProtocolTimestamp = 'draft_protocol_timestamp';
 
   // String operations
   Future<bool> setString(String key, String value) async {
@@ -142,5 +144,29 @@ class StorageService {
 
   int get reviewPromptCount => getInt(keyReviewPromptCount) ?? 0;
   Future<void> incrementReviewPromptCount() => setInt(keyReviewPromptCount, reviewPromptCount + 1);
+
+  // Draft Protocol
+  String? get draftProtocol => getString(keyDraftProtocol);
+  Future<void> setDraftProtocol(String? value) async {
+    if (value != null) {
+      await setString(keyDraftProtocol, value);
+      await setInt(keyDraftProtocolTimestamp, DateTime.now().millisecondsSinceEpoch);
+    } else {
+      await remove(keyDraftProtocol);
+      await remove(keyDraftProtocolTimestamp);
+    }
+  }
+
+  DateTime? get draftProtocolTimestamp {
+    final timestamp = getInt(keyDraftProtocolTimestamp);
+    return timestamp != null ? DateTime.fromMillisecondsSinceEpoch(timestamp) : null;
+  }
+
+  bool get hasDraftProtocol => draftProtocol != null;
+
+  Future<void> clearDraftProtocol() async {
+    await remove(keyDraftProtocol);
+    await remove(keyDraftProtocolTimestamp);
+  }
 }
 

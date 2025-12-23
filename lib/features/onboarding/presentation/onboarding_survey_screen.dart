@@ -220,17 +220,9 @@ class _ProfileStep extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: AppSpacing.m),
-                    Expanded(
-                      child: SegmentedButton<String>(
-                        segments: const [
-                          ButtonSegment(value: 'lbs', label: Text('lbs')),
-                          ButtonSegment(value: 'kg', label: Text('kg')),
-                        ],
-                        selected: {provider.weightUnit},
-                        onSelectionChanged: (value) {
-                          provider.setWeightUnit(value.first);
-                        },
-                      ),
+                    _WeightUnitToggle(
+                      selectedUnit: provider.weightUnit,
+                      onUnitChanged: provider.setWeightUnit,
                     ),
                   ],
                 ),
@@ -482,3 +474,62 @@ class _SelectionCard extends StatelessWidget {
   }
 }
 
+/// Custom weight unit toggle that doesn't rotate text
+class _WeightUnitToggle extends StatelessWidget {
+  final String selectedUnit;
+  final ValueChanged<String> onUnitChanged;
+
+  const _WeightUnitToggle({
+    required this.selectedUnit,
+    required this.onUnitChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: AppRadius.mediumRadius,
+        border: Border.all(color: AppColors.lightGray),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildOption('lbs'),
+          _buildOption('kg'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOption(String unit) {
+    final isSelected = selectedUnit == unit;
+    return GestureDetector(
+      onTap: () => onUnitChanged(unit),
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.m,
+          vertical: AppSpacing.s,
+        ),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.purple : Colors.transparent,
+          borderRadius: unit == 'lbs'
+              ? const BorderRadius.only(
+                  topLeft: Radius.circular(8),
+                  bottomLeft: Radius.circular(8),
+                )
+              : const BorderRadius.only(
+                  topRight: Radius.circular(8),
+                  bottomRight: Radius.circular(8),
+                ),
+        ),
+        child: Text(
+          unit,
+          style: AppTypography.body.copyWith(
+            color: isSelected ? Colors.white : AppColors.mediumGray,
+            fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          ),
+        ),
+      ),
+    );
+  }
+}

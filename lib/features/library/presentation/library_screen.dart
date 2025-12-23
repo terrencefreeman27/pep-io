@@ -19,18 +19,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
   String? _selectedCategory;
   bool _showFavoritesOnly = false;
 
-  final List<String> _categories = [
-    'All',
-    'Growth Hormone',
-    'Metabolic',
-    'Recovery',
-    'Cognitive',
-    'Sexual Health',
-    'Anti-Aging',
-    'Immune',
-    'Other',
-  ];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -83,21 +71,39 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-                  itemCount: _categories.length,
+                  itemCount: PeptideCategory.all.length + 1, // +1 for "All"
                   itemBuilder: (context, index) {
-                    final category = _categories[index];
-                    final isSelected = _selectedCategory == category ||
-                        (category == 'All' && _selectedCategory == null);
+                    if (index == 0) {
+                      // "All" option
+                      final isSelected = _selectedCategory == null;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: AppSpacing.xs),
+                        child: FilterChip(
+                          label: const Text('All'),
+                          selected: isSelected,
+                          onSelected: (selected) {
+                            setState(() {
+                              _selectedCategory = null;
+                            });
+                          },
+                          selectedColor: AppColors.primaryBlue.withOpacity(0.1),
+                          checkmarkColor: AppColors.primaryBlue,
+                        ),
+                      );
+                    }
+                    
+                    final category = PeptideCategory.all[index - 1];
+                    final isSelected = _selectedCategory == category;
+                    final shortName = PeptideCategory.getShortName(category);
 
                     return Padding(
                       padding: const EdgeInsets.only(right: AppSpacing.xs),
                       child: FilterChip(
-                        label: Text(category),
+                        label: Text(shortName),
                         selected: isSelected,
                         onSelected: (selected) {
                           setState(() {
-                            _selectedCategory =
-                                category == 'All' ? null : category;
+                            _selectedCategory = category;
                           });
                         },
                         selectedColor: AppColors.primaryBlue.withOpacity(0.1),

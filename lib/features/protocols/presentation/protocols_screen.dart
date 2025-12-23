@@ -18,6 +18,15 @@ class _ProtocolsScreenState extends State<ProtocolsScreen> {
   String _searchQuery = '';
 
   @override
+  void initState() {
+    super.initState();
+    // Ensure protocols are loaded when this screen is viewed
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProtocolProvider>().loadProtocols();
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -33,6 +42,11 @@ class _ProtocolsScreenState extends State<ProtocolsScreen> {
         builder: (context, provider, _) {
           if (provider.isLoading) {
             return const Center(child: CircularProgressIndicator());
+          }
+
+          // Show clean empty state for first-time users (no protocols at all)
+          if (provider.protocols.isEmpty) {
+            return _buildFirstTimeEmptyState(context);
           }
 
           final protocols = _filterProtocols(provider.protocols);
@@ -83,7 +97,7 @@ class _ProtocolsScreenState extends State<ProtocolsScreen> {
               // Protocols list
               Expanded(
                 child: protocols.isEmpty
-                    ? _buildEmptyState(context)
+                    ? _buildSearchEmptyState()
                     : ListView.builder(
                         padding: const EdgeInsets.all(AppSpacing.m),
                         itemCount: protocols.length,
@@ -118,31 +132,81 @@ class _ProtocolsScreenState extends State<ProtocolsScreen> {
     }).toList();
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  /// Empty state for first-time users with no protocols
+  Widget _buildFirstTimeEmptyState(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                color: AppColors.primaryBlue.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.science_outlined,
+                size: 60,
+                color: AppColors.primaryBlue,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.l),
+            Text(
+              'No Protocols Yet',
+              style: AppTypography.title2,
+            ),
+            const SizedBox(height: AppSpacing.s),
+            Text(
+              'Create your first protocol to start tracking\nyour peptide regimen',
+              textAlign: TextAlign.center,
+              style: AppTypography.body.copyWith(color: AppColors.mediumGray),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () => Navigator.pushNamed(context, AppRoutes.protocolCreate),
+                icon: const Icon(Icons.add),
+                label: const Text('Add Protocol'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.m),
+            TextButton(
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.library),
+              child: const Text('Browse Peptide Library'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Empty state when search returns no results
+  Widget _buildSearchEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.description_outlined,
-            size: 80,
+            Icons.search_off,
+            size: 64,
             color: AppColors.mediumGray,
           ),
           const SizedBox(height: AppSpacing.m),
           Text(
-            'No Protocols Yet',
-            style: AppTypography.title3.copyWith(color: AppColors.mediumGray),
+            'No Results Found',
+            style: AppTypography.headline.copyWith(color: AppColors.mediumGray),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
-            'Add your first protocol to start tracking',
+            'Try adjusting your search',
             style: AppTypography.body.copyWith(color: AppColors.mediumGray),
-          ),
-          const SizedBox(height: AppSpacing.l),
-          ElevatedButton.icon(
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.protocolCreate),
-            icon: const Icon(Icons.add),
-            label: const Text('Create Protocol'),
           ),
         ],
       ),

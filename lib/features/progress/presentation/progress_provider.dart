@@ -12,6 +12,7 @@ class ProgressProvider extends ChangeNotifier {
   DateRange _dateRange = DateRange.last30Days;
   String? _selectedProtocolId;
   bool _isLoading = false;
+  bool _hasLoaded = false;
   String? _error;
 
   // Calculated metrics
@@ -32,6 +33,8 @@ class ProgressProvider extends ChangeNotifier {
   DateRange get dateRange => _dateRange;
   String? get selectedProtocolId => _selectedProtocolId;
   bool get isLoading => _isLoading;
+  bool get hasLoaded => _hasLoaded;
+  bool get hasData => _doses.isNotEmpty || _protocols.isNotEmpty;
   String? get error => _error;
   double get overallAdherence => _overallAdherence;
   int get totalDosesTaken => _totalDosesTaken;
@@ -64,6 +67,7 @@ class ProgressProvider extends ChangeNotifier {
       _error = e.toString();
     } finally {
       _isLoading = false;
+      _hasLoaded = true;
       notifyListeners();
     }
   }

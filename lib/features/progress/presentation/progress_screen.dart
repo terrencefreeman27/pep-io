@@ -17,14 +17,25 @@ class ProgressScreen extends StatefulWidget {
 class _ProgressScreenState extends State<ProgressScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-  String _selectedTimeRange = 'Week';
+  DateRange _selectedDateRange = DateRange.last7Days;
 
-  final List<String> _timeRanges = ['Week', 'Month', '3 Months', 'Year', 'All'];
+  final Map<String, DateRange> _timeRangeMap = {
+    'Week': DateRange.last7Days,
+    'Month': DateRange.last30Days,
+    '3 Months': DateRange.last90Days,
+    'All': DateRange.allTime,
+  };
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    
+    // Load progress data when screen initializes
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<ProgressProvider>().loadProgress();
+      context.read<ProtocolProvider>().loadProtocols();
+    });
   }
 
   @override
@@ -55,15 +66,17 @@ class _ProgressScreenState extends State<ProgressScreen>
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: _timeRanges
-                    .map((range) => Padding(
+                children: _timeRangeMap.entries
+                    .map((entry) => Padding(
                           padding: const EdgeInsets.only(right: AppSpacing.xs),
                           child: ChoiceChip(
-                            label: Text(range),
-                            selected: _selectedTimeRange == range,
+                            label: Text(entry.key),
+                            selected: _selectedDateRange == entry.value,
                             onSelected: (selected) {
                               if (selected) {
-                                setState(() => _selectedTimeRange = range);
+                                setState(() => _selectedDateRange = entry.value);
+                                // Update the progress provider with the new date range
+                                context.read<ProgressProvider>().setDateRange(entry.value);
                               }
                             },
                             selectedColor: AppColors.primaryBlue.withOpacity(0.1),
@@ -79,9 +92,9 @@ class _ProgressScreenState extends State<ProgressScreen>
             child: TabBarView(
               controller: _tabController,
               children: [
-                _OverviewTab(timeRange: _selectedTimeRange),
-                _AdherenceTab(timeRange: _selectedTimeRange),
-                _InsightsTab(timeRange: _selectedTimeRange),
+                _OverviewTab(dateRange: _selectedDateRange),
+                _AdherenceTab(dateRange: _selectedDateRange),
+                const _InsightsTab(),
               ],
             ),
           ),
@@ -92,16 +105,15 @@ class _ProgressScreenState extends State<ProgressScreen>
 }
 
 class _OverviewTab extends StatelessWidget {
-  final String timeRange;
+  final DateRange dateRange;
 
-  const _OverviewTab({required this.timeRange});
+  const _OverviewTab({required this.dateRange});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ProtocolProvider>(
-      builder: (context, provider, _) {
-        final stats = _calculateStats(provider);
-
+    return Consumer2<ProtocolProvider, ProgressProvider>(
+      builder: (context, protocolProvider, progressProvider, _) {
+        // Show content immediately - empty states will display if no data
         return ListView(
           padding: const EdgeInsets.all(AppSpacing.m),
           children: [
@@ -112,7 +124,7 @@ class _OverviewTab extends StatelessWidget {
                   child: _StatCard(
                     icon: Icons.check_circle,
                     title: 'Total Doses',
-                    value: '${stats['totalCompleted']}',
+                    value: '${progressProvider.totalDosesTaken}',
                     subtitle: 'completed',
                     color: AppColors.green,
                   ),
@@ -122,7 +134,7 @@ class _OverviewTab extends StatelessWidget {
                   child: _StatCard(
                     icon: Icons.percent,
                     title: 'Adherence',
-                    value: '${stats['adherence']}%',
+                    value: '${progressProvider.overallAdherence.round()}%',
                     subtitle: 'on time',
                     color: AppColors.primaryBlue,
                   ),
@@ -138,7 +150,7 @@ class _OverviewTab extends StatelessWidget {
                   child: _StatCard(
                     icon: Icons.local_fire_department,
                     title: 'Current Streak',
-                    value: '${stats['streak']}',
+                    value: '${progressProvider.currentStreak}',
                     subtitle: 'days',
                     color: AppColors.yellow,
                   ),
@@ -148,7 +160,7 @@ class _OverviewTab extends StatelessWidget {
                   child: _StatCard(
                     icon: Icons.description,
                     title: 'Active',
-                    value: '${stats['activeProtocols']}',
+                    value: '${protocolProvider.activeCount}',
                     subtitle: 'protocols',
                     color: AppColors.purple,
                   ),
@@ -169,7 +181,7 @@ class _OverviewTab extends StatelessWidget {
                     const SizedBox(height: AppSpacing.m),
                     SizedBox(
                       height: 150,
-                      child: _WeeklyActivityChart(provider: provider),
+                      child: _WeeklyActivityChart(progressProvider: progressProvider),
                     ),
                   ],
                 ),
@@ -187,14 +199,24 @@ class _OverviewTab extends StatelessWidget {
                   children: [
                     Text('Protocol Progress', style: AppTypography.headline),
                     const SizedBox(height: AppSpacing.m),
-                    ...provider.protocols
-                        .where((p) => p.active)
+                    if (progressProvider.protocols.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.all(AppSpacing.m),
+                        child: Text(
+                          'No active protocols',
+                          style: AppTypography.body.copyWith(
+                            color: AppColors.mediumGray,
+                          ),
+                        ),
+                      )
+                    else
+                      ...progressProvider.protocols
                         .take(5)
                         .map((protocol) {
-                      final progress = _getProtocolProgress(provider, protocol.id);
+                        final adherence = progressProvider.protocolAdherence[protocol.id] ?? 0.0;
                       return _ProtocolProgressItem(
                         name: protocol.peptideName,
-                        progress: progress,
+                          progress: adherence / 100,
                         color: AppColors.getCategoryColor(protocol.peptideName),
                       );
                     }),
@@ -207,65 +229,18 @@ class _OverviewTab extends StatelessWidget {
       },
     );
   }
-
-  Map<String, int> _calculateStats(ProtocolProvider provider) {
-    final doses = provider.allDoses;
-    final completed = doses.where((d) => d.status == DoseStatus.taken).length;
-    final total = doses.where((d) =>
-        d.status == DoseStatus.taken || d.status == DoseStatus.skipped).length;
-
-    return {
-      'totalCompleted': completed,
-      'adherence': total > 0 ? ((completed / total) * 100).round() : 0,
-      'streak': _calculateStreak(doses),
-      'activeProtocols': provider.protocols.where((p) => p.active).length,
-    };
-  }
-
-  int _calculateStreak(List<Dose> doses) {
-    // Simple streak calculation
-    int streak = 0;
-    var currentDate = DateTime.now();
-
-    for (int i = 0; i < 365; i++) {
-      final dayDoses = doses.where((d) =>
-          d.scheduledDate.year == currentDate.year &&
-          d.scheduledDate.month == currentDate.month &&
-          d.scheduledDate.day == currentDate.day);
-
-      if (dayDoses.isEmpty) {
-        currentDate = currentDate.subtract(const Duration(days: 1));
-        continue;
-      }
-
-      final allCompleted = dayDoses.every((d) => d.status == DoseStatus.taken);
-      if (allCompleted) {
-        streak++;
-        currentDate = currentDate.subtract(const Duration(days: 1));
-      } else {
-        break;
-      }
-    }
-
-    return streak;
-  }
-
-  double _getProtocolProgress(ProtocolProvider provider, String protocolId) {
-    final doses = provider.getDosesForProtocol(protocolId);
-    final completed = doses.where((d) => d.status == DoseStatus.taken).length;
-    return doses.isNotEmpty ? completed / doses.length : 0;
-  }
 }
 
 class _AdherenceTab extends StatelessWidget {
-  final String timeRange;
+  final DateRange dateRange;
 
-  const _AdherenceTab({required this.timeRange});
+  const _AdherenceTab({required this.dateRange});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ProtocolProvider>(
-      builder: (context, provider, _) {
+    return Consumer2<ProtocolProvider, ProgressProvider>(
+      builder: (context, protocolProvider, progressProvider, _) {
+        // Show content immediately - empty states will display if no data
         return ListView(
           padding: const EdgeInsets.all(AppSpacing.m),
           children: [
@@ -280,7 +255,7 @@ class _AdherenceTab extends StatelessWidget {
                     const SizedBox(height: AppSpacing.m),
                     SizedBox(
                       height: 200,
-                      child: _AdherenceTrendChart(provider: provider),
+                      child: _AdherenceTrendChart(progressProvider: progressProvider),
                     ),
                   ],
                 ),
@@ -298,7 +273,7 @@ class _AdherenceTab extends StatelessWidget {
                   children: [
                     Text('Dose Distribution', style: AppTypography.headline),
                     const SizedBox(height: AppSpacing.m),
-                    _TimeDistributionChart(),
+                    _TimeDistributionChart(progressProvider: progressProvider),
                   ],
                 ),
               ),
@@ -321,7 +296,10 @@ class _AdherenceTab extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: AppSpacing.m),
-                    _MissedDosesSummary(provider: provider),
+                    _MissedDosesSummary(
+                      progressProvider: progressProvider,
+                      protocolProvider: protocolProvider,
+                    ),
                   ],
                 ),
               ),
@@ -334,14 +312,13 @@ class _AdherenceTab extends StatelessWidget {
 }
 
 class _InsightsTab extends StatelessWidget {
-  final String timeRange;
-
-  const _InsightsTab({required this.timeRange});
+  const _InsightsTab();
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ProgressProvider>(
       builder: (context, provider, _) {
+        // Show content immediately - empty state will display if no insights
         final insights = provider.getInsights();
 
         if (insights.isEmpty) {
@@ -447,43 +424,104 @@ class _StatCard extends StatelessWidget {
 }
 
 class _WeeklyActivityChart extends StatelessWidget {
-  final ProtocolProvider provider;
+  final ProgressProvider progressProvider;
 
-  const _WeeklyActivityChart({required this.provider});
+  const _WeeklyActivityChart({required this.progressProvider});
 
   @override
   Widget build(BuildContext context) {
-    final weekData = _getWeekData();
+    final weekData = progressProvider.getWeeklyAdherence();
+
+    // Check if all days have zero doses (no data)
+    final hasAnyDoses = weekData.any((d) => d.totalDoses > 0);
+    
+    if (weekData.isEmpty || !hasAnyDoses) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.bar_chart_outlined,
+              size: 48,
+              color: AppColors.mediumGray.withOpacity(0.5),
+            ),
+            const SizedBox(height: AppSpacing.s),
+            Text(
+              'No activity data yet',
+              style: AppTypography.body.copyWith(color: AppColors.mediumGray),
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              'Start a protocol to see your progress',
+              style: AppTypography.caption1.copyWith(color: AppColors.mediumGray),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // Find max doses for scaling
+    final maxDoses = weekData.map((d) => d.totalDoses).fold(1, (a, b) => a > b ? a : b);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: weekData.map((day) {
-        final maxHeight = 100.0;
-        final height = day['completed']! > 0
-            ? (day['completed']! / day['total']!) * maxHeight
+        const maxHeight = 100.0;
+        final height = day.totalDoses > 0
+            ? (day.dosesTaken / maxDoses) * maxHeight
             : 0.0;
+
+        // Determine color based on adherence
+        Color barColor;
+        if (day.totalDoses == 0) {
+          barColor = AppColors.lightGray;
+        } else if (day.adherence >= 100) {
+          barColor = AppColors.green;
+        } else if (day.adherence >= 50) {
+          barColor = AppColors.yellow;
+        } else if (day.dosesTaken > 0) {
+          barColor = AppColors.yellow.withOpacity(0.6);
+        } else {
+          barColor = AppColors.lightGray;
+        }
+
+        final dayName = _getDayAbbreviation(day.date.weekday);
 
         return Column(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
+            if (day.totalDoses > 0)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4),
+                child: Text(
+                  '${day.dosesTaken}/${day.totalDoses}',
+                  style: AppTypography.caption2.copyWith(
+                    color: AppColors.mediumGray,
+                    fontSize: 10,
+                  ),
+                ),
+              ),
             Container(
               width: 30,
               height: height.clamp(4.0, maxHeight),
               decoration: BoxDecoration(
-                color: day['completed'] == day['total']
-                    ? AppColors.green
-                    : day['completed']! > 0
-                        ? AppColors.yellow
-                        : AppColors.lightGray,
+                color: barColor,
                 borderRadius: AppRadius.smallRadius,
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              day['day'] as String,
+              dayName,
               style: AppTypography.caption2.copyWith(
-                color: AppColors.mediumGray,
+                color: day.date.day == DateTime.now().day &&
+                        day.date.month == DateTime.now().month
+                    ? AppColors.primaryBlue
+                    : AppColors.mediumGray,
+                fontWeight: day.date.day == DateTime.now().day &&
+                        day.date.month == DateTime.now().month
+                    ? FontWeight.bold
+                    : FontWeight.normal,
               ),
             ),
           ],
@@ -492,25 +530,9 @@ class _WeeklyActivityChart extends StatelessWidget {
     );
   }
 
-  List<Map<String, dynamic>> _getWeekData() {
-    final days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    final now = DateTime.now();
-    final weekStart = now.subtract(Duration(days: now.weekday - 1));
-
-    return List.generate(7, (index) {
-      final date = weekStart.add(Duration(days: index));
-      final dayDoses = provider.allDoses.where((d) =>
-          d.scheduledDate.year == date.year &&
-          d.scheduledDate.month == date.month &&
-          d.scheduledDate.day == date.day);
-
-      return {
-        'day': days[index],
-        'total': dayDoses.length,
-        'completed':
-            dayDoses.where((d) => d.status == DoseStatus.taken).length,
-      };
-    });
+  String _getDayAbbreviation(int weekday) {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days[weekday - 1];
   }
 }
 
@@ -556,13 +578,15 @@ class _ProtocolProgressItem extends StatelessWidget {
 }
 
 class _AdherenceTrendChart extends StatelessWidget {
-  final ProtocolProvider provider;
+  final ProgressProvider progressProvider;
 
-  const _AdherenceTrendChart({required this.provider});
+  const _AdherenceTrendChart({required this.progressProvider});
 
   @override
   Widget build(BuildContext context) {
-    // Placeholder for actual chart
+    final weekData = progressProvider.getWeeklyAdherence();
+
+    if (weekData.isEmpty || weekData.every((d) => d.totalDoses == 0)) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -570,11 +594,18 @@ class _AdherenceTrendChart extends StatelessWidget {
           Icon(
             Icons.show_chart,
             size: 48,
-            color: AppColors.primaryBlue.withOpacity(0.5),
+              color: AppColors.mediumGray.withOpacity(0.5),
           ),
           const SizedBox(height: AppSpacing.s),
           Text(
-            'Adherence chart visualization',
+              'No adherence data yet',
+              style: AppTypography.body.copyWith(
+                color: AppColors.mediumGray,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xxs),
+            Text(
+              'Track doses to see trends',
             style: AppTypography.caption1.copyWith(
               color: AppColors.mediumGray,
             ),
@@ -582,33 +613,200 @@ class _AdherenceTrendChart extends StatelessWidget {
         ],
       ),
     );
+    }
+
+    // Build a simple line chart representation
+    return Column(
+      children: [
+        // Chart area
+        Expanded(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: weekData.map((day) {
+              const maxHeight = 140.0;
+              final height = day.totalDoses > 0
+                  ? (day.adherence / 100) * maxHeight
+                  : 0.0;
+
+              return Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Adherence percentage label
+                    if (day.totalDoses > 0)
+                      Text(
+                        '${day.adherence.round()}%',
+                        style: AppTypography.caption2.copyWith(
+                          color: _getAdherenceColor(day.adherence),
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    const SizedBox(height: 4),
+                    // Bar
+                    Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
+                      height: height.clamp(4.0, maxHeight),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.bottomCenter,
+                          end: Alignment.topCenter,
+                          colors: [
+                            _getAdherenceColor(day.adherence).withOpacity(0.7),
+                            _getAdherenceColor(day.adherence),
+                          ],
+                        ),
+                        borderRadius: AppRadius.smallRadius,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }).toList(),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        // Day labels
+        Row(
+          children: weekData.map((day) {
+            final isToday = day.date.day == DateTime.now().day &&
+                day.date.month == DateTime.now().month &&
+                day.date.year == DateTime.now().year;
+            return Expanded(
+              child: Text(
+                _formatDayLabel(day.date),
+                textAlign: TextAlign.center,
+                style: AppTypography.caption2.copyWith(
+                  color: isToday ? AppColors.primaryBlue : AppColors.mediumGray,
+                  fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Color _getAdherenceColor(double adherence) {
+    if (adherence >= 90) return AppColors.green;
+    if (adherence >= 70) return AppColors.yellow;
+    if (adherence >= 50) return Colors.orange;
+    return Colors.red.shade400;
+  }
+
+  String _formatDayLabel(DateTime date) {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days[date.weekday - 1];
   }
 }
 
 class _TimeDistributionChart extends StatelessWidget {
-  const _TimeDistributionChart();
+  final ProgressProvider progressProvider;
+
+  const _TimeDistributionChart({required this.progressProvider});
 
   @override
   Widget build(BuildContext context) {
-    final timeSlots = ['Morning', 'Afternoon', 'Evening', 'Night'];
-    final values = [45, 25, 20, 10];
+    // Calculate time slot distribution from hourly data
+    final hourlyDistribution = progressProvider.hourlyDistribution;
+    
+    if (hourlyDistribution.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.m),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.schedule,
+                size: 40,
+                color: AppColors.mediumGray.withOpacity(0.5),
+              ),
+              const SizedBox(height: AppSpacing.s),
+              Text(
+                'No dose timing data yet',
+                style: AppTypography.body.copyWith(color: AppColors.mediumGray),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // Aggregate into time slots
+    int morning = 0;   // 5 AM - 12 PM
+    int afternoon = 0; // 12 PM - 5 PM
+    int evening = 0;   // 5 PM - 9 PM
+    int night = 0;     // 9 PM - 5 AM
+
+    for (final entry in hourlyDistribution.entries) {
+      final hour = entry.key;
+      final count = entry.value;
+      
+      if (hour >= 5 && hour < 12) {
+        morning += count;
+      } else if (hour >= 12 && hour < 17) {
+        afternoon += count;
+      } else if (hour >= 17 && hour < 21) {
+        evening += count;
+      } else {
+        night += count;
+      }
+    }
+
+    final total = morning + afternoon + evening + night;
+    if (total == 0) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.m),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.schedule,
+                size: 40,
+                color: AppColors.mediumGray.withOpacity(0.5),
+              ),
+              const SizedBox(height: AppSpacing.s),
+              Text(
+                'No dose timing data yet',
+                style: AppTypography.body.copyWith(color: AppColors.mediumGray),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final timeSlots = [
+      {'name': 'Morning', 'count': morning, 'icon': Icons.wb_sunny_outlined},
+      {'name': 'Afternoon', 'count': afternoon, 'icon': Icons.wb_sunny},
+      {'name': 'Evening', 'count': evening, 'icon': Icons.nights_stay_outlined},
+      {'name': 'Night', 'count': night, 'icon': Icons.nights_stay},
+    ];
 
     return Column(
-      children: List.generate(timeSlots.length, (index) {
+      children: timeSlots.map((slot) {
+        final count = slot['count'] as int;
+        final percentage = (count / total * 100).round();
+        final icon = slot['icon'] as IconData;
+        
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.xxs),
           child: Row(
             children: [
+              Icon(icon, size: 18, color: AppColors.mediumGray),
+              const SizedBox(width: AppSpacing.xs),
               SizedBox(
                 width: 80,
                 child: Text(
-                  timeSlots[index],
+                  slot['name'] as String,
                   style: AppTypography.body,
                 ),
               ),
               Expanded(
                 child: LinearProgressIndicator(
-                  value: values[index] / 100,
+                  value: percentage / 100,
                   backgroundColor: AppColors.lightGray,
                   valueColor: AlwaysStoppedAnimation(AppColors.primaryBlue),
                   borderRadius: AppRadius.smallRadius,
@@ -616,9 +814,9 @@ class _TimeDistributionChart extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.s),
               SizedBox(
-                width: 40,
+                width: 50,
                 child: Text(
-                  '${values[index]}%',
+                  '$percentage% ($count)',
                   style: AppTypography.caption1,
                   textAlign: TextAlign.right,
                 ),
@@ -626,24 +824,31 @@ class _TimeDistributionChart extends StatelessWidget {
             ],
           ),
         );
-      }),
+      }).toList(),
     );
   }
 }
 
 class _MissedDosesSummary extends StatelessWidget {
-  final ProtocolProvider provider;
+  final ProgressProvider progressProvider;
+  final ProtocolProvider protocolProvider;
 
-  const _MissedDosesSummary({required this.provider});
+  const _MissedDosesSummary({
+    required this.progressProvider,
+    required this.protocolProvider,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final missedDoses = provider.allDoses
-        .where((d) => d.status == DoseStatus.skipped)
+    // Get missed doses from progressProvider's doses
+    final missedDoses = progressProvider.doses
+        .where((d) => d.status == DoseStatus.missed || d.status == DoseStatus.skipped)
         .take(5)
         .toList();
 
-    if (missedDoses.isEmpty) {
+    final missedCount = progressProvider.totalDosesMissed;
+
+    if (missedDoses.isEmpty && missedCount == 0) {
       return Container(
         padding: const EdgeInsets.all(AppSpacing.m),
         decoration: BoxDecoration(
@@ -654,9 +859,11 @@ class _MissedDosesSummary extends StatelessWidget {
           children: [
             Icon(Icons.celebration, color: AppColors.green),
             const SizedBox(width: AppSpacing.s),
-            Text(
+            Expanded(
+              child: Text(
               'No missed doses! Keep it up!',
               style: AppTypography.body.copyWith(color: AppColors.green),
+              ),
             ),
           ],
         ),
@@ -664,23 +871,60 @@ class _MissedDosesSummary extends StatelessWidget {
     }
 
     return Column(
-      children: missedDoses.map((dose) {
-        final protocol = provider.getProtocolById(dose.protocolId);
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (missedCount > 0)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.s),
+            child: Text(
+              '$missedCount missed in this period',
+              style: AppTypography.caption1.copyWith(
+                color: AppColors.mediumGray,
+              ),
+            ),
+          ),
+        ...missedDoses.map((dose) {
+          final protocol = protocolProvider.getProtocolById(dose.protocolId);
         return ListTile(
           contentPadding: EdgeInsets.zero,
           leading: CircleAvatar(
-            backgroundColor: AppColors.yellow.withOpacity(0.1),
-            child: Icon(Icons.skip_next, color: AppColors.yellow),
+              backgroundColor: dose.status == DoseStatus.missed 
+                  ? Colors.red.withOpacity(0.1)
+                  : AppColors.yellow.withOpacity(0.1),
+              child: Icon(
+                dose.status == DoseStatus.missed ? Icons.close : Icons.skip_next, 
+                color: dose.status == DoseStatus.missed ? Colors.red : AppColors.yellow,
+              ),
           ),
-          title: Text(protocol?.peptideName ?? 'Unknown'),
-          subtitle: Text(_formatDate(dose.scheduledDate)),
-        );
-      }).toList(),
+            title: Text(protocol?.peptideName ?? 'Unknown Protocol'),
+            subtitle: Text(
+              '${_formatDate(dose.scheduledDate)} at ${dose.scheduledTime}',
+            ),
+            trailing: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: dose.status == DoseStatus.missed 
+                    ? Colors.red.withOpacity(0.1)
+                    : AppColors.yellow.withOpacity(0.1),
+                borderRadius: AppRadius.smallRadius,
+              ),
+              child: Text(
+                dose.status == DoseStatus.missed ? 'Missed' : 'Skipped',
+                style: AppTypography.caption2.copyWith(
+                  color: dose.status == DoseStatus.missed ? Colors.red : AppColors.yellow,
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
     );
   }
 
   String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }
 

@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/models/protocol.dart';
+import '../../../core/services/storage_service.dart';
 import '../../library/presentation/peptide_provider.dart';
 import '../../settings/presentation/settings_provider.dart';
 import 'protocol_provider.dart';
@@ -20,6 +22,8 @@ class ProtocolFormScreen extends StatefulWidget {
 class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
   final _formKey = GlobalKey<FormState>();
   bool get isEditing => widget.protocolId != null;
+  bool _savedSuccessfully = false;
+  bool _loadedFromDraft = false;
 
   String? _selectedPeptideId;
   String _peptideName = '';
@@ -49,6 +53,11 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
     if (isEditing) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _loadProtocol();
+      });
+    } else {
+      // Try to load draft for new protocols
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadDraft();
       });
     }
   }
@@ -95,6 +104,102 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
     return TimeOfDay(hour: hour, minute: minute);
   }
 
+  void _loadDraft() {
+    final storage = context.read<StorageService>();
+    final draftJson = storage.draftProtocol;
+    
+    if (draftJson != null) {
+      try {
+        final draft = jsonDecode(draftJson) as Map<String, dynamic>;
+        setState(() {
+          _selectedPeptideId = draft['peptideId'] as String?;
+          _peptideName = draft['peptideName'] as String? ?? '';
+          if (draft['dosage'] != null) {
+            _dosageController.text = draft['dosage'].toString();
+          }
+          _dosageUnit = draft['dosageUnit'] as String? ?? 'mcg';
+          _frequency = draft['frequency'] as String? ?? 'Daily';
+          if (draft['scheduledTimeHour'] != null && draft['scheduledTimeMinute'] != null) {
+            _scheduledTime = TimeOfDay(
+              hour: draft['scheduledTimeHour'] as int,
+              minute: draft['scheduledTimeMinute'] as int,
+            );
+          }
+          if (draft['startDate'] != null) {
+            _startDate = DateTime.fromMillisecondsSinceEpoch(draft['startDate'] as int);
+          }
+          if (draft['endDate'] != null) {
+            _endDate = DateTime.fromMillisecondsSinceEpoch(draft['endDate'] as int);
+          }
+          _syncToCalendar = draft['syncToCalendar'] as bool? ?? false;
+          _notesController.text = draft['notes'] as String? ?? '';
+          _loadedFromDraft = true;
+        });
+        
+        // Show a message that draft was restored
+        if (_loadedFromDraft && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: const Text('Resumed your unfinished protocol'),
+              behavior: SnackBarBehavior.floating,
+              action: SnackBarAction(
+                label: 'Clear',
+                onPressed: () async {
+                  await storage.clearDraftProtocol();
+                  setState(() {
+                    _selectedPeptideId = null;
+                    _peptideName = '';
+                    _dosageController.clear();
+                    _dosageUnit = 'mcg';
+                    _frequency = 'Daily';
+                    _scheduledTime = const TimeOfDay(hour: 8, minute: 0);
+                    _startDate = DateTime.now();
+                    _endDate = null;
+                    _syncToCalendar = false;
+                    _notesController.clear();
+                    _loadedFromDraft = false;
+                  });
+                },
+              ),
+            ),
+          );
+        }
+      } catch (e) {
+        // Invalid draft data, clear it
+        storage.clearDraftProtocol();
+      }
+    }
+  }
+
+  Future<void> _saveDraft() async {
+    // Don't save draft if editing an existing protocol or if saved successfully
+    if (isEditing || _savedSuccessfully) return;
+    
+    // Only save if there's some meaningful data entered
+    final hasData = _peptideName.isNotEmpty || 
+                    _dosageController.text.isNotEmpty ||
+                    _notesController.text.isNotEmpty;
+    
+    if (!hasData) return;
+    
+    final storage = context.read<StorageService>();
+    final draft = {
+      'peptideId': _selectedPeptideId,
+      'peptideName': _peptideName,
+      'dosage': _dosageController.text.isNotEmpty ? double.tryParse(_dosageController.text) : null,
+      'dosageUnit': _dosageUnit,
+      'frequency': _frequency,
+      'scheduledTimeHour': _scheduledTime.hour,
+      'scheduledTimeMinute': _scheduledTime.minute,
+      'startDate': _startDate.millisecondsSinceEpoch,
+      'endDate': _endDate?.millisecondsSinceEpoch,
+      'syncToCalendar': _syncToCalendar,
+      'notes': _notesController.text,
+    };
+    
+    await storage.setDraftProtocol(jsonEncode(draft));
+  }
+
   @override
   void dispose() {
     _dosageController.dispose();
@@ -104,23 +209,37 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(isEditing ? 'Edit Protocol' : 'New Protocol'),
-        actions: [
-          TextButton(
-            onPressed: _saveProtocol,
-            child: Text(
-              'Save',
-              style: TextStyle(
-                color: AppColors.primaryBlue,
-                fontWeight: FontWeight.w600,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        
+        // Save draft before allowing pop
+        if (!_savedSuccessfully && !isEditing) {
+          await _saveDraft();
+        }
+        
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(isEditing ? 'Edit Protocol' : 'New Protocol'),
+          actions: [
+            TextButton(
+              onPressed: _saveProtocol,
+              child: Text(
+                'Save',
+                style: TextStyle(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-        ],
-      ),
-      body: Form(
+          ],
+        ),
+        body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(AppSpacing.m),
@@ -322,6 +441,7 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -514,7 +634,7 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
     return '${date.month}/${date.day}/${date.year}';
   }
 
-  void _saveProtocol() {
+  void _saveProtocol() async {
     if (_peptideName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please select a peptide')),
@@ -555,7 +675,13 @@ class _ProtocolFormScreenState extends State<ProtocolFormScreen> {
       provider.addProtocol(protocol);
     }
 
-    Navigator.pop(context);
+    // Mark as saved successfully and clear draft
+    _savedSuccessfully = true;
+    await context.read<StorageService>().clearDraftProtocol();
+
+    if (mounted) {
+      Navigator.pop(context);
+    }
   }
 
   void _confirmDelete() {
