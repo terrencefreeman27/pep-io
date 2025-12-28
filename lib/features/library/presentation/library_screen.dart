@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../../core/navigation/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/models/peptide.dart';
+import '../../../core/widgets/animated_widgets.dart';
 import 'peptide_provider.dart';
 
 class LibraryScreen extends StatefulWidget {
@@ -18,27 +20,59 @@ class _LibraryScreenState extends State<LibraryScreen> {
   String _searchQuery = '';
   String? _selectedCategory;
   bool _showFavoritesOnly = false;
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
+  bool _isSearchFocused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchFocusNode.addListener(() {
+      setState(() => _isSearchFocused = _searchFocusNode.hasFocus);
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    _searchFocusNode.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Peptide Library'),
+        title: Text(
+          'Peptide Library',
+          style: AppTypography.title3,
+        ),
         actions: [
-          IconButton(
-            icon: Icon(
+          BouncyTap(
+            onTap: () => setState(() => _showFavoritesOnly = !_showFavoritesOnly),
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              decoration: BoxDecoration(
+                color: _showFavoritesOnly 
+                    ? AppColors.pink.withOpacity(0.1)
+                    : Colors.transparent,
+                borderRadius: AppRadius.smallRadius,
+              ),
+              child: Icon(
               _showFavoritesOnly ? Icons.favorite : Icons.favorite_border,
-              color: _showFavoritesOnly ? AppColors.error : null,
+                color: _showFavoritesOnly ? AppColors.pink : AppColors.mediumGray,
+              ),
             ),
-            onPressed: () =>
-                setState(() => _showFavoritesOnly = !_showFavoritesOnly),
           ),
+          const SizedBox(width: AppSpacing.s),
         ],
       ),
       body: Consumer<PeptideProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading) {
-            return const Center(child: CircularProgressIndicator());
+            return const ShimmerList(itemCount: 6, itemHeight: 100);
           }
 
           final filteredPeptides = _filterPeptides(provider.peptides);
@@ -46,24 +80,53 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
           return Column(
             children: [
-              // Search Bar
-              Padding(
-                padding: const EdgeInsets.all(AppSpacing.m),
+              // Animated Search Bar
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.m,
+                  vertical: _isSearchFocused ? AppSpacing.s : AppSpacing.m,
+                ),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : AppColors.softGray,
+                    borderRadius: AppRadius.largeRadius,
+                    border: _isSearchFocused
+                        ? Border.all(color: AppColors.primaryBlue, width: 2)
+                        : null,
+                    boxShadow: _isSearchFocused
+                        ? AppShadows.glow(AppColors.primaryBlue, intensity: 0.2)
+                        : null,
+                  ),
                 child: TextField(
+                    controller: _searchController,
+                    focusNode: _searchFocusNode,
                   decoration: InputDecoration(
                     hintText: 'Search peptides...',
-                    prefixIcon: const Icon(Icons.search),
+                      prefixIcon: Icon(
+                        Icons.search,
+                        color: _isSearchFocused ? AppColors.primaryBlue : AppColors.mediumGray,
+                      ),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
                             icon: const Icon(Icons.clear),
-                            onPressed: () =>
-                                setState(() => _searchQuery = ''),
+                              onPressed: () {
+                                _searchController.clear();
+                                setState(() => _searchQuery = '');
+                              },
                           )
                         : null,
+                      border: InputBorder.none,
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
                   ),
                   onChanged: (value) => setState(() => _searchQuery = value),
                 ),
               ),
+              )
+                  .animate()
+                  .fadeIn(duration: 300.ms)
+                  .slideY(begin: -0.1, end: 0),
 
               // Category Filter Chips
               SizedBox(
@@ -71,45 +134,31 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
-                  itemCount: PeptideCategory.all.length + 1, // +1 for "All"
+                  itemCount: PeptideCategory.all.length + 1,
                   itemBuilder: (context, index) {
                     if (index == 0) {
-                      // "All" option
-                      final isSelected = _selectedCategory == null;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: AppSpacing.xs),
-                        child: FilterChip(
-                          label: const Text('All'),
-                          selected: isSelected,
-                          onSelected: (selected) {
-                            setState(() {
-                              _selectedCategory = null;
-                            });
-                          },
-                          selectedColor: AppColors.primaryBlue.withOpacity(0.1),
-                          checkmarkColor: AppColors.primaryBlue,
-                        ),
-                      );
+                      return _CategoryChip(
+                        label: 'All',
+                        isSelected: _selectedCategory == null,
+                        onTap: () => setState(() => _selectedCategory = null),
+                      )
+                          .animate()
+                          .fadeIn(delay: Duration(milliseconds: index * 50));
                     }
                     
                     final category = PeptideCategory.all[index - 1];
                     final isSelected = _selectedCategory == category;
                     final shortName = PeptideCategory.getShortName(category);
+                    final categoryColor = AppColors.getCategoryColor(category);
 
-                    return Padding(
-                      padding: const EdgeInsets.only(right: AppSpacing.xs),
-                      child: FilterChip(
-                        label: Text(shortName),
-                        selected: isSelected,
-                        onSelected: (selected) {
-                          setState(() {
-                            _selectedCategory = category;
-                          });
-                        },
-                        selectedColor: AppColors.primaryBlue.withOpacity(0.1),
-                        checkmarkColor: AppColors.primaryBlue,
-                      ),
-                    );
+                    return _CategoryChip(
+                      label: shortName,
+                      isSelected: isSelected,
+                      color: categoryColor,
+                      onTap: () => setState(() => _selectedCategory = category),
+                    )
+                        .animate()
+                        .fadeIn(delay: Duration(milliseconds: index * 50));
                   },
                 ),
               ),
@@ -123,8 +172,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                   children: [
                     Text(
                       '${filteredPeptides.length} peptides',
-                      style: AppTypography.caption1
-                          .copyWith(color: AppColors.mediumGray),
+                      style: AppTypography.caption1.copyWith(
+                        color: AppColors.mediumGray,
+                      ),
                     ),
                     if (_showFavoritesOnly || _selectedCategory != null) ...[
                       const Spacer(),
@@ -134,6 +184,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                             _showFavoritesOnly = false;
                             _selectedCategory = null;
                             _searchQuery = '';
+                            _searchController.clear();
                           });
                         },
                         child: const Text('Clear Filters'),
@@ -146,7 +197,17 @@ class _LibraryScreenState extends State<LibraryScreen> {
               // Peptide List
               Expanded(
                 child: filteredPeptides.isEmpty
-                    ? _buildEmptyState()
+                    ? AnimatedEmptyState(
+                        icon: Icons.science_outlined,
+                        title: 'No Peptides Found',
+                        subtitle: _showFavoritesOnly
+                            ? "You haven't favorited any peptides yet"
+                            : 'Try adjusting your search or filters',
+                        iconColor: AppColors.purple,
+                        imagePath: _showFavoritesOnly 
+                            ? 'assets/images/empty_favorites.png'
+                            : 'assets/images/empty_search.png',
+                      )
                     : _selectedCategory != null || _searchQuery.isNotEmpty
                         ? _buildFlatList(filteredPeptides)
                         : _buildGroupedList(categories),
@@ -160,15 +221,12 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
   List<Peptide> _filterPeptides(List<Peptide> peptides) {
     return peptides.where((p) {
-      // Favorites filter
       if (_showFavoritesOnly && !p.isFavorite) return false;
 
-      // Category filter
       if (_selectedCategory != null && p.category != _selectedCategory) {
         return false;
       }
 
-      // Search filter
       if (_searchQuery.isNotEmpty) {
         final query = _searchQuery.toLowerCase();
         return p.name.toLowerCase().contains(query) ||
@@ -189,39 +247,14 @@ class _LibraryScreenState extends State<LibraryScreen> {
     return categories;
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.science_outlined,
-            size: 64,
-            color: AppColors.mediumGray,
-          ),
-          const SizedBox(height: AppSpacing.m),
-          Text(
-            'No Peptides Found',
-            style: AppTypography.headline.copyWith(color: AppColors.mediumGray),
-          ),
-          const SizedBox(height: AppSpacing.xs),
-          Text(
-            _showFavoritesOnly
-                ? 'You haven\'t favorited any peptides yet'
-                : 'Try adjusting your search or filters',
-            style: AppTypography.body.copyWith(color: AppColors.mediumGray),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildFlatList(List<Peptide> peptides) {
     return ListView.builder(
       padding: const EdgeInsets.all(AppSpacing.m),
       itemCount: peptides.length,
       itemBuilder: (context, index) {
-        return _PeptideCard(
+        return AnimatedListItem(
+          index: index,
+          child: _PeptideCard(
           peptide: peptides[index],
           onTap: () => Navigator.pushNamed(
             context,
@@ -229,10 +262,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
             arguments: peptides[index].id,
           ),
           onFavoriteToggle: () {
-            context.read<PeptideProvider>().toggleFavorite(
-                  peptides[index].id,
-                );
+              context.read<PeptideProvider>().toggleFavorite(peptides[index].id);
           },
+          ),
         );
       },
     );
@@ -252,66 +284,164 @@ class _LibraryScreenState extends State<LibraryScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Category Header
+            // Category Header with Icon
             Container(
               margin: const EdgeInsets.symmetric(vertical: AppSpacing.s),
               padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.s,
-                vertical: AppSpacing.xs,
+                horizontal: AppSpacing.m,
+                vertical: AppSpacing.s,
               ),
               decoration: BoxDecoration(
-                color: categoryColor.withOpacity(0.1),
-                borderRadius: AppRadius.smallRadius,
+                gradient: LinearGradient(
+                  colors: [
+                    categoryColor.withOpacity(0.15),
+                    categoryColor.withOpacity(0.05),
+                  ],
+                ),
+                borderRadius: AppRadius.mediumRadius,
+                border: Border.all(color: categoryColor.withOpacity(0.2)),
               ),
               child: Row(
-                mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Category Icon
                   Container(
-                    width: 8,
-                    height: 8,
+                    width: 36,
+                    height: 36,
                     decoration: BoxDecoration(
-                      color: categoryColor,
-                      shape: BoxShape.circle,
+                      color: categoryColor.withOpacity(0.2),
+                      borderRadius: AppRadius.smallRadius,
+                      boxShadow: AppShadows.glow(categoryColor, intensity: 0.3),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: AppRadius.smallRadius,
+                      child: AppColors.getCategoryIcon(category) != null
+                          ? Image.asset(
+                              AppColors.getCategoryIcon(category)!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.category_outlined,
+                                  color: categoryColor,
+                                  size: 20,
+                                );
+                              },
+                            )
+                          : Icon(
+                              Icons.category_outlined,
+                              color: categoryColor,
+                              size: 20,
+                            ),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
+                  const SizedBox(width: AppSpacing.s),
+                  Expanded(
+                    child: Text(
                     category,
                     style: AppTypography.subhead.copyWith(
                       color: categoryColor,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Text(
-                    '(${peptides.length})',
-                    style: AppTypography.caption1.copyWith(
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.xs,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: categoryColor.withOpacity(0.2),
+                      borderRadius: AppRadius.smallRadius,
+                    ),
+                    child: Text(
+                      '${peptides.length}',
+                      style: AppTypography.caption2.copyWith(
                       color: categoryColor,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
               ),
-            ),
+            )
+                .animate()
+                .fadeIn(delay: Duration(milliseconds: index * 100))
+                .slideX(begin: -0.05, end: 0),
 
             // Peptides in category
-            ...peptides.map(
-              (peptide) => _PeptideCard(
-                peptide: peptide,
+            ...peptides.asMap().entries.map((entry) => 
+              AnimatedListItem(
+                index: entry.key,
+                delay: Duration(milliseconds: index * 50 + 100),
+                child: _PeptideCard(
+                  peptide: entry.value,
                 onTap: () => Navigator.pushNamed(
                   context,
                   AppRoutes.peptideDetail,
-                  arguments: peptide.id,
+                    arguments: entry.value.id,
                 ),
                 onFavoriteToggle: () {
-                  context.read<PeptideProvider>().toggleFavorite(
-                        peptide.id,
-                      );
+                    context.read<PeptideProvider>().toggleFavorite(entry.value.id);
                 },
+                ),
               ),
             ),
           ],
         );
       },
+    );
+  }
+}
+
+class _CategoryChip extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final Color? color;
+  final VoidCallback onTap;
+
+  const _CategoryChip({
+    required this.label,
+    required this.isSelected,
+    this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final chipColor = color ?? AppColors.primaryBlue;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Padding(
+      padding: const EdgeInsets.only(right: AppSpacing.xs),
+      child: BouncyTap(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.m,
+            vertical: AppSpacing.xs,
+          ),
+          decoration: BoxDecoration(
+            color: isSelected 
+                ? chipColor.withOpacity(isDark ? 0.3 : 0.15)
+                : isDark ? AppColors.cardDark : AppColors.softGray,
+            borderRadius: AppRadius.fullRadius,
+            border: Border.all(
+              color: isSelected ? chipColor : Colors.transparent,
+              width: 1.5,
+            ),
+            boxShadow: isSelected
+                ? AppShadows.glow(chipColor, intensity: 0.2)
+                : null,
+          ),
+          child: Text(
+            label,
+            style: AppTypography.caption1.copyWith(
+              color: isSelected ? chipColor : AppColors.mediumGray,
+              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -330,24 +460,41 @@ class _PeptideCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final categoryColor = AppColors.getCategoryColor(peptide.category);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
+    return BouncyTap(
+      onTap: onTap,
+      child: Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.s),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: AppRadius.mediumRadius,
-        child: Padding(
           padding: const EdgeInsets.all(AppSpacing.m),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.white,
+          borderRadius: AppRadius.largeRadius,
+          border: Border.all(
+            color: isDark ? AppColors.cardDark : AppColors.lightGray.withOpacity(0.5),
+          ),
+          boxShadow: isDark ? null : AppShadows.level1,
+        ),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Avatar
-              CircleAvatar(
-                backgroundColor: categoryColor.withOpacity(0.1),
-                radius: 24,
+            // Avatar with gradient
+            Hero(
+              tag: 'peptide_avatar_${peptide.id}',
+              child: Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  gradient: AppColors.getGradientForColor(categoryColor),
+                  borderRadius: AppRadius.mediumRadius,
+                  boxShadow: AppShadows.glow(categoryColor, intensity: 0.3),
+                ),
+                child: Center(
                 child: Text(
                   peptide.name[0],
-                  style: AppTypography.title2.copyWith(color: categoryColor),
+                    style: AppTypography.title2.copyWith(color: Colors.white),
+                  ),
+                ),
                 ),
               ),
               const SizedBox(width: AppSpacing.m),
@@ -360,16 +507,28 @@ class _PeptideCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
+                        child: Hero(
+                          tag: 'peptide_name_${peptide.id}',
+                          child: Material(
+                            color: Colors.transparent,
                           child: Text(
                             peptide.name,
                             style: AppTypography.headline,
+                            ),
+                          ),
                           ),
                         ),
                         if (peptide.isFavorite)
                           Icon(
                             Icons.favorite,
-                            size: 16,
-                            color: AppColors.error,
+                          size: 18,
+                          color: AppColors.pink,
+                        )
+                            .animate(onPlay: (c) => c.repeat(reverse: true))
+                            .scale(
+                              begin: const Offset(1, 1),
+                              end: const Offset(1.1, 1.1),
+                              duration: 1000.ms,
                           ),
                       ],
                     ),
@@ -389,7 +548,7 @@ class _PeptideCard extends StatelessWidget {
                         color: AppColors.mediumGray,
                       ),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
+                  const SizedBox(height: AppSpacing.s),
 
                     // Benefits preview
                     Wrap(
@@ -399,7 +558,7 @@ class _PeptideCard extends StatelessWidget {
                         return Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.xs,
-                            vertical: 2,
+                          vertical: 3,
                           ),
                           decoration: BoxDecoration(
                             color: categoryColor.withOpacity(0.1),
@@ -409,6 +568,7 @@ class _PeptideCard extends StatelessWidget {
                             benefit,
                             style: AppTypography.caption2.copyWith(
                               color: categoryColor,
+                            fontWeight: FontWeight.w500,
                             ),
                           ),
                         );
@@ -419,18 +579,20 @@ class _PeptideCard extends StatelessWidget {
               ),
 
               // Favorite button
-              IconButton(
-                icon: Icon(
+            BouncyTap(
+              onTap: onFavoriteToggle,
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xs),
+                child: Icon(
                   peptide.isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: peptide.isFavorite ? AppColors.error : AppColors.mediumGray,
+                  color: peptide.isFavorite ? AppColors.pink : AppColors.mediumGray,
+                  size: 24,
                 ),
-                onPressed: onFavoriteToggle,
+              ),
               ),
             ],
-          ),
         ),
       ),
     );
   }
 }
-

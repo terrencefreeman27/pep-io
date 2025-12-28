@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../../core/navigation/app_router.dart';
 import '../../../core/services/storage_service.dart';
@@ -9,6 +10,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/models/dose.dart';
+import '../../../core/widgets/animated_widgets.dart';
 import '../../protocols/presentation/protocol_provider.dart';
 import '../../settings/presentation/settings_provider.dart';
 
@@ -34,6 +36,13 @@ class _HomeScreenState extends State<HomeScreen> {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   }
+  
+  String _getGreetingEmoji() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return '☀️';
+    if (hour < 17) return '🌤️';
+    return '🌙';
+  }
 
   Future<void> _handleRefresh() async {
     await context.read<ProtocolProvider>().loadProtocols();
@@ -45,11 +54,15 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: _handleRefresh,
+          color: AppColors.primaryBlue,
           child: CustomScrollView(
             slivers: [
-              // Header
+              // Header with greeting
               SliverToBoxAdapter(
-                child: _buildHeader(context),
+                child: _buildHeader(context)
+                    .animate()
+                    .fadeIn(duration: 400.ms)
+                    .slideY(begin: -0.1, end: 0, duration: 400.ms),
               ),
               
               // Metric Cards
@@ -57,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: _buildMetricCards(context),
               ),
               
-              // Today's Doses
+              // Today's Doses section
               SliverToBoxAdapter(
                 child: _buildTodaysDoses(context),
               ),
@@ -86,20 +99,40 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildHeader(BuildContext context) {
     final settings = context.watch<SettingsProvider>();
     final name = settings.userProfile?.name;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.m),
       child: Row(
         children: [
-          // Avatar
-          GestureDetector(
+          // Animated Avatar with App Icon
+          BouncyTap(
             onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
-            child: CircleAvatar(
-              radius: 24,
-              backgroundColor: AppColors.primaryBlue.withOpacity(0.1),
-              child: Icon(
-                Icons.person_outline,
-                color: AppColors.primaryBlue,
+            child: Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                boxShadow: AppShadows.glow(AppColors.primaryBlue, intensity: 0.3),
+              ),
+              child: ClipOval(
+                child: Image.asset(
+                  'assets/images/app_icon.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: const BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                      ),
+                      child: Center(
+                        child: Text(
+                          name?.isNotEmpty == true ? name![0].toUpperCase() : '👤',
+                          style: AppTypography.title2.copyWith(color: Colors.white),
+                        ),
+                      ),
+                    );
+                  },
+                ),
               ),
             ),
           ),
@@ -110,24 +143,37 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+              children: [
                 Text(
                   _getGreeting(),
                   style: AppTypography.subhead.copyWith(
                     color: AppColors.mediumGray,
                   ),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(_getGreetingEmoji()),
+                  ],
                 ),
                 Text(
-                  name ?? 'Welcome',
-                  style: AppTypography.title3,
+                  name ?? 'Welcome back',
+                  style: AppTypography.title2,
                 ),
               ],
             ),
           ),
           
-          // Settings
-          IconButton(
+          // Settings button
+          Container(
+            decoration: BoxDecoration(
+              color: isDark ? AppColors.cardDark : AppColors.softGray,
+              borderRadius: AppRadius.mediumRadius,
+            ),
+            child: IconButton(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.settings),
             icon: const Icon(Icons.settings_outlined),
+              color: AppColors.mediumGray,
+            ),
           ),
         ],
       ),
@@ -138,39 +184,43 @@ class _HomeScreenState extends State<HomeScreen> {
     final provider = context.watch<ProtocolProvider>();
     
     return SizedBox(
-      height: 140,
+      height: 160,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
         children: [
-          _MetricCard(
-            icon: Icons.checklist_outlined,
-            iconColor: AppColors.purple,
+          AnimatedMetricCard(
+            icon: Icons.science_outlined,
             value: '${provider.activeCount}',
             label: 'Active Protocols',
-            gradient: AppColors.purpleGradient,
+            color: AppColors.purple,
+            animationIndex: 0,
           ),
-          _MetricCard(
+          const SizedBox(width: AppSpacing.s),
+          AnimatedMetricCard(
             icon: Icons.check_circle_outline,
-            iconColor: AppColors.green,
             value: '${provider.adherenceRate.toStringAsFixed(0)}%',
             label: 'Adherence',
-            gradient: AppColors.greenGradient,
+            color: AppColors.green,
+            animationIndex: 1,
           ),
-          _MetricCard(
+          const SizedBox(width: AppSpacing.s),
+          AnimatedMetricCard(
             icon: Icons.local_fire_department_outlined,
-            iconColor: AppColors.orange,
             value: '${provider.currentStreak}',
             label: 'Day Streak',
-            gradient: AppColors.orangeGradient,
+            color: AppColors.orange,
+            animationIndex: 2,
           ),
-          _MetricCard(
+          const SizedBox(width: AppSpacing.s),
+          AnimatedMetricCard(
             icon: Icons.access_time,
-            iconColor: AppColors.primaryBlue,
             value: _getNextDoseTime(provider),
             label: 'Next Dose',
-            gradient: AppColors.blueGradient,
+            color: AppColors.primaryBlue,
+            animationIndex: 3,
           ),
+          const SizedBox(width: AppSpacing.s),
         ],
       ),
     );
@@ -204,57 +254,90 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                "Today's Doses",
-                style: AppTypography.headline,
-              ),
-              TextButton(
+          AnimatedSectionHeader(
+            title: "Today's Doses",
+            trailing: TextButton(
                 onPressed: () {
                   // Navigate to calendar
                 },
                 child: const Text('See all'),
               ),
-            ],
+            animationIndex: 0,
           ),
           const SizedBox(height: AppSpacing.s),
           
           if (doses.isEmpty)
             _buildEmptyDosesCard(context)
+                .animate()
+                .fadeIn(delay: 200.ms, duration: 400.ms)
+                .scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1))
           else
-            ...doses.take(3).map((dose) => _DoseCard(
-              dose: dose,
+            ...doses.take(3).toList().asMap().entries.map((entry) => 
+              AnimatedListItem(
+                index: entry.key,
+                child: _DoseCard(
+                  dose: entry.value,
               protocol: provider.protocols.firstWhere(
-                (p) => p.id == dose.protocolId,
+                    (p) => p.id == entry.value.protocolId,
                 orElse: () => throw Exception('Protocol not found'),
               ),
-              onMarkTaken: () => provider.markDoseAsTaken(dose.id),
-            )),
+                  onMarkTaken: () => provider.markDoseAsTaken(entry.value.id),
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
   Widget _buildEmptyDosesCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
       padding: const EdgeInsets.all(AppSpacing.l),
       decoration: BoxDecoration(
-        borderRadius: AppRadius.mediumRadius,
-        border: Border.all(color: AppColors.lightGray),
+        borderRadius: AppRadius.largeRadius,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [AppColors.cardDark, AppColors.surfaceDark]
+              : [AppColors.softGray, AppColors.white],
+        ),
+        border: Border.all(
+          color: isDark ? AppColors.cardDark : AppColors.lightGray,
+        ),
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.calendar_today_outlined,
-            size: 48,
-            color: AppColors.mediumGray,
+          // Empty doses image
+          SizedBox(
+            width: 120,
+            height: 120,
+            child: Image.asset(
+              'assets/images/empty_doses.png',
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 72,
+                  height: 72,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primaryBlue.withOpacity(0.1),
+                  ),
+                  child: Icon(
+                    Icons.calendar_today_outlined,
+                    size: 32,
+                    color: AppColors.primaryBlue,
+                  ),
+                );
+              },
+            ),
           ),
           const SizedBox(height: AppSpacing.m),
           Text(
             'No doses scheduled today',
-            style: AppTypography.headline.copyWith(color: AppColors.mediumGray),
+            style: AppTypography.headline,
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
@@ -264,7 +347,7 @@ class _HomeScreenState extends State<HomeScreen> {
           const SizedBox(height: AppSpacing.m),
           ElevatedButton.icon(
             onPressed: () => Navigator.pushNamed(context, AppRoutes.protocolCreate),
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, size: 20),
             label: const Text('Add Protocol'),
           ),
         ],
@@ -273,6 +356,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuickActions(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
       child: Row(
@@ -281,32 +366,48 @@ class _HomeScreenState extends State<HomeScreen> {
             child: _QuickActionButton(
               icon: Icons.calculate_outlined,
               label: 'Calculator',
+              color: AppColors.teal,
               onTap: () => Navigator.pushNamed(context, AppRoutes.calculator),
-            ),
+            )
+                .animate()
+                .fadeIn(delay: 100.ms, duration: 400.ms)
+                .slideY(begin: 0.1, end: 0),
           ),
           const SizedBox(width: AppSpacing.s),
           Expanded(
             child: _QuickActionButton(
               icon: Icons.add_circle_outline,
               label: 'New Protocol',
+              color: AppColors.primaryBlue,
               onTap: () => Navigator.pushNamed(context, AppRoutes.protocolCreate),
-            ),
+            )
+                .animate()
+                .fadeIn(delay: 150.ms, duration: 400.ms)
+                .slideY(begin: 0.1, end: 0),
           ),
           const SizedBox(width: AppSpacing.s),
           Expanded(
             child: _QuickActionButton(
               icon: Icons.menu_book_outlined,
               label: 'Library',
+              color: AppColors.purple,
               onTap: () => Navigator.pushNamed(context, AppRoutes.library),
-            ),
+            )
+                .animate()
+                .fadeIn(delay: 200.ms, duration: 400.ms)
+                .slideY(begin: 0.1, end: 0),
           ),
           const SizedBox(width: AppSpacing.s),
           Expanded(
             child: _QuickActionButton(
               icon: Icons.analytics_outlined,
               label: 'Progress',
+              color: AppColors.green,
               onTap: () => Navigator.pushNamed(context, AppRoutes.progress),
-            ),
+            )
+                .animate()
+                .fadeIn(delay: 250.ms, duration: 400.ms)
+                .slideY(begin: 0.1, end: 0),
           ),
         ],
       ),
@@ -320,7 +421,6 @@ class _HomeScreenState extends State<HomeScreen> {
       return const SizedBox.shrink();
     }
     
-    // Parse draft to get peptide name for display
     String draftPeptideName = 'Unnamed Protocol';
     final draftJson = storage.draftProtocol;
     if (draftJson != null) {
@@ -335,7 +435,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
     
-    // Format timestamp
     String timeAgo = '';
     final timestamp = storage.draftProtocolTimestamp;
     if (timestamp != null) {
@@ -354,38 +453,37 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.m),
         decoration: BoxDecoration(
-          borderRadius: AppRadius.mediumRadius,
+          borderRadius: AppRadius.largeRadius,
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              AppColors.orange.withOpacity(0.12),
-              AppColors.orange.withOpacity(0.04),
+              AppColors.orange.withOpacity(0.15),
+              AppColors.orange.withOpacity(0.05),
             ],
           ),
           border: Border.all(
             color: AppColors.orange.withOpacity(0.3),
           ),
+          boxShadow: AppShadows.glow(AppColors.orange, intensity: 0.15),
         ),
         child: Row(
           children: [
-            // Icon
             Container(
-              width: 48,
-              height: 48,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.orange.withOpacity(0.15),
+                color: AppColors.orange.withOpacity(0.2),
               ),
               child: const Icon(
                 Icons.edit_note_rounded,
                 color: AppColors.orange,
-                size: 26,
+                size: 28,
               ),
             ),
             const SizedBox(width: AppSpacing.m),
             
-            // Text content
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -407,11 +505,9 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             
-            // Actions
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Discard button
                 IconButton(
                   onPressed: () async {
                     final confirm = await showDialog<bool>(
@@ -450,11 +546,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   tooltip: 'Discard draft',
                 ),
                 
-                // Resume button
                 FilledButton.icon(
                   onPressed: () {
                     Navigator.pushNamed(context, AppRoutes.protocolCreate).then((_) {
-                      // Refresh when returning to check if draft was cleared
                       setState(() {});
                     });
                   },
@@ -473,76 +567,10 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-    );
-  }
-
-}
-
-class _MetricCard extends StatelessWidget {
-  final IconData icon;
-  final Color iconColor;
-  final String value;
-  final String label;
-  final LinearGradient gradient;
-
-  const _MetricCard({
-    required this.icon,
-    required this.iconColor,
-    required this.value,
-    required this.label,
-    required this.gradient,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 140,
-      margin: const EdgeInsets.only(right: AppSpacing.s),
-      padding: const EdgeInsets.all(AppSpacing.m),
-      decoration: BoxDecoration(
-        borderRadius: AppRadius.largeRadius,
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            gradient.colors.first.withOpacity(0.15),
-            gradient.colors.last.withOpacity(0.05),
-          ],
-        ),
-        border: Border.all(
-          color: iconColor.withOpacity(0.2),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: iconColor.withOpacity(0.2),
-            ),
-            child: Icon(icon, color: iconColor, size: 20),
-          ),
-          const Spacer(),
-          Text(
-            value,
-            style: AppTypography.title2.copyWith(
-              color: iconColor,
-            ),
-          ),
-          Text(
-            label,
-            style: AppTypography.caption1.copyWith(
-              color: AppColors.mediumGray,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
-      ),
-    );
+    )
+        .animate()
+        .fadeIn(delay: 300.ms, duration: 400.ms)
+        .slideY(begin: 0.1, end: 0);
   }
 }
 
@@ -575,7 +603,6 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
       vsync: this,
     );
 
-    // Generate confetti particles
     final random = Random();
     for (int i = 0; i < 12; i++) {
       _particles.add(_ConfettiParticle(
@@ -600,7 +627,6 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
   }
 
   void _handleTake() async {
-    // Haptic feedback
     HapticFeedback.mediumImpact();
     
     setState(() {
@@ -609,11 +635,8 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
     });
     
     _animationController.forward();
-    
-    // Call the actual take action
     widget.onMarkTaken();
     
-    // Wait for animation to complete
     await Future.delayed(const Duration(milliseconds: 1000));
     
     if (mounted) {
@@ -627,6 +650,7 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
     final isOverdue = widget.dose.isOverdue;
     final isDueSoon = widget.dose.isDueSoon;
     final isTaken = widget.dose.status == DoseStatus.taken || _justTaken;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     Color statusColor = AppColors.mediumGray;
     String statusText = 'Upcoming';
@@ -649,10 +673,9 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
     return AnimatedBuilder(
       animation: _animationController,
       builder: (context, child) {
-        // Simple scale animation using sin for bounce effect
         final progress = _animationController.value;
         final scaleValue = _showCelebration 
-            ? 1.0 + (sin(progress * pi) * 0.05) 
+            ? 1.0 + (sin(progress * pi) * 0.03) 
             : 1.0;
         final checkScale = _showCelebration 
             ? Curves.elasticOut.transform(progress.clamp(0.0, 1.0))
@@ -663,50 +686,52 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
           child: Stack(
             clipBehavior: Clip.none,
             children: [
-              // Main card
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 margin: const EdgeInsets.only(bottom: AppSpacing.s),
                 padding: const EdgeInsets.all(AppSpacing.m),
                 decoration: BoxDecoration(
-                  borderRadius: AppRadius.mediumRadius,
+                  borderRadius: AppRadius.largeRadius,
                   color: _showCelebration 
                       ? AppColors.green.withOpacity(0.08)
-                      : Theme.of(context).colorScheme.surface,
+                      : isDark ? AppColors.cardDark : AppColors.white,
                   border: Border.all(
                     color: _showCelebration 
                         ? AppColors.green
                         : isTaken
                             ? AppColors.green.withOpacity(0.3)
-                            : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                            : isDark 
+                                ? AppColors.cardDark 
+                                : AppColors.lightGray,
                     width: _showCelebration ? 2 : 1,
                   ),
                   boxShadow: _showCelebration 
-                      ? [
-                          BoxShadow(
-                            color: AppColors.green.withOpacity(0.3),
-                            blurRadius: 12,
-                            spreadRadius: 2,
-                          )
-                        ]
+                      ? AppShadows.glow(AppColors.green, intensity: 0.3)
                       : AppShadows.level1,
                 ),
                 child: Row(
                   children: [
-                    // Status icon with celebration animation
+                    // Status icon with animation
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: statusColor.withOpacity(0.1),
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            statusColor.withOpacity(0.2),
+                            statusColor.withOpacity(0.1),
+                          ],
+                        ),
                       ),
                       child: _showCelebration
                           ? Transform.scale(
                               scale: checkScale.clamp(0.0, 1.5),
                               child: const Icon(Icons.check_circle, color: AppColors.green, size: 28),
                             )
-                          : Icon(statusIcon, color: statusColor),
+                          : Icon(statusIcon, color: statusColor, size: 24),
                     ),
                     const SizedBox(width: AppSpacing.m),
                     Expanded(
@@ -717,6 +742,7 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
                             widget.protocol.peptideName,
                             style: AppTypography.headline,
                           ),
+                          const SizedBox(height: 2),
                           Row(
                             children: [
                               Text(
@@ -726,8 +752,17 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
                                 ),
                               ),
                               const SizedBox(width: AppSpacing.s),
+                              Container(
+                                width: 4,
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: AppColors.mediumGray,
+                                ),
+                              ),
+                              const SizedBox(width: AppSpacing.s),
                               Text(
-                                '• ${widget.dose.scheduledTime}',
+                                widget.dose.scheduledTime,
                                 style: AppTypography.caption1.copyWith(
                                   color: AppColors.mediumGray,
                                 ),
@@ -738,9 +773,25 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
                       ),
                     ),
                     if (!isTaken)
-                      TextButton(
-                        onPressed: _handleTake,
-                        child: const Text('Take'),
+                      BouncyTap(
+                        onTap: _handleTake,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: AppSpacing.m,
+                            vertical: AppSpacing.s,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryBlue,
+                            borderRadius: AppRadius.mediumRadius,
+                          ),
+                          child: Text(
+                            'Take',
+                            style: AppTypography.subhead.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
                       )
                     else
                       AnimatedContainer(
@@ -784,8 +835,8 @@ class _DoseCardState extends State<_DoseCard> with SingleTickerProviderStateMixi
                   final dy = sin(particle.angle) * distance - (progress * 30);
                   
                   return Positioned(
-                    left: 24 + dx,
-                    top: 24 + dy,
+                    left: 26 + dx,
+                    top: 26 + dy,
                     child: Opacity(
                       opacity: opacity,
                       child: Transform.rotate(
@@ -827,35 +878,59 @@ class _ConfettiParticle {
 class _QuickActionButton extends StatelessWidget {
   final IconData icon;
   final String label;
+  final Color color;
   final VoidCallback onTap;
 
   const _QuickActionButton({
     required this.icon,
     required this.label,
+    required this.color,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return BouncyTap(
       onTap: onTap,
-      borderRadius: AppRadius.mediumRadius,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
         decoration: BoxDecoration(
-          borderRadius: AppRadius.mediumRadius,
+          borderRadius: AppRadius.largeRadius,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              color.withOpacity(isDark ? 0.2 : 0.1),
+              color.withOpacity(isDark ? 0.1 : 0.05),
+            ],
+          ),
           border: Border.all(
-            color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            color: color.withOpacity(0.2),
           ),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppColors.primaryBlue),
-            const SizedBox(height: AppSpacing.xxs),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: color.withOpacity(0.15),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: AppSpacing.xs),
             Text(
               label,
-              style: AppTypography.caption1,
+              style: AppTypography.caption1.copyWith(
+                color: color,
+                fontWeight: FontWeight.w500,
+              ),
               textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -863,4 +938,3 @@ class _QuickActionButton extends StatelessWidget {
     );
   }
 }
-

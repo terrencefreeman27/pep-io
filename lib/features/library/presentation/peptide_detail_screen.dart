@@ -67,23 +67,46 @@ class _PeptideDetailScreenState extends State<PeptideDetailScreen> {
                           mainAxisAlignment: MainAxisAlignment.end,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: AppSpacing.s,
-                                vertical: AppSpacing.xxs,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: AppRadius.smallRadius,
-                              ),
-                              child: Text(
-                                peptide.category,
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
+                            Row(
+                              children: [
+                                // Category Icon
+                                if (AppColors.getCategoryIcon(peptide.category) != null)
+                                  Container(
+                                    width: 32,
+                                    height: 32,
+                                    margin: const EdgeInsets.only(right: AppSpacing.xs),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.2),
+                                      borderRadius: AppRadius.smallRadius,
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: AppRadius.smallRadius,
+                                      child: Image.asset(
+                                        AppColors.getCategoryIcon(peptide.category)!,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) => const SizedBox(),
+                                      ),
+                                    ),
+                                  ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.s,
+                                    vertical: AppSpacing.xxs,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    borderRadius: AppRadius.smallRadius,
+                                  ),
+                                  child: Text(
+                                    peptide.category,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                             const SizedBox(height: AppSpacing.xs),
                             Text(

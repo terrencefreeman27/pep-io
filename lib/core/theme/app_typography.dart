@@ -1,21 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'app_colors.dart';
 
-/// App typography based on PRD design specifications
+/// App typography using Google Fonts for a distinctive, modern look
+/// Using Plus Jakarta Sans for body text and DM Sans for headlines
 class AppTypography {
-  // Using system fonts - on iOS this is SF Pro, on Android this is Roboto
-  static const String? fontFamily = null;
+  // Font families
+  static String get headlineFont => GoogleFonts.dmSans().fontFamily!;
+  static String get bodyFont => GoogleFonts.plusJakartaSans().fontFamily!;
+  static String get displayFont => GoogleFonts.spaceGrotesk().fontFamily!;
   
-  // Large Title - 34px bold (iOS style)
-  static const TextStyle largeTitle = TextStyle(
-    fontSize: 34,
+  // Display - 40px bold (hero text)
+  static TextStyle get display => GoogleFonts.spaceGrotesk(
+    fontSize: 40,
     fontWeight: FontWeight.bold,
-    letterSpacing: -0.5,
-    height: 1.2,
+    letterSpacing: -1,
+    height: 1.1,
   );
   
-  // Display - 34px bold
-  static const TextStyle display = TextStyle(
+  // Large Title - 34px bold
+  static TextStyle get largeTitle => GoogleFonts.dmSans(
     fontSize: 34,
     fontWeight: FontWeight.bold,
     letterSpacing: -0.5,
@@ -23,7 +27,7 @@ class AppTypography {
   );
   
   // Title 1 - 28px bold
-  static const TextStyle title1 = TextStyle(
+  static TextStyle get title1 => GoogleFonts.dmSans(
     fontSize: 28,
     fontWeight: FontWeight.bold,
     letterSpacing: -0.5,
@@ -31,7 +35,7 @@ class AppTypography {
   );
   
   // Title 2 - 22px bold
-  static const TextStyle title2 = TextStyle(
+  static TextStyle get title2 => GoogleFonts.dmSans(
     fontSize: 22,
     fontWeight: FontWeight.bold,
     letterSpacing: -0.3,
@@ -39,7 +43,7 @@ class AppTypography {
   );
   
   // Title 3 - 20px semibold
-  static const TextStyle title3 = TextStyle(
+  static TextStyle get title3 => GoogleFonts.dmSans(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.2,
@@ -47,7 +51,7 @@ class AppTypography {
   );
   
   // Headline - 17px semibold
-  static const TextStyle headline = TextStyle(
+  static TextStyle get headline => GoogleFonts.plusJakartaSans(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: -0.1,
@@ -55,7 +59,7 @@ class AppTypography {
   );
   
   // Body - 17px regular
-  static const TextStyle body = TextStyle(
+  static TextStyle get body => GoogleFonts.plusJakartaSans(
     fontSize: 17,
     fontWeight: FontWeight.normal,
     letterSpacing: 0,
@@ -63,7 +67,7 @@ class AppTypography {
   );
   
   // Callout - 16px regular
-  static const TextStyle callout = TextStyle(
+  static TextStyle get callout => GoogleFonts.plusJakartaSans(
     fontSize: 16,
     fontWeight: FontWeight.normal,
     letterSpacing: 0,
@@ -71,7 +75,7 @@ class AppTypography {
   );
   
   // Subhead - 15px regular
-  static const TextStyle subhead = TextStyle(
+  static TextStyle get subhead => GoogleFonts.plusJakartaSans(
     fontSize: 15,
     fontWeight: FontWeight.normal,
     letterSpacing: 0,
@@ -79,7 +83,7 @@ class AppTypography {
   );
   
   // Footnote - 13px regular
-  static const TextStyle footnote = TextStyle(
+  static TextStyle get footnote => GoogleFonts.plusJakartaSans(
     fontSize: 13,
     fontWeight: FontWeight.normal,
     letterSpacing: 0,
@@ -87,7 +91,7 @@ class AppTypography {
   );
   
   // Caption 1 - 12px regular
-  static const TextStyle caption1 = TextStyle(
+  static TextStyle get caption1 => GoogleFonts.plusJakartaSans(
     fontSize: 12,
     fontWeight: FontWeight.normal,
     letterSpacing: 0,
@@ -95,7 +99,7 @@ class AppTypography {
   );
   
   // Caption 2 - 11px regular
-  static const TextStyle caption2 = TextStyle(
+  static TextStyle get caption2 => GoogleFonts.plusJakartaSans(
     fontSize: 11,
     fontWeight: FontWeight.normal,
     letterSpacing: 0,
@@ -103,7 +107,7 @@ class AppTypography {
   );
   
   // Button text
-  static const TextStyle button = TextStyle(
+  static TextStyle get button => GoogleFonts.plusJakartaSans(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     letterSpacing: 0,
@@ -111,25 +115,49 @@ class AppTypography {
   );
   
   // Label styles
-  static const TextStyle labelLarge = TextStyle(
+  static TextStyle get labelLarge => GoogleFonts.plusJakartaSans(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.1,
     height: 1.4,
   );
   
-  static const TextStyle labelMedium = TextStyle(
+  static TextStyle get labelMedium => GoogleFonts.plusJakartaSans(
     fontSize: 12,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
     height: 1.4,
   );
   
-  static const TextStyle labelSmall = TextStyle(
+  static TextStyle get labelSmall => GoogleFonts.plusJakartaSans(
     fontSize: 11,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
     height: 1.4,
+  );
+  
+  // Monospace for numbers/metrics
+  static TextStyle get mono => GoogleFonts.jetBrainsMono(
+    fontSize: 16,
+    fontWeight: FontWeight.w500,
+    letterSpacing: 0,
+    height: 1.4,
+  );
+  
+  // Large metric display
+  static TextStyle get metricLarge => GoogleFonts.spaceGrotesk(
+    fontSize: 48,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -1,
+    height: 1.1,
+  );
+  
+  // Medium metric display  
+  static TextStyle get metricMedium => GoogleFonts.spaceGrotesk(
+    fontSize: 32,
+    fontWeight: FontWeight.bold,
+    letterSpacing: -0.5,
+    height: 1.2,
   );
 }
 
@@ -156,4 +184,3 @@ TextTheme createTextTheme({required bool isDark}) {
     labelSmall: AppTypography.labelSmall.copyWith(color: secondaryColor),
   );
 }
-

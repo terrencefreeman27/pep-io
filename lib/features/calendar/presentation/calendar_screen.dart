@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/models/dose.dart';
 import '../../../core/models/protocol.dart';
+import '../../../core/widgets/animated_widgets.dart';
 import '../../protocols/presentation/protocol_provider.dart';
 
 class CalendarScreen extends StatefulWidget {
@@ -23,19 +26,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Calendar'),
+        title: Text('Calendar', style: AppTypography.title3),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.today),
-            onPressed: () {
+          BouncyTap(
+            onTap: () {
+              HapticFeedback.lightImpact();
               setState(() {
                 _focusedDay = DateTime.now();
                 _selectedDay = DateTime.now();
               });
             },
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              margin: const EdgeInsets.only(right: AppSpacing.xs),
+              child: Icon(
+                Icons.today,
+                color: AppColors.primaryBlue,
+              ),
+            ),
           ),
           PopupMenuButton<CalendarFormat>(
-            icon: const Icon(Icons.view_agenda),
+            icon: const Icon(Icons.view_agenda_outlined),
             onSelected: (format) => setState(() => _calendarFormat = format),
             itemBuilder: (context) => [
               const PopupMenuItem(
@@ -66,6 +77,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 doses: provider.allDoses,
                 protocols: provider.protocols,
                 onDaySelected: (selectedDay, focusedDay) {
+                  HapticFeedback.selectionClick();
                   setState(() {
                     _selectedDay = selectedDay;
                     _focusedDay = focusedDay;
@@ -77,21 +89,60 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 onPageChanged: (focusedDay) {
                   setState(() => _focusedDay = focusedDay);
                 },
-              ),
+              )
+                  .animate()
+                  .fadeIn(duration: 400.ms)
+                  .slideY(begin: -0.05, end: 0),
 
               const Divider(height: 1),
 
               // Selected Day Header
               Container(
                 padding: const EdgeInsets.all(AppSpacing.m),
-                color: AppColors.primaryBlue.withOpacity(0.05),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppColors.primaryBlue.withOpacity(0.08),
+                      Colors.transparent,
+                    ],
+                  ),
+                ),
                 child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: AppColors.primaryBlue.withOpacity(0.1),
+                        borderRadius: AppRadius.mediumRadius,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${_selectedDay.day}',
+                          style: AppTypography.headline.copyWith(
+                            color: AppColors.primaryBlue,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.m),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _formatDate(_selectedDay),
                       style: AppTypography.headline,
                     ),
-                    const Spacer(),
+                          Text(
+                            _getRelativeDay(_selectedDay),
+                            style: AppTypography.caption1.copyWith(
+                              color: AppColors.mediumGray,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     _buildDayStats(provider),
                   ],
                 ),
@@ -108,10 +159,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
+  String _getRelativeDay(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selected = DateTime(date.year, date.month, date.day);
+
+    if (selected == today) return 'Today';
+    if (selected == today.add(const Duration(days: 1))) return 'Tomorrow';
+    if (selected == today.subtract(const Duration(days: 1))) return 'Yesterday';
+    
+    final weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    return weekdays[date.weekday - 1];
+  }
+
   Widget _buildDayStats(ProtocolProvider provider) {
     final dayDoses = _getDosesForDay(provider, _selectedDay);
-    final completed =
-        dayDoses.where((d) => d.status == DoseStatus.taken).length;
+    final completed = dayDoses.where((d) => d.status == DoseStatus.taken).length;
     final total = dayDoses.length;
 
     if (total == 0) {
@@ -120,20 +183,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
     return Container(
       padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.s,
-        vertical: AppSpacing.xxs,
+        horizontal: AppSpacing.m,
+        vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: completed == total
-            ? AppColors.green.withOpacity(0.1)
-            : AppColors.primaryBlue.withOpacity(0.1),
-        borderRadius: AppRadius.smallRadius,
-      ),
-      child: Text(
-        '$completed/$total completed',
-        style: AppTypography.caption1.copyWith(
-          color: completed == total ? AppColors.green : AppColors.primaryBlue,
+        gradient: LinearGradient(
+          colors: completed == total
+              ? [AppColors.green.withOpacity(0.2), AppColors.green.withOpacity(0.1)]
+              : [AppColors.primaryBlue.withOpacity(0.2), AppColors.primaryBlue.withOpacity(0.1)],
         ),
+        borderRadius: AppRadius.fullRadius,
+        boxShadow: completed == total
+            ? AppShadows.glow(AppColors.green, intensity: 0.2)
+            : null,
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (completed == total)
+            const Icon(Icons.check_circle, size: 16, color: AppColors.green),
+          if (completed == total) const SizedBox(width: 4),
+          Text(
+            '$completed/$total',
+            style: AppTypography.subhead.copyWith(
+          color: completed == total ? AppColors.green : AppColors.primaryBlue,
+              fontWeight: FontWeight.w600,
+            ),
+        ),
+        ],
       ),
     );
   }
@@ -142,31 +219,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final dayDoses = _getDosesForDay(provider, _selectedDay);
 
     if (dayDoses.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.event_available,
-              size: 64,
-              color: AppColors.mediumGray,
-            ),
-            const SizedBox(height: AppSpacing.m),
-            Text(
-              'No Doses Scheduled',
-              style: AppTypography.headline.copyWith(
-                color: AppColors.mediumGray,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'No doses are scheduled for this day',
-              style: AppTypography.body.copyWith(
-                color: AppColors.mediumGray,
-              ),
-            ),
-          ],
-        ),
+      return AnimatedEmptyState(
+        icon: Icons.event_available,
+        title: 'No Doses Scheduled',
+        subtitle: 'No doses are scheduled for this day',
+        iconColor: AppColors.mediumGray,
+        imagePath: 'assets/images/empty_calendar.png',
       );
     }
 
@@ -184,12 +242,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final doses = grouped[protocolId]!;
         final protocol = provider.getProtocolById(protocolId);
 
-        return _ProtocolDoseGroup(
+        return AnimatedListItem(
+          index: index,
+          child: _ProtocolDoseGroup(
           protocol: protocol,
           doses: doses,
           onDoseAction: (dose, status) {
+              HapticFeedback.mediumImpact();
             provider.logDose(dose.id, status);
           },
+          ),
         );
       },
     );
@@ -211,43 +273,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final selected = DateTime(date.year, date.month, date.day);
-
-    if (selected == today) {
-      return 'Today';
-    } else if (selected == today.add(const Duration(days: 1))) {
-      return 'Tomorrow';
-    } else if (selected == today.subtract(const Duration(days: 1))) {
-      return 'Yesterday';
-    }
-
     final months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
-    final weekdays = [
-      'Monday',
-      'Tuesday',
-      'Wednesday',
-      'Thursday',
-      'Friday',
-      'Saturday',
-      'Sunday'
-    ];
-
-    return '${weekdays[date.weekday - 1]}, ${months[date.month - 1]} ${date.day}';
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 }
 
@@ -277,6 +307,7 @@ class _CustomCalendar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final weeks = _getWeeksToShow();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Column(
       children: [
@@ -285,15 +316,19 @@ class _CustomCalendar extends StatelessWidget {
           padding: const EdgeInsets.all(AppSpacing.m),
           child: Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.chevron_left),
-                onPressed: () {
-                  onPageChanged(DateTime(
-                    focusedDay.year,
-                    focusedDay.month - 1,
-                    1,
-                  ));
+              BouncyTap(
+                onTap: () {
+                  onPageChanged(DateTime(focusedDay.year, focusedDay.month - 1, 1));
                 },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : AppColors.softGray,
+                    borderRadius: AppRadius.mediumRadius,
+                  ),
+                  child: const Icon(Icons.chevron_left, size: 20),
+                ),
               ),
               Expanded(
                 child: Text(
@@ -302,15 +337,19 @@ class _CustomCalendar extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
               ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right),
-                onPressed: () {
-                  onPageChanged(DateTime(
-                    focusedDay.year,
-                    focusedDay.month + 1,
-                    1,
-                  ));
+              BouncyTap(
+                onTap: () {
+                  onPageChanged(DateTime(focusedDay.year, focusedDay.month + 1, 1));
                 },
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: isDark ? AppColors.cardDark : AppColors.softGray,
+                    borderRadius: AppRadius.mediumRadius,
+                  ),
+                  child: const Icon(Icons.chevron_right, size: 20),
+                ),
               ),
             ],
           ),
@@ -325,6 +364,7 @@ class _CustomCalendar extends StatelessWidget {
                         day,
                         style: AppTypography.caption1.copyWith(
                           color: AppColors.mediumGray,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
@@ -335,9 +375,16 @@ class _CustomCalendar extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
 
         // Calendar Grid
-        ...weeks.map((week) => Row(
-              children: week
-                  .map((day) => Expanded(
+        ...weeks.asMap().entries.map((weekEntry) {
+          final weekIndex = weekEntry.key;
+          final week = weekEntry.value;
+          
+          return Row(
+            children: week.asMap().entries.map((dayEntry) {
+              final dayIndex = dayEntry.key;
+              final day = dayEntry.value;
+              
+              return Expanded(
                         child: _CalendarDay(
                           date: day,
                           isSelected: _isSameDay(day, selectedDay),
@@ -346,10 +393,16 @@ class _CustomCalendar extends StatelessWidget {
                           hasDoses: _hasDoses(day),
                           completionStatus: _getCompletionStatus(day),
                           onTap: () => onDaySelected(day, focusedDay),
+                )
+                    .animate()
+                    .fadeIn(
+                      delay: Duration(milliseconds: weekIndex * 50 + dayIndex * 20),
+                      duration: 200.ms,
                         ),
-                      ))
-                  .toList(),
-            )),
+              );
+            }).toList(),
+          );
+        }),
       ],
     );
   }
@@ -406,25 +459,14 @@ class _CustomCalendar extends StatelessWidget {
 
     if (dayDoses.isEmpty) return 0;
 
-    final completed =
-        dayDoses.where((d) => d.status == DoseStatus.taken).length;
+    final completed = dayDoses.where((d) => d.status == DoseStatus.taken).length;
     return completed / dayDoses.length;
   }
 
   String _formatMonthYear(DateTime date) {
     final months = [
-      'January',
-      'February',
-      'March',
-      'April',
-      'May',
-      'June',
-      'July',
-      'August',
-      'September',
-      'October',
-      'November',
-      'December'
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
     ];
     return '${months[date.month - 1]} ${date.year}';
   }
@@ -451,39 +493,55 @@ class _CalendarDay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isSelected
-        ? AppColors.primaryBlue
-        : completionStatus == 1
-            ? AppColors.green
-            : completionStatus > 0
-                ? AppColors.yellow
-                : isToday
-                    ? AppColors.primaryBlue
-                    : null;
+    Color? backgroundColor;
+    Color? borderColor;
+    Color textColor = isCurrentMonth 
+        ? Theme.of(context).colorScheme.onSurface 
+        : AppColors.mediumGray.withOpacity(0.5);
+    
+    if (isSelected) {
+      backgroundColor = AppColors.primaryBlue;
+      textColor = Colors.white;
+    } else if (isToday) {
+      borderColor = AppColors.primaryBlue;
+      textColor = AppColors.primaryBlue;
+    }
+
+    Color dotColor = AppColors.primaryBlue;
+    if (completionStatus == 1) {
+      dotColor = AppColors.green;
+    } else if (completionStatus > 0) {
+      dotColor = AppColors.yellow;
+    }
 
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.all(2),
         padding: const EdgeInsets.all(AppSpacing.xs),
         decoration: BoxDecoration(
-          color: isSelected ? color : null,
-          border: isToday && !isSelected
-              ? Border.all(color: AppColors.primaryBlue, width: 2)
+          color: isSelected 
+              ? backgroundColor 
+              : completionStatus == 1 
+                  ? AppColors.green.withOpacity(0.1) 
+                  : null,
+          border: borderColor != null
+              ? Border.all(color: borderColor, width: 2)
               : null,
           borderRadius: AppRadius.smallRadius,
+          boxShadow: isSelected
+              ? AppShadows.glow(AppColors.primaryBlue, intensity: 0.3)
+              : null,
         ),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               '${date.day}',
               style: AppTypography.body.copyWith(
-                color: isSelected
-                    ? Colors.white
-                    : !isCurrentMonth
-                        ? AppColors.mediumGray.withOpacity(0.5)
-                        : null,
-                fontWeight: isToday || isSelected ? FontWeight.bold : null,
+                color: textColor,
+                fontWeight: isToday || isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
             if (hasDoses)
@@ -492,14 +550,11 @@ class _CalendarDay extends StatelessWidget {
                 height: 6,
                 margin: const EdgeInsets.only(top: 2),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? Colors.white
-                      : completionStatus == 1
-                          ? AppColors.green
-                          : completionStatus > 0
-                              ? AppColors.yellow
-                              : AppColors.primaryBlue,
+                  color: isSelected ? Colors.white : dotColor,
                   shape: BoxShape.circle,
+                  boxShadow: completionStatus == 1
+                      ? AppShadows.glow(AppColors.green, intensity: 0.5)
+                      : null,
                 ),
               ),
           ],
@@ -525,9 +580,18 @@ class _ProtocolDoseGroup extends StatelessWidget {
     final categoryColor = protocol != null
         ? AppColors.getCategoryColor(protocol!.peptideName)
         : AppColors.mediumGray;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.m),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.white,
+        borderRadius: AppRadius.largeRadius,
+        border: Border.all(
+          color: isDark ? AppColors.cardDark : AppColors.lightGray.withOpacity(0.5),
+        ),
+        boxShadow: isDark ? null : AppShadows.level1,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -535,19 +599,29 @@ class _ProtocolDoseGroup extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(AppSpacing.m),
             decoration: BoxDecoration(
-              color: categoryColor.withOpacity(0.05),
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(12),
+              gradient: LinearGradient(
+                colors: [
+                  categoryColor.withOpacity(0.15),
+                  categoryColor.withOpacity(0.05),
+                ],
               ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
             ),
             child: Row(
               children: [
-                CircleAvatar(
-                  backgroundColor: categoryColor.withOpacity(0.1),
-                  radius: 16,
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.getGradientForColor(categoryColor),
+                    borderRadius: AppRadius.mediumRadius,
+                    boxShadow: AppShadows.glow(categoryColor, intensity: 0.3),
+                  ),
+                  child: Center(
                   child: Text(
                     protocol?.peptideName[0] ?? '?',
-                    style: TextStyle(color: categoryColor),
+                      style: AppTypography.headline.copyWith(color: Colors.white),
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.s),
@@ -573,12 +647,19 @@ class _ProtocolDoseGroup extends StatelessWidget {
           ),
 
           // Doses List
-          ...doses.map((dose) => _DoseListItem(
+          ...doses.asMap().entries.map((entry) {
+            final index = entry.key;
+            final dose = entry.value;
+            
+            return _DoseListItem(
                 dose: dose,
                 categoryColor: categoryColor,
                 onComplete: () => onDoseAction(dose, DoseStatus.taken),
                 onSkip: () => onDoseAction(dose, DoseStatus.skipped),
-              )),
+            )
+                .animate()
+                .fadeIn(delay: Duration(milliseconds: index * 50));
+          }),
         ],
       ),
     );
@@ -612,7 +693,7 @@ class _DoseListItem extends StatelessWidget {
       decoration: BoxDecoration(
         border: Border(
           bottom: BorderSide(
-            color: AppColors.lightGray,
+            color: AppColors.lightGray.withOpacity(0.5),
             width: 0.5,
           ),
         ),
@@ -621,13 +702,13 @@ class _DoseListItem extends StatelessWidget {
         children: [
           // Status Icon
           Container(
-            width: 32,
-            height: 32,
+            width: 36,
+            height: 36,
             decoration: BoxDecoration(
               color: isCompleted
-                  ? AppColors.green.withOpacity(0.1)
+                  ? AppColors.green.withOpacity(0.15)
                   : isSkipped
-                      ? AppColors.yellow.withOpacity(0.1)
+                      ? AppColors.yellow.withOpacity(0.15)
                       : categoryColor.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
@@ -654,16 +735,19 @@ class _DoseListItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  _formatTime(dose.scheduledTime),
+                  dose.scheduledTime,
                   style: AppTypography.headline.copyWith(
                     decoration: isCompleted || isSkipped
                         ? TextDecoration.lineThrough
+                        : null,
+                    color: isCompleted || isSkipped
+                        ? AppColors.mediumGray
                         : null,
                   ),
                 ),
                 if (isCompleted && dose.actualTime != null)
                   Text(
-                    'Taken at ${_formatTime(dose.actualTime!)}',
+                    'Taken at ${dose.actualTime!}',
                     style: AppTypography.caption1.copyWith(
                       color: AppColors.green,
                     ),
@@ -684,15 +768,36 @@ class _DoseListItem extends StatelessWidget {
             Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.check_circle_outline),
+                BouncyTap(
+                  onTap: onComplete,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.green.withOpacity(0.1),
+                      borderRadius: AppRadius.mediumRadius,
+                    ),
+                    child: const Icon(
+                      Icons.check_circle_outline,
                   color: AppColors.green,
-                  onPressed: onComplete,
+                    ),
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.skip_next_outlined),
+                const SizedBox(width: AppSpacing.xs),
+                BouncyTap(
+                  onTap: onSkip,
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: AppColors.yellow.withOpacity(0.1),
+                      borderRadius: AppRadius.mediumRadius,
+                    ),
+                    child: const Icon(
+                      Icons.skip_next_outlined,
                   color: AppColors.yellow,
-                  onPressed: onSkip,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -700,10 +805,4 @@ class _DoseListItem extends StatelessWidget {
       ),
     );
   }
-
-  String _formatTime(String time) {
-    // Time is already formatted as a string like "8:00 AM"
-    return time;
-  }
 }
-

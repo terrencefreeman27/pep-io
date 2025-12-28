@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../../core/navigation/app_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/widgets/animated_widgets.dart';
 import 'settings_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -11,9 +13,11 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text('Settings', style: AppTypography.title3),
       ),
       body: Consumer<SettingsProvider>(
         builder: (context, settings, _) {
@@ -21,23 +25,24 @@ class SettingsScreen extends StatelessWidget {
             padding: const EdgeInsets.all(AppSpacing.m),
             children: [
               // Profile Section
-              _SectionHeader(title: 'Profile'),
-              Card(
-                child: Column(
+              _AnimatedSection(
+                index: 0,
+                title: 'Profile',
+                child: _SettingsCard(
                   children: [
-                    ListTile(
-                      leading: const Icon(Icons.person_outline),
-                      title: const Text('Personal Information'),
-                      subtitle: const Text('Name, weight, units'),
-                      trailing: const Icon(Icons.chevron_right),
+                    _SettingsTile(
+                      icon: Icons.person_outline,
+                      iconColor: AppColors.primaryBlue,
+                      title: 'Personal Information',
+                      subtitle: 'Name, weight, units',
                       onTap: () => _showProfileEditor(context, settings),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.flag_outlined),
-                      title: const Text('Goals'),
-                      subtitle: const Text('Set your primary goals'),
-                      trailing: const Icon(Icons.chevron_right),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.flag_outlined,
+                      iconColor: AppColors.orange,
+                      title: 'Goals',
+                      subtitle: 'Set your primary goals',
                       onTap: () => Navigator.pushNamed(context, AppRoutes.goals),
                     ),
                   ],
@@ -47,53 +52,37 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.l),
 
               // Notifications Section
-              _SectionHeader(title: 'Notifications'),
-              Card(
-                child: Column(
+              _AnimatedSection(
+                index: 1,
+                title: 'Notifications',
+                child: _SettingsCard(
                   children: [
-                    SwitchListTile(
-                      secondary: const Icon(Icons.notifications_outlined),
-                      title: const Text('Dose Reminders'),
-                      subtitle: const Text('Get notified when doses are due'),
+                    _SettingsToggle(
+                      icon: Icons.notifications_outlined,
+                      iconColor: AppColors.purple,
+                      title: 'Dose Reminders',
+                      subtitle: 'Get notified when doses are due',
                       value: settings.doseRemindersEnabled,
-                      onChanged: (value) =>
-                          settings.setDoseReminders(value),
+                      onChanged: (value) => settings.setDoseReminders(value),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.access_time),
-                      title: const Text('Default Reminder Time'),
-                      subtitle: Text('${settings.reminderMinutesBefore} minutes before'),
-                      trailing: const Icon(Icons.chevron_right),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.access_time,
+                      iconColor: AppColors.teal,
+                      title: 'Default Reminder Time',
+                      subtitle: '${settings.reminderMinutesBefore} minutes before',
                       enabled: settings.doseRemindersEnabled,
                       onTap: () => _showReminderTimePicker(context, settings),
                     ),
-                    const Divider(height: 1),
-                    SwitchListTile(
-                      secondary: const Icon(Icons.night_shelter_outlined),
-                      title: const Text('Do Not Disturb'),
-                      subtitle: Text(
-                        'Silent from ${_formatTime(settings.dndStartTime)} - ${_formatTime(settings.dndEndTime)}',
-                      ),
+                    const _SettingsDivider(),
+                    _SettingsToggle(
+                      icon: Icons.nights_stay_outlined,
+                      iconColor: AppColors.indigo,
+                      title: 'Do Not Disturb',
+                      subtitle: 'Silent from ${_formatTime(settings.dndStartTime)} - ${_formatTime(settings.dndEndTime)}',
                       value: settings.doNotDisturbEnabled,
-                      onChanged: (value) =>
-                          settings.setDoNotDisturb(value),
+                      onChanged: (value) => settings.setDoNotDisturb(value),
                     ),
-                    if (settings.doNotDisturbEnabled) ...[
-                      const Divider(height: 1),
-                      ListTile(
-                        leading: const SizedBox(width: 24),
-                        title: const Text('Start Time'),
-                        trailing: Text(_formatTime(settings.dndStartTime)),
-                        onTap: () => _pickDndTime(context, settings, isStart: true),
-                      ),
-                      ListTile(
-                        leading: const SizedBox(width: 24),
-                        title: const Text('End Time'),
-                        trailing: Text(_formatTime(settings.dndEndTime)),
-                        onTap: () => _pickDndTime(context, settings, isStart: false),
-                      ),
-                    ],
                   ],
                 ),
               ),
@@ -101,19 +90,20 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.l),
 
               // Calendar Integration Section
-              _SectionHeader(title: 'Calendar Integration'),
-              Card(
-                child: Column(
+              _AnimatedSection(
+                index: 2,
+                title: 'Calendar Integration',
+                child: _SettingsCard(
                   children: [
-                    SwitchListTile(
-                      secondary: const Icon(Icons.calendar_month_outlined),
-                      title: const Text('Apple Calendar Sync'),
-                      subtitle: const Text('Sync protocol doses to your calendar'),
+                    _SettingsToggle(
+                      icon: Icons.calendar_month_outlined,
+                      iconColor: AppColors.green,
+                      title: 'Apple Calendar Sync',
+                      subtitle: 'Sync protocol doses to your calendar',
                       value: settings.calendarSyncEnabled,
                       onChanged: (value) async {
                         await settings.setCalendarSync(value);
-                        if (settings.error != null) {
-                          if (context.mounted) {
+                        if (settings.error != null && context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(settings.error!),
@@ -121,24 +111,16 @@ class SettingsScreen extends StatelessWidget {
                               ),
                             );
                             settings.clearError();
-                          }
                         }
                       },
                     ),
                     if (settings.calendarSyncEnabled) ...[
-                      const Divider(height: 1),
-                      ListTile(
-                        leading: const SizedBox(width: 24),
-                        title: const Text('Calendar'),
-                        subtitle: Text(
-                          settings.selectedCalendarName ?? 'Select a calendar',
-                          style: TextStyle(
-                            color: settings.selectedCalendarName == null
-                                ? AppColors.mediumGray
-                                : null,
-                          ),
-                        ),
-                        trailing: const Icon(Icons.chevron_right),
+                      const _SettingsDivider(),
+                      _SettingsTile(
+                        icon: Icons.event_note_outlined,
+                        iconColor: AppColors.green,
+                        title: 'Calendar',
+                        subtitle: settings.selectedCalendarName ?? 'Select a calendar',
                         onTap: () => _showCalendarPicker(context, settings),
                       ),
                     ],
@@ -149,23 +131,24 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.l),
 
               // Appearance Section
-              _SectionHeader(title: 'Appearance'),
-              Card(
-                child: Column(
+              _AnimatedSection(
+                index: 3,
+                title: 'Appearance',
+                child: _SettingsCard(
                   children: [
-                    ListTile(
-                      leading: const Icon(Icons.dark_mode_outlined),
-                      title: const Text('Theme'),
-                      subtitle: Text(_getThemeName(settings.themeMode)),
-                      trailing: const Icon(Icons.chevron_right),
+                    _SettingsTile(
+                      icon: Icons.palette_outlined,
+                      iconColor: AppColors.pink,
+                      title: 'Theme',
+                      subtitle: _getThemeName(settings.themeMode),
                       onTap: () => _showThemePicker(context, settings),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.straighten),
-                      title: const Text('Units'),
-                      subtitle: Text(settings.useMetricUnits ? 'Metric (kg, mL)' : 'Imperial (lbs, oz)'),
-                      trailing: const Icon(Icons.chevron_right),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.straighten,
+                      iconColor: AppColors.yellow,
+                      title: 'Units',
+                      subtitle: settings.useMetricUnits ? 'Metric (kg, mL)' : 'Imperial (lbs, oz)',
                       onTap: () => _showUnitsPicker(context, settings),
                     ),
                   ],
@@ -175,33 +158,33 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.l),
 
               // Data & Privacy Section
-              _SectionHeader(title: 'Data & Privacy'),
-              Card(
-                child: Column(
+              _AnimatedSection(
+                index: 4,
+                title: 'Data & Privacy',
+                child: _SettingsCard(
                   children: [
-                    ListTile(
-                      leading: const Icon(Icons.file_download_outlined),
-                      title: const Text('Export Data'),
-                      subtitle: const Text('Download your data as CSV'),
-                      trailing: const Icon(Icons.chevron_right),
+                    _SettingsTile(
+                      icon: Icons.file_download_outlined,
+                      iconColor: AppColors.teal,
+                      title: 'Export Data',
+                      subtitle: 'Download your data as CSV',
                       onTap: () => _exportData(context),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.backup_outlined),
-                      title: const Text('Backup'),
-                      subtitle: const Text('Create a local backup'),
-                      trailing: const Icon(Icons.chevron_right),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.backup_outlined,
+                      iconColor: AppColors.primaryBlue,
+                      title: 'Backup',
+                      subtitle: 'Create a local backup',
                       onTap: () => _createBackup(context),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: Icon(Icons.delete_outline, color: AppColors.error),
-                      title: Text(
-                        'Delete All Data',
-                        style: TextStyle(color: AppColors.error),
-                      ),
-                      subtitle: const Text('Permanently delete all app data'),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.delete_outline,
+                      iconColor: AppColors.error,
+                      title: 'Delete All Data',
+                      subtitle: 'Permanently delete all app data',
+                      titleColor: AppColors.error,
                       onTap: () => _confirmDeleteData(context, settings),
                     ),
                   ],
@@ -211,42 +194,43 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.l),
 
               // About Section
-              _SectionHeader(title: 'About'),
-              Card(
-                child: Column(
+              _AnimatedSection(
+                index: 5,
+                title: 'About',
+                child: _SettingsCard(
                   children: [
-                    ListTile(
-                      leading: const Icon(Icons.info_outline),
-                      title: const Text('About pep.io'),
-                      trailing: const Icon(Icons.chevron_right),
+                    _SettingsTile(
+                      icon: Icons.info_outline,
+                      iconColor: AppColors.primaryBlue,
+                      title: 'About pep.io',
                       onTap: () => _showAboutDialog(context),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.description_outlined),
-                      title: const Text('Terms of Service'),
-                      trailing: const Icon(Icons.chevron_right),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.description_outlined,
+                      iconColor: AppColors.mediumGray,
+                      title: 'Terms of Service',
                       onTap: () => Navigator.pushNamed(context, AppRoutes.disclaimer),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.privacy_tip_outlined),
-                      title: const Text('Privacy Policy'),
-                      trailing: const Icon(Icons.chevron_right),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.privacy_tip_outlined,
+                      iconColor: AppColors.mediumGray,
+                      title: 'Privacy Policy',
                       onTap: () => Navigator.pushNamed(context, AppRoutes.privacy),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.star_outline),
-                      title: const Text('Rate This App'),
-                      trailing: const Icon(Icons.chevron_right),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.star_outline,
+                      iconColor: AppColors.yellow,
+                      title: 'Rate This App',
                       onTap: () => _rateApp(context),
                     ),
-                    const Divider(height: 1),
-                    ListTile(
-                      leading: const Icon(Icons.email_outlined),
-                      title: const Text('Contact Support'),
-                      trailing: const Icon(Icons.chevron_right),
+                    const _SettingsDivider(),
+                    _SettingsTile(
+                      icon: Icons.email_outlined,
+                      iconColor: AppColors.purple,
+                      title: 'Contact Support',
                       onTap: () => _contactSupport(context),
                     ),
                   ],
@@ -259,10 +243,38 @@ class SettingsScreen extends StatelessWidget {
               Center(
                 child: Column(
                   children: [
+                    Container(
+                      width: 60,
+                      height: 60,
+                      decoration: BoxDecoration(
+                        borderRadius: AppRadius.largeRadius,
+                        boxShadow: AppShadows.glow(AppColors.primaryBlue, intensity: 0.3),
+                      ),
+                      child: ClipRRect(
+                        borderRadius: AppRadius.largeRadius,
+                        child: Image.asset(
+                          'assets/images/app_icon.png',
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              decoration: const BoxDecoration(
+                                gradient: AppColors.primaryGradient,
+                              ),
+                              child: const Icon(
+                                Icons.science_outlined,
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.m),
                     Text(
                       'pep.io',
                       style: AppTypography.headline.copyWith(
-                        color: AppColors.mediumGray,
+                        color: isDark ? AppColors.white : AppColors.black,
                       ),
                     ),
                     Text(
@@ -273,7 +285,9 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
+              )
+                  .animate()
+                  .fadeIn(delay: 600.ms, duration: 400.ms),
 
               const SizedBox(height: AppSpacing.xl),
             ],
@@ -320,12 +334,24 @@ class SettingsScreen extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Personal Information', style: AppTypography.headline),
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: AppColors.lightGray,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
               const SizedBox(height: AppSpacing.m),
+              Text('Personal Information', style: AppTypography.title3),
+              const SizedBox(height: AppSpacing.l),
               TextField(
                 controller: nameController,
                 decoration: const InputDecoration(
                   labelText: 'Name (optional)',
+                  prefixIcon: Icon(Icons.person_outline),
                 ),
               ),
               const SizedBox(height: AppSpacing.m),
@@ -333,6 +359,7 @@ class SettingsScreen extends StatelessWidget {
                 controller: weightController,
                 decoration: InputDecoration(
                   labelText: 'Weight (${settings.useMetricUnits ? 'kg' : 'lbs'})',
+                  prefixIcon: const Icon(Icons.monitor_weight_outlined),
                 ),
                 keyboardType: TextInputType.number,
               ),
@@ -343,9 +370,7 @@ class SettingsScreen extends StatelessWidget {
                   onPressed: () {
                     settings.setUserName(nameController.text);
                     if (weightController.text.isNotEmpty) {
-                      settings.setUserWeight(
-                        double.tryParse(weightController.text),
-                      );
+                      settings.setUserWeight(double.tryParse(weightController.text));
                     }
                     Navigator.pop(context);
                   },
@@ -360,10 +385,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  void _showReminderTimePicker(
-    BuildContext context,
-    SettingsProvider settings,
-  ) {
+  void _showReminderTimePicker(BuildContext context, SettingsProvider settings) {
     final options = [5, 10, 15, 30, 60];
 
     showModalBottomSheet(
@@ -372,48 +394,27 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              child: Text('Reminder Time', style: AppTypography.headline),
-            ),
+            const SizedBox(height: AppSpacing.m),
+            Text('Reminder Time', style: AppTypography.title3),
+            const SizedBox(height: AppSpacing.m),
             ...options.map((minutes) => ListTile(
                   title: Text('$minutes minutes before'),
                   trailing: settings.reminderMinutesBefore == minutes
-                      ? Icon(Icons.check, color: AppColors.primaryBlue)
+                  ? Icon(Icons.check_circle, color: AppColors.primaryBlue)
                       : null,
                   onTap: () {
                     settings.setReminderMinutes(minutes);
                     Navigator.pop(context);
                   },
                 )),
+            const SizedBox(height: AppSpacing.m),
           ],
         ),
       ),
     );
   }
 
-  Future<void> _pickDndTime(
-    BuildContext context,
-    SettingsProvider settings, {
-    required bool isStart,
-  }) async {
-    final initial = isStart ? settings.dndStartTime : settings.dndEndTime;
-    final time = await showTimePicker(
-      context: context,
-      initialTime: initial,
-    );
-
-    if (time != null) {
-      if (isStart) {
-        settings.setDndStartTime(time);
-      } else {
-        settings.setDndEndTime(time);
-      }
-    }
-  }
-
-  void _showCalendarPicker(BuildContext context, SettingsProvider settings) async {
-    // Ensure calendars are loaded
+  Future<void> _showCalendarPicker(BuildContext context, SettingsProvider settings) async {
     if (settings.availableCalendars.isEmpty) {
       await settings.loadAvailableCalendars();
     }
@@ -432,9 +433,6 @@ class SettingsScreen extends StatelessWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (context) => DraggableScrollableSheet(
         initialChildSize: 0.5,
         minChildSize: 0.3,
@@ -443,9 +441,8 @@ class SettingsScreen extends StatelessWidget {
         builder: (context, scrollController) {
           return Column(
             children: [
-              // Handle
+              const SizedBox(height: AppSpacing.s),
               Container(
-                margin: const EdgeInsets.only(top: AppSpacing.s),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
@@ -455,16 +452,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               Padding(
                 padding: const EdgeInsets.all(AppSpacing.m),
-                child: Row(
-                  children: [
-                    Text('Select Calendar', style: AppTypography.headline),
-                    const Spacer(),
-                    IconButton(
-                      icon: const Icon(Icons.close),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                  ],
-                ),
+                child: Text('Select Calendar', style: AppTypography.title3),
               ),
               const Divider(height: 1),
               Expanded(
@@ -475,7 +463,6 @@ class SettingsScreen extends StatelessWidget {
                     final calendar = settings.availableCalendars[index];
                     final isSelected = calendar.id == settings.selectedCalendar;
                     
-                    // Get calendar color
                     Color calendarColor = AppColors.primaryBlue;
                     if (calendar.color != null) {
                       calendarColor = Color(calendar.color!);
@@ -505,14 +492,6 @@ class SettingsScreen extends StatelessWidget {
                       onTap: () {
                         settings.selectCalendar(calendar);
                         Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              'Calendar "${calendar.name}" selected for syncing',
-                            ),
-                            backgroundColor: AppColors.green,
-                          ),
-                        );
                       },
                     );
                   },
@@ -532,43 +511,37 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              child: Text('Theme', style: AppTypography.headline),
-            ),
-            ListTile(
-              leading: const Icon(Icons.light_mode),
-              title: const Text('Light'),
-              trailing: settings.themeMode == ThemeMode.light
-                  ? Icon(Icons.check, color: AppColors.primaryBlue)
-                  : null,
+            const SizedBox(height: AppSpacing.m),
+            Text('Theme', style: AppTypography.title3),
+            const SizedBox(height: AppSpacing.m),
+            _ThemeOption(
+              icon: Icons.light_mode,
+              title: 'Light',
+              isSelected: settings.themeMode == ThemeMode.light,
               onTap: () {
                 settings.setThemeMode(ThemeMode.light);
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.dark_mode),
-              title: const Text('Dark'),
-              trailing: settings.themeMode == ThemeMode.dark
-                  ? Icon(Icons.check, color: AppColors.primaryBlue)
-                  : null,
+            _ThemeOption(
+              icon: Icons.dark_mode,
+              title: 'Dark',
+              isSelected: settings.themeMode == ThemeMode.dark,
               onTap: () {
                 settings.setThemeMode(ThemeMode.dark);
                 Navigator.pop(context);
               },
             ),
-            ListTile(
-              leading: const Icon(Icons.settings_system_daydream),
-              title: const Text('System'),
-              trailing: settings.themeMode == ThemeMode.system
-                  ? Icon(Icons.check, color: AppColors.primaryBlue)
-                  : null,
+            _ThemeOption(
+              icon: Icons.settings_system_daydream,
+              title: 'System',
+              isSelected: settings.themeMode == ThemeMode.system,
               onTap: () {
                 settings.setThemeMode(ThemeMode.system);
                 Navigator.pop(context);
               },
             ),
+            const SizedBox(height: AppSpacing.m),
           ],
         ),
       ),
@@ -582,14 +555,13 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(AppSpacing.m),
-              child: Text('Units', style: AppTypography.headline),
-            ),
+            const SizedBox(height: AppSpacing.m),
+            Text('Units', style: AppTypography.title3),
+            const SizedBox(height: AppSpacing.m),
             ListTile(
               title: const Text('Metric (kg, mL)'),
               trailing: settings.useMetricUnits
-                  ? Icon(Icons.check, color: AppColors.primaryBlue)
+                  ? Icon(Icons.check_circle, color: AppColors.primaryBlue)
                   : null,
               onTap: () {
                 settings.setUseMetricUnits(true);
@@ -599,13 +571,14 @@ class SettingsScreen extends StatelessWidget {
             ListTile(
               title: const Text('Imperial (lbs, oz)'),
               trailing: !settings.useMetricUnits
-                  ? Icon(Icons.check, color: AppColors.primaryBlue)
+                  ? Icon(Icons.check_circle, color: AppColors.primaryBlue)
                   : null,
               onTap: () {
                 settings.setUseMetricUnits(false);
                 Navigator.pop(context);
               },
             ),
+            const SizedBox(height: AppSpacing.m),
           ],
         ),
       ),
@@ -613,58 +586,14 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _exportData(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Export Data'),
-        content: const Text(
-          'Export your protocol and dose history as a CSV file?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Export logic here
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Data exported successfully')),
-              );
-            },
-            child: const Text('Export'),
-          ),
-        ],
-      ),
     );
   }
 
   void _createBackup(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Create Backup'),
-        content: const Text(
-          'Create a backup of all your app data? You can use this to restore your data later.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // Backup logic here
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Backup created successfully')),
-              );
-            },
-            child: const Text('Create Backup'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -706,50 +635,49 @@ class SettingsScreen extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
-                color: AppColors.primaryBlue,
-                borderRadius: AppRadius.smallRadius,
+                borderRadius: AppRadius.largeRadius,
+                boxShadow: AppShadows.glow(AppColors.primaryBlue, intensity: 0.3),
               ),
-              child: const Center(
-                child: Text(
-                  'P',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 20,
-                  ),
+              child: ClipRRect(
+                borderRadius: AppRadius.largeRadius,
+                child: Image.asset(
+                  'assets/images/app_icon.png',
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: const BoxDecoration(
+                        gradient: AppColors.primaryGradient,
+                      ),
+                      child: const Icon(
+                        Icons.science_outlined,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-            const SizedBox(width: AppSpacing.s),
-            const Text('pep.io'),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
+            const SizedBox(height: AppSpacing.m),
+            Text('pep.io', style: AppTypography.title2),
+            const SizedBox(height: AppSpacing.s),
+            Text(
               'pep.io is an educational peptide tracking application designed to help users organize and understand their peptide research protocols.',
+              style: AppTypography.body.copyWith(color: AppColors.mediumGray),
+              textAlign: TextAlign.center,
             ),
             const SizedBox(height: AppSpacing.m),
             Text(
-              'Version 1.0.0',
-              style: AppTypography.caption1.copyWith(
-                color: AppColors.mediumGray,
-              ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              '© 2024 pep.io',
-              style: AppTypography.caption1.copyWith(
-                color: AppColors.mediumGray,
-              ),
+              'Version 1.0.0\n© 2024 pep.io',
+              style: AppTypography.caption1.copyWith(color: AppColors.mediumGray),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -764,40 +692,252 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void _rateApp(BuildContext context) {
-    // Would trigger in_app_review
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Thank you for your support!')),
     );
   }
 
   void _contactSupport(BuildContext context) {
-    // Would open email client
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(content: Text('Opening email...')),
     );
   }
 }
 
-class _SectionHeader extends StatelessWidget {
+class _AnimatedSection extends StatelessWidget {
+  final int index;
   final String title;
+  final Widget child;
 
-  const _SectionHeader({required this.title});
+  const _AnimatedSection({
+    required this.index,
+    required this.title,
+    required this.child,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(
-        left: AppSpacing.xs,
-        bottom: AppSpacing.xs,
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.xs),
       child: Text(
         title.toUpperCase(),
         style: AppTypography.caption1.copyWith(
           color: AppColors.mediumGray,
           letterSpacing: 1.2,
+              fontWeight: FontWeight.w600,
+        ),
+      ),
+        ),
+        child,
+      ],
+    )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: index * 100), duration: 400.ms)
+        .slideY(begin: 0.05, end: 0, delay: Duration(milliseconds: index * 100));
+  }
+}
+
+class _SettingsCard extends StatelessWidget {
+  final List<Widget> children;
+
+  const _SettingsCard({required this.children});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : AppColors.white,
+        borderRadius: AppRadius.largeRadius,
+        border: Border.all(
+          color: isDark ? AppColors.cardDark : AppColors.lightGray.withOpacity(0.5),
+        ),
+        boxShadow: isDark ? null : AppShadows.level1,
+      ),
+      child: Column(children: children),
+    );
+  }
+}
+
+class _SettingsTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String? subtitle;
+  final Color? titleColor;
+  final bool enabled;
+  final VoidCallback onTap;
+
+  const _SettingsTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    this.subtitle,
+    this.titleColor,
+    this.enabled = true,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BouncyTap(
+      onTap: enabled ? onTap : null,
+      child: Opacity(
+        opacity: enabled ? 1 : 0.5,
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.m),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: iconColor.withOpacity(0.1),
+                  borderRadius: AppRadius.mediumRadius,
+                ),
+                child: Icon(icon, color: iconColor, size: 20),
+              ),
+              const SizedBox(width: AppSpacing.m),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: AppTypography.body.copyWith(
+                        color: titleColor,
+                      ),
+                    ),
+                    if (subtitle != null)
+                      Text(
+                        subtitle!,
+                        style: AppTypography.caption1.copyWith(
+                          color: AppColors.mediumGray,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: AppColors.mediumGray,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+class _SettingsToggle extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final bool value;
+  final ValueChanged<bool> onChanged;
+
+  const _SettingsToggle({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.m),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: AppRadius.mediumRadius,
+            ),
+            child: Icon(icon, color: iconColor, size: 20),
+          ),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(title, style: AppTypography.body),
+                Text(
+                  subtitle,
+                  style: AppTypography.caption1.copyWith(
+                    color: AppColors.mediumGray,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SettingsDivider extends StatelessWidget {
+  const _SettingsDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 72),
+      child: Divider(height: 1, color: AppColors.lightGray.withOpacity(0.5)),
+    );
+  }
+}
+
+class _ThemeOption extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _ThemeOption({
+    required this.icon,
+    required this.title,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.primaryBlue.withOpacity(0.1)
+              : AppColors.softGray,
+          borderRadius: AppRadius.mediumRadius,
+        ),
+        child: Icon(
+          icon,
+          color: isSelected ? AppColors.primaryBlue : AppColors.mediumGray,
+        ),
+      ),
+      title: Text(title),
+      trailing: isSelected
+          ? Icon(Icons.check_circle, color: AppColors.primaryBlue)
+          : null,
+      onTap: onTap,
+    );
+  }
+}

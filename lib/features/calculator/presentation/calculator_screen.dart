@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/models/calculation.dart';
+import '../../../core/widgets/animated_widgets.dart';
 import 'calculator_provider.dart';
 
 class CalculatorScreen extends StatefulWidget {
@@ -33,6 +36,7 @@ class _CalculatorScreenState extends State<CalculatorScreen>
   double? _dosePerUnit;
   double? _volumeNeeded;
   int? _totalDoses;
+  bool _showResults = false;
 
   final List<String> _vialUnits = ['mg', 'mcg', 'IU'];
   final List<String> _waterUnits = ['mL'];
@@ -70,6 +74,7 @@ class _CalculatorScreenState extends State<CalculatorScreen>
         _dosePerUnit = null;
         _volumeNeeded = null;
         _totalDoses = null;
+        _showResults = false;
       });
       return;
     }
@@ -109,9 +114,6 @@ class _CalculatorScreenState extends State<CalculatorScreen>
     // Calculate volume needed (in mL)
     final volumeNeeded = desiredMcg / concentration;
 
-    // Calculate units to draw
-    final unitsNeeded = volumeNeeded / (syringeVolume / syringeUnits);
-
     // Calculate total doses from vial
     final totalDoses = (vialMcg / desiredMcg).floor();
 
@@ -120,14 +122,17 @@ class _CalculatorScreenState extends State<CalculatorScreen>
       _dosePerUnit = mcgPerUnit;
       _volumeNeeded = volumeNeeded;
       _totalDoses = totalDoses;
+      _showResults = true;
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dose Calculator'),
+        title: Text('Dose Calculator', style: AppTypography.title3),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -139,30 +144,56 @@ class _CalculatorScreenState extends State<CalculatorScreen>
       body: TabBarView(
         controller: _tabController,
         children: [
-          _buildCalculatorTab(),
+          _buildCalculatorTab(isDark),
           _buildHistoryTab(),
         ],
       ),
     );
   }
 
-  Widget _buildCalculatorTab() {
+  Widget _buildCalculatorTab(bool isDark) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.m),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Calculator header image
+          Center(
+            child: SizedBox(
+              height: 80,
+              child: Image.asset(
+                'assets/images/calculator_header.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const SizedBox(),
+              ),
+            ),
+          ).animate().fadeIn(duration: 400.ms).scale(begin: const Offset(0.9, 0.9)),
+          const SizedBox(height: AppSpacing.m),
+          
           // Educational disclaimer
           Container(
             padding: const EdgeInsets.all(AppSpacing.m),
             decoration: BoxDecoration(
-              color: AppColors.primaryBlue.withOpacity(0.1),
-              borderRadius: AppRadius.mediumRadius,
-              border: Border.all(color: AppColors.primaryBlue.withOpacity(0.3)),
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.primaryBlue.withOpacity(0.1),
+                  AppColors.purple.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: AppRadius.largeRadius,
+              border: Border.all(color: AppColors.primaryBlue.withOpacity(0.2)),
             ),
             child: Row(
               children: [
-                Icon(Icons.info_outline, color: AppColors.primaryBlue),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.primaryBlue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(Icons.info_outline, color: AppColors.primaryBlue),
+                ),
                 const SizedBox(width: AppSpacing.s),
                 Expanded(
                   child: Text(
@@ -174,35 +205,37 @@ class _CalculatorScreenState extends State<CalculatorScreen>
                 ),
               ],
             ),
-          ),
+          )
+              .animate()
+              .fadeIn(duration: 300.ms)
+              .slideY(begin: -0.1, end: 0),
 
           const SizedBox(height: AppSpacing.l),
 
-          // Vial Information
-          _SectionHeader(title: 'Vial Information'),
-          Row(
+          // Input sections
+          _buildInputSection(
+            index: 0,
+            title: 'Vial Information',
+            icon: Icons.science_outlined,
+            color: AppColors.purple,
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 flex: 2,
-                child: TextField(
+                  child: _AnimatedTextField(
                   controller: _vialQuantityController,
-                  decoration: const InputDecoration(
-                    labelText: 'Peptide Amount',
-                    hintText: '5',
-                  ),
-                  keyboardType: TextInputType.number,
+                    label: 'Peptide Amount',
+                    hint: '5',
                   onChanged: (_) => _calculateDose(),
                 ),
               ),
               const SizedBox(width: AppSpacing.m),
               Expanded(
-                child: DropdownButtonFormField<String>(
+                  child: _AnimatedDropdown(
                   value: _vialUnit,
-                  decoration: const InputDecoration(labelText: 'Unit'),
-                  items: _vialUnits
-                      .map((u) => DropdownMenuItem(value: u, child: Text(u)))
-                      .toList(),
+                    label: 'Unit',
+                    items: _vialUnits,
                   onChanged: (v) {
                     setState(() => _vialUnit = v!);
                     _calculateDose();
@@ -211,34 +244,31 @@ class _CalculatorScreenState extends State<CalculatorScreen>
               ),
             ],
           ),
+          ),
 
-          const SizedBox(height: AppSpacing.m),
-
-          // Reconstitution
-          _SectionHeader(title: 'Reconstitution'),
-          Row(
+          _buildInputSection(
+            index: 1,
+            title: 'Reconstitution',
+            icon: Icons.water_drop_outlined,
+            color: AppColors.teal,
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 flex: 2,
-                child: TextField(
+                  child: _AnimatedTextField(
                   controller: _waterVolumeController,
-                  decoration: const InputDecoration(
-                    labelText: 'Bacteriostatic Water',
-                    hintText: '2',
-                  ),
-                  keyboardType: TextInputType.number,
+                    label: 'Bacteriostatic Water',
+                    hint: '2',
                   onChanged: (_) => _calculateDose(),
                 ),
               ),
               const SizedBox(width: AppSpacing.m),
               Expanded(
-                child: DropdownButtonFormField<String>(
+                  child: _AnimatedDropdown(
                   value: _waterUnit,
-                  decoration: const InputDecoration(labelText: 'Unit'),
-                  items: _waterUnits
-                      .map((u) => DropdownMenuItem(value: u, child: Text(u)))
-                      .toList(),
+                    label: 'Unit',
+                    items: _waterUnits,
                   onChanged: (v) {
                     setState(() => _waterUnit = v!);
                     _calculateDose();
@@ -247,34 +277,31 @@ class _CalculatorScreenState extends State<CalculatorScreen>
               ),
             ],
           ),
+          ),
 
-          const SizedBox(height: AppSpacing.m),
-
-          // Desired Dose
-          _SectionHeader(title: 'Desired Dose'),
-          Row(
+          _buildInputSection(
+            index: 2,
+            title: 'Desired Dose',
+            icon: Icons.medication_outlined,
+            color: AppColors.orange,
+            child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 flex: 2,
-                child: TextField(
+                  child: _AnimatedTextField(
                   controller: _desiredDoseController,
-                  decoration: const InputDecoration(
-                    labelText: 'Dose Amount',
-                    hintText: '250',
-                  ),
-                  keyboardType: TextInputType.number,
+                    label: 'Dose Amount',
+                    hint: '250',
                   onChanged: (_) => _calculateDose(),
                 ),
               ),
               const SizedBox(width: AppSpacing.m),
               Expanded(
-                child: DropdownButtonFormField<String>(
+                  child: _AnimatedDropdown(
                   value: _doseUnit,
-                  decoration: const InputDecoration(labelText: 'Unit'),
-                  items: _doseUnits
-                      .map((u) => DropdownMenuItem(value: u, child: Text(u)))
-                      .toList(),
+                    label: 'Unit',
+                    items: _doseUnits,
                   onChanged: (v) {
                     setState(() => _doseUnit = v!);
                     _calculateDose();
@@ -283,62 +310,120 @@ class _CalculatorScreenState extends State<CalculatorScreen>
               ),
             ],
           ),
+          ),
 
-          const SizedBox(height: AppSpacing.m),
-
-          // Syringe Type
-          _SectionHeader(title: 'Syringe Type'),
-          DropdownButtonFormField<String>(
+          _buildInputSection(
+            index: 3,
+            title: 'Syringe Type',
+            icon: Icons.colorize_outlined,
+            color: AppColors.pink,
+            child: _AnimatedDropdown(
             value: _syringeType,
-            decoration: const InputDecoration(labelText: 'Select Syringe'),
-            items: _syringeTypes
-                .map((s) => DropdownMenuItem(value: s, child: Text(s)))
-                .toList(),
+              label: 'Select Syringe',
+              items: _syringeTypes,
+              isFullWidth: true,
             onChanged: (v) {
               setState(() => _syringeType = v!);
               _calculateDose();
             },
+            ),
           ),
-
-          const SizedBox(height: AppSpacing.xl),
-
-          // Results
-          if (_concentration != null) _buildResults(),
 
           const SizedBox(height: AppSpacing.l),
 
-          // Save Calculation Button
+          // Results
+          if (_showResults && _concentration != null) _buildResults(isDark),
+
+          const SizedBox(height: AppSpacing.l),
+
+          // Action Buttons
           if (_concentration != null)
-            SizedBox(
-              width: double.infinity,
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _resetCalculator,
+                    icon: const Icon(Icons.refresh),
+                    label: const Text('Reset'),
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.m),
+                Expanded(
+                  flex: 2,
               child: ElevatedButton.icon(
                 onPressed: _saveCalculation,
                 icon: const Icon(Icons.save_outlined),
                 label: const Text('Save Calculation'),
               ),
             ),
-
-          const SizedBox(height: AppSpacing.m),
-
-          // Reset Button
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _resetCalculator,
-              icon: const Icon(Icons.refresh),
-              label: const Text('Reset'),
-            ),
-          ),
+              ],
+            )
+                .animate()
+                .fadeIn(delay: 400.ms)
+                .slideY(begin: 0.1, end: 0),
         ],
       ),
     );
   }
 
-  Widget _buildResults() {
-    final unitsNeeded = _volumeNeeded! * 100 / 1.0; // Assuming 100 unit syringe
+  Widget _buildInputSection({
+    required int index,
+    required String title,
+    required IconData icon,
+    required Color color,
+    required Widget child,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 28,
+              height: 28,
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: AppRadius.smallRadius,
+              ),
+              child: Icon(icon, color: color, size: 16),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Text(
+              title,
+              style: AppTypography.subhead.copyWith(
+                color: AppColors.mediumGray,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.s),
+        child,
+        const SizedBox(height: AppSpacing.m),
+      ],
+    )
+        .animate()
+        .fadeIn(delay: Duration(milliseconds: 100 + index * 80))
+        .slideX(begin: -0.05, end: 0);
+  }
 
-    return Card(
-      color: AppColors.green.withOpacity(0.05),
+  Widget _buildResults(bool isDark) {
+    final unitsNeeded = _volumeNeeded! * 100 / 1.0;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.green.withOpacity(0.15),
+            AppColors.green.withOpacity(0.05),
+          ],
+        ),
+        borderRadius: AppRadius.largeRadius,
+        border: Border.all(color: AppColors.green.withOpacity(0.3)),
+        boxShadow: AppShadows.glow(AppColors.green, intensity: 0.2),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.m),
         child: Column(
@@ -346,20 +431,28 @@ class _CalculatorScreenState extends State<CalculatorScreen>
           children: [
             Row(
               children: [
-                Icon(Icons.check_circle, color: AppColors.green),
-                const SizedBox(width: AppSpacing.xs),
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: AppColors.green.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.check_circle, color: AppColors.green),
+                ),
+                const SizedBox(width: AppSpacing.s),
                 Text(
                   'Results',
-                  style: AppTypography.headline.copyWith(color: AppColors.green),
+                  style: AppTypography.title3.copyWith(color: AppColors.green),
                 ),
               ],
             ),
             const SizedBox(height: AppSpacing.m),
 
-            // Main result - Units to draw
+            // Main result
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(AppSpacing.m),
+              padding: const EdgeInsets.all(AppSpacing.l),
               decoration: BoxDecoration(
                 color: AppColors.green.withOpacity(0.1),
                 borderRadius: AppRadius.mediumRadius,
@@ -370,24 +463,28 @@ class _CalculatorScreenState extends State<CalculatorScreen>
                     'Draw',
                     style: AppTypography.caption1.copyWith(
                       color: AppColors.green,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
+                  const SizedBox(height: AppSpacing.xxs),
                   Text(
                     '${unitsNeeded.toStringAsFixed(1)} units',
-                    style: AppTypography.largeTitle.copyWith(
+                    style: AppTypography.metricLarge.copyWith(
                       color: AppColors.green,
-                      fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     '(${(_volumeNeeded! * 1000).toStringAsFixed(2)} µL)',
                     style: AppTypography.caption1.copyWith(
-                      color: AppColors.green,
+                      color: AppColors.green.withOpacity(0.7),
                     ),
                   ),
                 ],
               ),
-            ),
+            )
+                .animate()
+                .scale(begin: const Offset(0.9, 0.9), end: const Offset(1, 1))
+                .fadeIn(),
 
             const SizedBox(height: AppSpacing.m),
 
@@ -407,38 +504,22 @@ class _CalculatorScreenState extends State<CalculatorScreen>
           ],
         ),
       ),
-    );
+    )
+        .animate()
+        .fadeIn(delay: 300.ms)
+        .slideY(begin: 0.1, end: 0);
   }
 
   Widget _buildHistoryTab() {
     return Consumer<CalculatorProvider>(
       builder: (context, provider, _) {
         if (provider.history.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.history,
-                  size: 64,
-                  color: AppColors.mediumGray,
-                ),
-                const SizedBox(height: AppSpacing.m),
-                Text(
-                  'No Saved Calculations',
-                  style: AppTypography.headline.copyWith(
-                    color: AppColors.mediumGray,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xs),
-                Text(
-                  'Your saved calculations will appear here',
-                  style: AppTypography.body.copyWith(
-                    color: AppColors.mediumGray,
-                  ),
-                ),
-              ],
-            ),
+          return AnimatedEmptyState(
+            icon: Icons.history,
+            title: 'No Saved Calculations',
+            subtitle: 'Your saved calculations will appear here',
+            iconColor: AppColors.mediumGray,
+            imagePath: 'assets/images/empty_progress.png',
           );
         }
 
@@ -447,10 +528,13 @@ class _CalculatorScreenState extends State<CalculatorScreen>
           itemCount: provider.history.length,
           itemBuilder: (context, index) {
             final calc = provider.history[index];
-            return _HistoryCard(
+            return AnimatedListItem(
+              index: index,
+              child: _HistoryCard(
               calculation: calc,
               onLoad: () => _loadCalculation(calc),
               onDelete: () => provider.deleteFromHistory(calc.id),
+              ),
             );
           },
         );
@@ -459,10 +543,12 @@ class _CalculatorScreenState extends State<CalculatorScreen>
   }
 
   void _saveCalculation() {
+    HapticFeedback.mediumImpact();
+    
     final calculation = Calculation(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
       peptideId: widget.peptideId,
-      peptideName: '', // Would come from selected peptide
+      peptideName: '',
       vialQuantity: double.parse(_vialQuantityController.text),
       vialUnit: _vialUnit,
       waterVolume: double.parse(_waterVolumeController.text),
@@ -479,7 +565,11 @@ class _CalculatorScreenState extends State<CalculatorScreen>
     context.read<CalculatorProvider>().saveToHistory();
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Calculation saved')),
+      SnackBar(
+        content: const Text('Calculation saved'),
+        backgroundColor: AppColors.green,
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -497,6 +587,8 @@ class _CalculatorScreenState extends State<CalculatorScreen>
   }
 
   void _resetCalculator() {
+    HapticFeedback.lightImpact();
+    
     setState(() {
       _vialQuantityController.text = '5';
       _vialUnit = 'mg';
@@ -509,21 +601,56 @@ class _CalculatorScreenState extends State<CalculatorScreen>
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
+class _AnimatedTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final String hint;
+  final ValueChanged<String>? onChanged;
 
-  const _SectionHeader({required this.title});
+  const _AnimatedTextField({
+    required this.controller,
+    required this.label,
+    required this.hint,
+    this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-      child: Text(
-        title,
-        style: AppTypography.subhead.copyWith(
-          color: AppColors.mediumGray,
-        ),
+    return TextField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
       ),
+      keyboardType: TextInputType.number,
+      onChanged: onChanged,
+    );
+  }
+}
+
+class _AnimatedDropdown extends StatelessWidget {
+  final String value;
+  final String label;
+  final List<String> items;
+  final ValueChanged<String?>? onChanged;
+  final bool isFullWidth;
+
+  const _AnimatedDropdown({
+    required this.value,
+    required this.label,
+    required this.items,
+    this.onChanged,
+    this.isFullWidth = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      value: value,
+      decoration: InputDecoration(labelText: label),
+      items: items.map((u) => DropdownMenuItem(value: u, child: Text(u))).toList(),
+      onChanged: onChanged,
+      isExpanded: isFullWidth,
     );
   }
 }
@@ -547,7 +674,7 @@ class _ResultRow extends StatelessWidget {
           ),
           Text(
             value,
-            style: AppTypography.headline,
+            style: AppTypography.headline.copyWith(color: AppColors.green),
           ),
         ],
       ),
@@ -568,24 +695,54 @@ class _HistoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return BouncyTap(
+      onTap: onLoad,
+      child: Container(
       margin: const EdgeInsets.only(bottom: AppSpacing.s),
-      child: ListTile(
-        title: Text(
+        padding: const EdgeInsets.all(AppSpacing.m),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.white,
+          borderRadius: AppRadius.largeRadius,
+          border: Border.all(
+            color: isDark ? AppColors.cardDark : AppColors.lightGray,
+          ),
+          boxShadow: isDark ? null : AppShadows.level1,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.teal.withOpacity(0.1),
+                borderRadius: AppRadius.mediumRadius,
+              ),
+              child: const Icon(Icons.calculate_outlined, color: AppColors.teal),
+            ),
+            const SizedBox(width: AppSpacing.m),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
           calculation.peptideName.isNotEmpty
               ? calculation.peptideName
               : 'Custom Calculation',
           style: AppTypography.headline,
         ),
-        subtitle: Text(
+                  Text(
           '${calculation.desiredDose} ${calculation.desiredDoseUnit} • ${calculation.vialQuantity} ${calculation.vialUnit} vial',
-          style: AppTypography.caption1,
+                    style: AppTypography.caption1.copyWith(
+                      color: AppColors.mediumGray,
+                    ),
         ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
+                ],
+              ),
+            ),
             IconButton(
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh, color: AppColors.primaryBlue),
               onPressed: onLoad,
             ),
             IconButton(
@@ -594,7 +751,6 @@ class _HistoryCard extends StatelessWidget {
             ),
           ],
         ),
-        onTap: onLoad,
       ),
     );
   }
@@ -625,4 +781,3 @@ class _HistoryCard extends StatelessWidget {
     );
   }
 }
-

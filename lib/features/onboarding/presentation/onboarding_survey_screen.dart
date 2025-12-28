@@ -88,6 +88,24 @@ class _IntentionsStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Welcome image
+          Center(
+            child: SizedBox(
+              height: 160,
+              child: Image.asset(
+                'assets/images/onboarding_welcome.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  return Icon(
+                    Icons.science_outlined,
+                    size: 80,
+                    color: AppColors.primaryBlue,
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.m),
           Text(
             'What would you like to do with pep.io?',
             style: AppTypography.title2,
@@ -99,7 +117,7 @@ class _IntentionsStep extends StatelessWidget {
               color: AppColors.mediumGray,
             ),
           ),
-          const SizedBox(height: AppSpacing.l),
+          const SizedBox(height: AppSpacing.m),
           
           Expanded(
             child: ListView(
@@ -176,6 +194,18 @@ class _ProfileStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Track image
+          Center(
+            child: SizedBox(
+              height: 120,
+              child: Image.asset(
+                'assets/images/onboarding_track.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const SizedBox(),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.m),
           Text(
             'Tell us about yourself',
             style: AppTypography.title2,
@@ -187,7 +217,7 @@ class _ProfileStep extends StatelessWidget {
               color: AppColors.mediumGray,
             ),
           ),
-          const SizedBox(height: AppSpacing.l),
+          const SizedBox(height: AppSpacing.m),
           
           Expanded(
             child: ListView(
@@ -283,6 +313,18 @@ class _ExperienceStep extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Learn image
+          Center(
+            child: SizedBox(
+              height: 140,
+              child: Image.asset(
+                'assets/images/onboarding_learn.png',
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => const SizedBox(),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.m),
           Text(
             'What\'s your experience with peptides?',
             style: AppTypography.title2,
@@ -333,17 +375,28 @@ class _SetupStep extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: AppColors.primaryBlue.withOpacity(0.1),
-            ),
-            child: Icon(
-              Icons.celebration_outlined,
-              size: 50,
-              color: AppColors.primaryBlue,
+          // Success/Goal image
+          SizedBox(
+            width: 150,
+            height: 150,
+            child: Image.asset(
+              'assets/images/success_goal.png',
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: AppColors.primaryBlue.withOpacity(0.1),
+                  ),
+                  child: Icon(
+                    Icons.celebration_outlined,
+                    size: 50,
+                    color: AppColors.primaryBlue,
+                  ),
+                );
+              },
             ),
           ),
           const SizedBox(height: AppSpacing.l),
