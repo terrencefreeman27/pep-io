@@ -304,6 +304,9 @@ class _AchievementBadges extends StatelessWidget {
         imagePath: 'assets/images/badge_first_protocol.png',
         color: AppColors.teal,
         isUnlocked: protocolCount >= 1,
+        currentValue: protocolCount.clamp(0, 1),
+        requiredValue: 1,
+        requirementLabel: 'Create your first protocol',
       ),
       // Streak badge
       _Achievement(
@@ -312,6 +315,9 @@ class _AchievementBadges extends StatelessWidget {
         imagePath: 'assets/images/badge_streak.png',
         color: AppColors.orange,
         isUnlocked: currentStreak >= 7,
+        currentValue: currentStreak.clamp(0, 7),
+        requiredValue: 7,
+        requirementLabel: 'Maintain a 7 day streak',
       ),
       // Perfect week
       _Achievement(
@@ -320,6 +326,9 @@ class _AchievementBadges extends StatelessWidget {
         imagePath: 'assets/images/badge_perfect_week.png',
         color: AppColors.primaryBlue,
         isUnlocked: longestStreak >= 7,
+        currentValue: longestStreak.clamp(0, 7),
+        requiredValue: 7,
+        requirementLabel: 'Complete 7 perfect days',
       ),
       // Century badge (100 doses)
       _Achievement(
@@ -328,6 +337,9 @@ class _AchievementBadges extends StatelessWidget {
         imagePath: 'assets/images/badge_century.png',
         color: AppColors.yellow,
         isUnlocked: totalDoses >= 100,
+        currentValue: totalDoses.clamp(0, 100),
+        requiredValue: 100,
+        requirementLabel: 'Take 100 doses total',
       ),
       // Early bird badge
       _Achievement(
@@ -335,7 +347,10 @@ class _AchievementBadges extends StatelessWidget {
         description: 'Morning dose champion',
         imagePath: 'assets/images/badge_early_bird.png',
         color: AppColors.orange,
-        isUnlocked: totalDoses >= 10, // Simplified check
+        isUnlocked: totalDoses >= 10,
+        currentValue: totalDoses.clamp(0, 10),
+        requiredValue: 10,
+        requirementLabel: 'Take 10 morning doses',
       ),
       // Night owl badge
       _Achievement(
@@ -343,7 +358,10 @@ class _AchievementBadges extends StatelessWidget {
         description: 'Evening protocol master',
         imagePath: 'assets/images/badge_night_owl.png',
         color: AppColors.purple,
-        isUnlocked: totalDoses >= 10, // Simplified check
+        isUnlocked: totalDoses >= 10,
+        currentValue: totalDoses.clamp(0, 10),
+        requiredValue: 10,
+        requirementLabel: 'Take 10 evening doses',
       ),
       // Knowledge seeker badge
       _Achievement(
@@ -352,6 +370,9 @@ class _AchievementBadges extends StatelessWidget {
         imagePath: 'assets/images/badge_knowledge.png',
         color: AppColors.primaryBlue,
         isUnlocked: protocolCount >= 3,
+        currentValue: protocolCount.clamp(0, 3),
+        requiredValue: 3,
+        requirementLabel: 'Create 3 different protocols',
       ),
       // Consistency champion (30+ day streak)
       _Achievement(
@@ -360,6 +381,9 @@ class _AchievementBadges extends StatelessWidget {
         imagePath: 'assets/images/badge_consistency.png',
         color: AppColors.purple,
         isUnlocked: longestStreak >= 30,
+        currentValue: longestStreak.clamp(0, 30),
+        requiredValue: 30,
+        requirementLabel: 'Achieve a 30 day streak',
       ),
     ];
 
@@ -405,6 +429,9 @@ class _Achievement {
   final String imagePath;
   final Color color;
   final bool isUnlocked;
+  final int currentValue;
+  final int requiredValue;
+  final String requirementLabel;
 
   const _Achievement({
     required this.name,
@@ -412,7 +439,14 @@ class _Achievement {
     required this.imagePath,
     required this.color,
     required this.isUnlocked,
+    required this.currentValue,
+    required this.requiredValue,
+    required this.requirementLabel,
   });
+
+  double get progress => requiredValue > 0 
+      ? (currentValue / requiredValue).clamp(0.0, 1.0) 
+      : 0.0;
 }
 
 class _AchievementBadge extends StatelessWidget {
@@ -420,58 +454,321 @@ class _AchievementBadge extends StatelessWidget {
 
   const _AchievementBadge({required this.achievement});
 
+  void _showAchievementDetails(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        margin: const EdgeInsets.all(AppSpacing.m),
+        padding: const EdgeInsets.all(AppSpacing.l),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.white,
+          borderRadius: AppRadius.largeRadius,
+          border: Border.all(
+            color: achievement.color.withOpacity(0.3),
+            width: 2,
+          ),
+          boxShadow: AppShadows.glow(achievement.color, intensity: 0.2),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.mediumGray.withOpacity(0.3),
+                borderRadius: AppRadius.fullRadius,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.l),
+            
+            // Badge image with glow effect
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: achievement.isUnlocked
+                    ? achievement.color.withOpacity(0.15)
+                    : (isDark ? AppColors.surfaceDark : AppColors.lightGray),
+                boxShadow: achievement.isUnlocked
+                    ? AppShadows.glow(achievement.color, intensity: 0.5)
+                    : null,
+              ),
+              child: Opacity(
+                opacity: achievement.isUnlocked ? 1.0 : 0.4,
+                child: ClipOval(
+                  child: Image.asset(
+                    achievement.imagePath,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(
+                        Icons.emoji_events,
+                        color: achievement.isUnlocked
+                            ? achievement.color
+                            : AppColors.mediumGray,
+                        size: 56,
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.m),
+            
+            // Badge name
+            Text(
+              achievement.name,
+              style: AppTypography.title3.copyWith(
+                color: achievement.isUnlocked 
+                    ? achievement.color 
+                    : (isDark ? AppColors.white : AppColors.black),
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            
+            // Description
+            Text(
+              achievement.description,
+              style: AppTypography.body.copyWith(
+                color: AppColors.mediumGray,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.l),
+            
+            // Status badge
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.m,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                color: achievement.isUnlocked
+                    ? AppColors.green.withOpacity(0.15)
+                    : achievement.color.withOpacity(0.1),
+                borderRadius: AppRadius.fullRadius,
+                border: Border.all(
+                  color: achievement.isUnlocked
+                      ? AppColors.green.withOpacity(0.5)
+                      : achievement.color.withOpacity(0.3),
+                ),
+              ),
+              child: Text(
+                achievement.isUnlocked ? '✓ Unlocked!' : 'In Progress',
+                style: AppTypography.subhead.copyWith(
+                  color: achievement.isUnlocked 
+                      ? AppColors.green 
+                      : achievement.color,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.l),
+            
+            // Requirement text
+            Text(
+              achievement.requirementLabel,
+              style: AppTypography.subhead.copyWith(
+                color: isDark ? AppColors.white : AppColors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.m),
+            
+            // Progress bar with values
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.m),
+              decoration: BoxDecoration(
+                color: isDark 
+                    ? AppColors.surfaceDark 
+                    : AppColors.softGray.withOpacity(0.5),
+                borderRadius: AppRadius.mediumRadius,
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Your Progress',
+                        style: AppTypography.caption1.copyWith(
+                          color: AppColors.mediumGray,
+                        ),
+                      ),
+                      Text(
+                        '${achievement.currentValue} / ${achievement.requiredValue}',
+                        style: AppTypography.headline.copyWith(
+                          color: achievement.color,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.s),
+                  TweenAnimationBuilder<double>(
+                    tween: Tween(begin: 0, end: achievement.progress),
+                    duration: const Duration(milliseconds: 800),
+                    curve: Curves.easeOutCubic,
+                    builder: (context, value, _) {
+                      return Stack(
+                        children: [
+                          // Background track
+                          Container(
+                            height: 12,
+                            decoration: BoxDecoration(
+                              color: isDark 
+                                  ? AppColors.cardDark 
+                                  : AppColors.lightGray,
+                              borderRadius: AppRadius.fullRadius,
+                            ),
+                          ),
+                          // Progress fill
+                          FractionallySizedBox(
+                            widthFactor: value,
+                            child: Container(
+                              height: 12,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    achievement.color.withOpacity(0.8),
+                                    achievement.color,
+                                  ],
+                                ),
+                                borderRadius: AppRadius.fullRadius,
+                                boxShadow: AppShadows.glow(
+                                  achievement.color, 
+                                  intensity: 0.3,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    '${(achievement.progress * 100).round()}% complete',
+                    style: AppTypography.caption2.copyWith(
+                      color: achievement.color,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.l),
+            
+            // Close button
+            SizedBox(
+              width: double.infinity,
+              child: BouncyTap(
+                onTap: () => Navigator.pop(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
+                  decoration: BoxDecoration(
+                    color: achievement.color.withOpacity(0.15),
+                    borderRadius: AppRadius.mediumRadius,
+                    border: Border.all(
+                      color: achievement.color.withOpacity(0.3),
+                    ),
+                  ),
+                  child: Text(
+                    'Got it!',
+                    style: AppTypography.headline.copyWith(
+                      color: achievement.color,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Opacity(
-      opacity: achievement.isUnlocked ? 1.0 : 0.4,
-      child: Container(
-        width: 80,
-        child: Column(
-          children: [
-            Container(
-              width: 64,
-              height: 64,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: achievement.isUnlocked
-                    ? achievement.color.withOpacity(0.1)
-                    : (isDark ? AppColors.cardDark : AppColors.lightGray),
-                boxShadow: achievement.isUnlocked
-                    ? AppShadows.glow(achievement.color, intensity: 0.3)
-                    : null,
-              ),
-              child: ClipOval(
-                child: Image.asset(
-                  achievement.imagePath,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Icon(
-                      Icons.emoji_events,
+    return BouncyTap(
+      onTap: () => _showAchievementDetails(context),
+      child: Opacity(
+        opacity: achievement.isUnlocked ? 1.0 : 0.5,
+        child: SizedBox(
+          width: 80,
+          child: Column(
+            children: [
+              Stack(
+                children: [
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
                       color: achievement.isUnlocked
-                          ? achievement.color
-                          : AppColors.mediumGray,
-                      size: 32,
-                    );
-                  },
+                          ? achievement.color.withOpacity(0.1)
+                          : (isDark ? AppColors.cardDark : AppColors.lightGray),
+                      boxShadow: achievement.isUnlocked
+                          ? AppShadows.glow(achievement.color, intensity: 0.3)
+                          : null,
+                    ),
+                    child: ClipOval(
+                      child: Image.asset(
+                        achievement.imagePath,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
+                            Icons.emoji_events,
+                            color: achievement.isUnlocked
+                                ? achievement.color
+                                : AppColors.mediumGray,
+                            size: 32,
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                  // Progress ring for locked badges
+                  if (!achievement.isUnlocked)
+                    Positioned.fill(
+                      child: CircularProgressIndicator(
+                        value: achievement.progress,
+                        strokeWidth: 3,
+                        backgroundColor: Colors.transparent,
+                        valueColor: AlwaysStoppedAnimation(
+                          achievement.color.withOpacity(0.6),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                achievement.name,
+                textAlign: TextAlign.center,
+                style: AppTypography.caption2.copyWith(
+                  color: achievement.isUnlocked
+                      ? (isDark ? AppColors.white : AppColors.black)
+                      : AppColors.mediumGray,
+                  fontWeight: FontWeight.w600,
                 ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              achievement.name,
-              textAlign: TextAlign.center,
-              style: AppTypography.caption2.copyWith(
-                color: achievement.isUnlocked
-                    ? (isDark ? AppColors.white : AppColors.black)
-                    : AppColors.mediumGray,
-                fontWeight: FontWeight.w600,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     )

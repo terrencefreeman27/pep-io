@@ -104,11 +104,6 @@ class _ProtocolsScreenState extends State<ProtocolsScreen> {
           );
         },
       ),
-      floatingActionButton: AnimatedFAB(
-        onPressed: () => Navigator.pushNamed(context, AppRoutes.protocolCreate),
-        icon: Icons.add,
-        tooltip: 'Add Protocol',
-      ),
     );
   }
 
