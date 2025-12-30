@@ -1,0 +1,25 @@
+
+1. Fix Widgets
+
+widgets need to display this
+
+small widget -> x/x protocols taken for the day
+
+medium widget -> 1 , 2 , 3 protocls with checks
+
+large widget -> displays each peptide name max of 5 protocols to display
+
+after every protocl is completed for the day the widget should update to have a completed message and everything checked off
+
+the widgets need to refresh in case the user creates a new protocol and wants to updaet their widget that is already created
+
+
+2. Add all peptides in library from the prd
+
+3. Remove the calendar image for blank calendar
+
+4. fix all gemini images
+
+5. remove duplicated save button on new protocol page
+
+6. app app icon
