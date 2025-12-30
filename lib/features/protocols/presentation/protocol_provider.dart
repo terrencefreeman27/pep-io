@@ -132,9 +132,9 @@ class ProtocolProvider extends ChangeNotifier {
       protocolDataList.add({
         'id': protocol.id,
         'name': protocol.peptideName,
-        'next_dose_time': nextDoseTime,
-        'doses_today': completedToday,
-        'total_doses_today': protocolDoses.length,
+        'nextDoseTime': nextDoseTime,
+        'dosesToday': completedToday,
+        'totalDosesToday': protocolDoses.length,
         'category': 'Regenerative', // Could fetch from peptide if needed
       });
     }
@@ -346,6 +346,7 @@ class ProtocolProvider extends ChangeNotifier {
         }
       }
       
+      // Reload protocols (this will also update the widget)
       await loadProtocols();
     } catch (e) {
       _error = e.toString();
@@ -428,7 +429,14 @@ class ProtocolProvider extends ChangeNotifier {
   /// Refresh today's doses
   Future<void> refreshTodaysDoses() async {
     await _loadTodaysDoses();
+    await _calculateStats();
+    await _updateWidget(); // Ensure widget shows latest data on refresh
     notifyListeners();
+  }
+  
+  /// Force refresh the iOS widget (useful for manual refresh)
+  Future<void> refreshWidget() async {
+    await _updateWidget();
   }
 
   /// Clear error
