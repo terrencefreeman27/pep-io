@@ -56,6 +56,9 @@ dependencies:
   uuid: ^4.2.1
   collection: ^1.18.0
 
+  # iOS Widgets
+  home_widget: ^0.6.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

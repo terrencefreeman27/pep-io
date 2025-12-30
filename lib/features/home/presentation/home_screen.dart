@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -84,6 +85,12 @@ class _HomeScreenState extends State<HomeScreen> {
               SliverToBoxAdapter(
                 child: _buildResumeDraftCard(context),
               ),
+              
+              // Add Widget Card (iOS only)
+              if (Platform.isIOS)
+                SliverToBoxAdapter(
+                  child: _buildWidgetCard(context),
+                ),
               
               // Bottom padding
               const SliverToBoxAdapter(
@@ -356,8 +363,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildQuickActions(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.m),
       child: Row(
@@ -571,6 +576,322 @@ class _HomeScreenState extends State<HomeScreen> {
         .animate()
         .fadeIn(delay: 300.ms, duration: 400.ms)
         .slideY(begin: 0.1, end: 0);
+  }
+
+  Widget _buildWidgetCard(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final provider = context.watch<ProtocolProvider>();
+    
+    // Only show if user has protocols
+    if (provider.protocols.isEmpty) {
+      return const SizedBox.shrink();
+    }
+    
+    return Padding(
+      padding: const EdgeInsets.all(AppSpacing.m),
+      child: Container(
+        padding: const EdgeInsets.all(AppSpacing.m),
+        decoration: BoxDecoration(
+          borderRadius: AppRadius.largeRadius,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primaryBlue.withOpacity(0.15),
+              AppColors.purple.withOpacity(0.1),
+            ],
+          ),
+          border: Border.all(
+            color: AppColors.primaryBlue.withOpacity(0.3),
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: AppRadius.mediumRadius,
+                    boxShadow: AppShadows.glow(AppColors.primaryBlue, intensity: 0.3),
+                  ),
+                  child: const Icon(
+                    Icons.widgets_outlined,
+                    color: Colors.white,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.m),
+                
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Add Home Screen Widget',
+                        style: AppTypography.headline.copyWith(
+                          color: isDark ? AppColors.white : AppColors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Track your protocols at a glance',
+                        style: AppTypography.caption1.copyWith(
+                          color: AppColors.mediumGray,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.m),
+            
+            // Info about widget showing all protocols
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.s),
+              decoration: BoxDecoration(
+                color: isDark 
+                    ? AppColors.surfaceDark.withOpacity(0.5)
+                    : AppColors.white.withOpacity(0.7),
+                borderRadius: AppRadius.mediumRadius,
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    color: AppColors.primaryBlue,
+                    size: 20,
+                  ),
+                  const SizedBox(width: AppSpacing.s),
+                  Expanded(
+                    child: Text(
+                      'All ${provider.protocols.where((p) => p.active).length} active protocols will appear on the widget',
+                      style: AppTypography.caption2.copyWith(
+                        color: AppColors.mediumGray,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: AppSpacing.m),
+            
+            // Add Widget Button
+            SizedBox(
+              width: double.infinity,
+              child: BouncyTap(
+                onTap: () => _showWidgetInstructions(context),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.primaryGradient,
+                    borderRadius: AppRadius.mediumRadius,
+                    boxShadow: AppShadows.glow(AppColors.primaryBlue, intensity: 0.3),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.add_circle_outline, color: Colors.white, size: 20),
+                      const SizedBox(width: AppSpacing.s),
+                      Text(
+                        'Add Widget to Home Screen',
+                        style: AppTypography.headline.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    )
+        .animate()
+        .fadeIn(delay: 350.ms, duration: 400.ms)
+        .slideY(begin: 0.1, end: 0);
+  }
+
+  void _showWidgetInstructions(BuildContext context) async {
+    if (!mounted) return;
+    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        margin: const EdgeInsets.all(AppSpacing.m),
+        padding: const EdgeInsets.all(AppSpacing.l),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.cardDark : AppColors.white,
+          borderRadius: AppRadius.largeRadius,
+          boxShadow: AppShadows.level3,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: AppColors.mediumGray.withOpacity(0.3),
+                borderRadius: AppRadius.fullRadius,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.l),
+            
+            // Success icon
+            Container(
+              width: 72,
+              height: 72,
+              decoration: BoxDecoration(
+                gradient: AppColors.primaryGradient,
+                shape: BoxShape.circle,
+                boxShadow: AppShadows.glow(AppColors.primaryBlue, intensity: 0.4),
+              ),
+              child: const Icon(
+                Icons.widgets_rounded,
+                color: Colors.white,
+                size: 36,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.l),
+            
+            Text(
+              'Widget Data Ready! 🎉',
+              style: AppTypography.title3.copyWith(
+                color: AppColors.primaryBlue,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s),
+            
+            Text(
+              'Your protocol data has been saved.\nNow add the widget to your home screen:',
+              style: AppTypography.body.copyWith(
+                color: AppColors.mediumGray,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.l),
+            
+            // Instructions
+            _InstructionStep(
+              number: '1',
+              text: 'Go to your home screen',
+              icon: Icons.home_outlined,
+            ),
+            const SizedBox(height: AppSpacing.s),
+            _InstructionStep(
+              number: '2',
+              text: 'Long-press on empty space',
+              icon: Icons.touch_app_outlined,
+            ),
+            const SizedBox(height: AppSpacing.s),
+            _InstructionStep(
+              number: '3',
+              text: 'Tap the + button (top left)',
+              icon: Icons.add_circle_outline,
+            ),
+            const SizedBox(height: AppSpacing.s),
+            _InstructionStep(
+              number: '4',
+              text: 'Search for "pep.io"',
+              icon: Icons.search,
+            ),
+            const SizedBox(height: AppSpacing.s),
+            _InstructionStep(
+              number: '5',
+              text: 'Choose size & tap "Add Widget"',
+              icon: Icons.check_circle_outline,
+            ),
+            
+            const SizedBox(height: AppSpacing.l),
+            
+            // Done button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Got it!'),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.s),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InstructionStep extends StatelessWidget {
+  final String number;
+  final String text;
+  final IconData icon;
+
+  const _InstructionStep({
+    required this.number,
+    required this.text,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.m,
+        vertical: AppSpacing.s,
+      ),
+      decoration: BoxDecoration(
+        color: isDarkMode 
+            ? AppColors.surfaceDark 
+            : AppColors.softGray.withOpacity(0.5),
+        borderRadius: AppRadius.mediumRadius,
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 28,
+            height: 28,
+            decoration: BoxDecoration(
+              color: AppColors.primaryBlue.withOpacity(0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Center(
+              child: Text(
+                number,
+                style: AppTypography.subhead.copyWith(
+                  color: AppColors.primaryBlue,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Text(
+              text,
+              style: AppTypography.body,
+            ),
+          ),
+          Icon(
+            icon,
+            color: AppColors.mediumGray,
+            size: 20,
+          ),
+        ],
+      ),
+    );
   }
 }
 

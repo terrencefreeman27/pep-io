@@ -504,33 +504,15 @@ class _PeptideCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                        child: Hero(
-                          tag: 'peptide_name_${peptide.id}',
-                          child: Material(
-                            color: Colors.transparent,
-                          child: Text(
-                            peptide.name,
-                            style: AppTypography.headline,
-                            ),
-                          ),
-                          ),
+                    Hero(
+                      tag: 'peptide_name_${peptide.id}',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Text(
+                          peptide.name,
+                          style: AppTypography.headline,
                         ),
-                        if (peptide.isFavorite)
-                          Icon(
-                            Icons.favorite,
-                          size: 18,
-                          color: AppColors.pink,
-                        )
-                            .animate(onPlay: (c) => c.repeat(reverse: true))
-                            .scale(
-                              begin: const Offset(1, 1),
-                              end: const Offset(1.1, 1.1),
-                              duration: 1000.ms,
-                          ),
-                      ],
+                      ),
                     ),
                     if (peptide.alternativeNames.isNotEmpty)
                       Text(

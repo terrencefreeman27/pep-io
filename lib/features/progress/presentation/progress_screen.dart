@@ -1284,7 +1284,7 @@ class _TimeDistributionChart extends StatelessWidget {
               ),
               const SizedBox(width: AppSpacing.xs),
               SizedBox(
-                width: 80,
+                width: 90,
                 child: Text(slot['name'] as String, style: AppTypography.body),
               ),
               Expanded(

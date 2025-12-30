@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../../../core/models/protocol.dart';
 import '../../../core/models/dose.dart';
 import '../../../core/services/calendar_service.dart';
 import '../../../core/services/notification_service.dart';
+import '../../../core/services/widget_service.dart';
 import '../data/protocol_repository.dart';
 
 /// Provider for protocol state management
@@ -10,6 +12,7 @@ class ProtocolProvider extends ChangeNotifier {
   final ProtocolRepository _repository;
   final NotificationService _notificationService;
   final CalendarService _calendarService;
+  final WidgetService _widgetService = WidgetService();
 
   List<Protocol> _protocols = [];
   List<Dose> _todaysDoses = [];
@@ -23,7 +26,9 @@ class ProtocolProvider extends ChangeNotifier {
   // Store calendar event IDs for each protocol
   final Map<String, List<String>> _protocolCalendarEvents = {};
 
-  ProtocolProvider(this._repository, this._notificationService, this._calendarService);
+  ProtocolProvider(this._repository, this._notificationService, this._calendarService) {
+    _widgetService.initialize();
+  }
 
   // Getters
   List<Protocol> get protocols => _protocols;
@@ -48,6 +53,7 @@ class ProtocolProvider extends ChangeNotifier {
       await _loadTodaysDoses();
       await _loadAllDoses();
       await _calculateStats();
+      await _updateWidget(); // Update iOS widget with latest data
       _error = null;
     } catch (e) {
       _error = e.toString();
@@ -90,6 +96,54 @@ class ProtocolProvider extends ChangeNotifier {
   Future<void> _calculateStats() async {
     _adherenceRate = await _repository.calculateOverallAdherence();
     _currentStreak = await _repository.calculateCurrentStreak();
+  }
+
+  /// Update iOS home screen widget with current data for ALL protocols
+  Future<void> _updateWidget() async {
+    if (!Platform.isIOS) return;
+    
+    if (_protocols.isEmpty) {
+      await _widgetService.clearWidget();
+      return;
+    }
+
+    // Build protocol data for each protocol
+    final List<Map<String, dynamic>> protocolDataList = [];
+    
+    for (final protocol in _protocols.where((p) => p.active)) {
+      // Get doses for this specific protocol
+      final protocolDoses = _todaysDoses.where(
+        (d) => d.protocolId == protocol.id,
+      ).toList();
+      
+      final completedToday = protocolDoses.where((d) => d.status == DoseStatus.taken).length;
+      
+      // Get next scheduled dose time for this protocol
+      String nextDoseTime = '--';
+      final scheduledDoses = protocolDoses.where(
+        (d) => d.status == DoseStatus.scheduled,
+      ).toList();
+      
+      if (scheduledDoses.isNotEmpty) {
+        scheduledDoses.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
+        nextDoseTime = scheduledDoses.first.scheduledTime;
+      }
+
+      protocolDataList.add({
+        'id': protocol.id,
+        'name': protocol.peptideName,
+        'next_dose_time': nextDoseTime,
+        'doses_today': completedToday,
+        'total_doses_today': protocolDoses.length,
+        'category': 'Regenerative', // Could fetch from peptide if needed
+      });
+    }
+
+    await _widgetService.updateWidgetWithProtocols(
+      protocolData: protocolDataList,
+      overallStreak: _currentStreak,
+      overallAdherence: _adherenceRate.round(),
+    );
   }
 
   /// Get protocol by ID
@@ -309,6 +363,7 @@ class ProtocolProvider extends ChangeNotifier {
       
       await _loadTodaysDoses();
       await _calculateStats();
+      await _updateWidget(); // Update iOS widget
       
       // Check for streak milestones
       if (_currentStreak > 0 && [7, 14, 30, 60, 90, 180, 365].contains(_currentStreak)) {
@@ -329,6 +384,7 @@ class ProtocolProvider extends ChangeNotifier {
       await _notificationService.cancelDoseNotifications(doseId);
       await _loadTodaysDoses();
       await _calculateStats();
+      await _updateWidget(); // Update iOS widget
       notifyListeners();
     } catch (e) {
       _error = e.toString();
@@ -343,6 +399,7 @@ class ProtocolProvider extends ChangeNotifier {
       await _notificationService.cancelDoseNotifications(doseId);
       await _loadTodaysDoses();
       await _calculateStats();
+      await _updateWidget(); // Update iOS widget
       notifyListeners();
     } catch (e) {
       _error = e.toString();
