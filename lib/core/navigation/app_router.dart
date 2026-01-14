@@ -15,6 +15,7 @@ import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
 import '../../features/upgrade/presentation/upgrade_screen.dart';
+import '../../features/ai_insights/presentation/ai_insights_screen.dart';
 
 /// App route names
 class AppRoutes {
@@ -38,6 +39,7 @@ class AppRoutes {
   static const String notifications = '/settings/notifications';
   static const String calendarSettings = '/settings/calendar';
   static const String upgrade = '/upgrade';
+  static const String aiInsights = '/ai-insights';
 }
 
 /// App router for generating routes
@@ -86,7 +88,7 @@ class AppRouter {
         );
         
       case AppRoutes.protocolCreate:
-        final peptideId = settings.arguments as String?;
+        // peptideId can be passed as argument for pre-filling protocol form
         return MaterialPageRoute(
           builder: (_) => ProtocolFormScreen(protocolId: null),
           fullscreenDialog: true,
@@ -151,6 +153,11 @@ class AppRouter {
         return MaterialPageRoute(
           builder: (_) => const UpgradeScreen(),
           fullscreenDialog: true,
+        );
+        
+      case AppRoutes.aiInsights:
+        return MaterialPageRoute(
+          builder: (_) => const AIInsightsScreen(),
         );
         
       default:

@@ -8,6 +8,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/models/protocol.dart';
 import '../../../core/widgets/animated_widgets.dart';
+import '../../../core/services/premium_service.dart';
 import 'protocol_provider.dart';
 
 class ProtocolsScreen extends StatefulWidget {
@@ -35,14 +36,155 @@ class _ProtocolsScreenState extends State<ProtocolsScreen> {
     super.dispose();
   }
 
+  void _handleAddProtocol(BuildContext context, PremiumService premiumService) {
+    final provider = context.read<ProtocolProvider>();
+    final currentCount = provider.protocols.length;
+    
+    if (premiumService.canCreateProtocol(currentCount)) {
+      Navigator.pushNamed(context, AppRoutes.protocolCreate);
+    } else {
+      // Show upgrade prompt
+      _showProtocolLimitDialog(context, premiumService);
+    }
+  }
+  
+  void _showProtocolLimitDialog(BuildContext context, PremiumService premiumService) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? AppColors.surfaceDark : AppColors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.accent.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.star,
+                color: AppColors.accent,
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text('Protocol Limit Reached'),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Free users can create up to ${PremiumService.freeProtocolLimit} protocols.',
+              style: AppTypography.body,
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Upgrade to Premium for unlimited protocols and more!',
+              style: AppTypography.footnote.copyWith(
+                color: AppColors.mediumGray,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Maybe Later',
+              style: TextStyle(color: AppColors.mediumGray),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, AppRoutes.upgrade);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.accent,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Upgrade'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final premiumService = context.watch<PremiumService>();
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('Protocols', style: AppTypography.title3),
         actions: [
+          // AI Insights Button with Premium Badge
           BouncyTap(
-            onTap: () => Navigator.pushNamed(context, AppRoutes.protocolCreate),
+            onTap: () => Navigator.pushNamed(context, AppRoutes.aiInsights),
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.xs),
+              margin: const EdgeInsets.only(right: AppSpacing.xs),
+              decoration: BoxDecoration(
+                gradient: AppColors.accentGradient,
+                borderRadius: AppRadius.mediumRadius,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.accent.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Icon(
+                      Icons.auto_awesome,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                  ),
+                  // Premium badge
+                  if (!premiumService.isPremium)
+                    Positioned(
+                      top: -6,
+                      right: -6,
+                      child: Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(
+                          color: AppColors.yellow,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).scaffoldBackgroundColor,
+                            width: 1.5,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.lock,
+                          size: 8,
+                          color: AppColors.black,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+          // Add Protocol Button
+          BouncyTap(
+            onTap: () => _handleAddProtocol(context, premiumService),
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.xs),
               margin: const EdgeInsets.only(right: AppSpacing.s),
@@ -184,18 +326,19 @@ class _ProtocolsScreenState extends State<ProtocolsScreen> {
   }
 
   Widget _buildFirstTimeEmptyState(BuildContext context) {
+    final premiumService = context.watch<PremiumService>();
+    
     return AnimatedEmptyState(
       icon: Icons.science_outlined,
       title: 'No Protocols Yet',
       subtitle: 'Create your first protocol to start tracking\nyour peptide regimen',
       iconColor: AppColors.primaryBlue,
-      imagePath: 'assets/images/empty_protocols.png',
       action: Column(
           children: [
             SizedBox(
               width: double.infinity,
               child: ElevatedButton.icon(
-                onPressed: () => Navigator.pushNamed(context, AppRoutes.protocolCreate),
+                onPressed: () => _handleAddProtocol(context, premiumService),
                 icon: const Icon(Icons.add),
                 label: const Text('Add Protocol'),
                 style: ElevatedButton.styleFrom(

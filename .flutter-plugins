@@ -2,11 +2,13 @@
 device_calendar=/Users/brett/.pub-cache/hosted/pub.dev/device_calendar-4.3.3/
 flutter_local_notifications=/Users/brett/.pub-cache/hosted/pub.dev/flutter_local_notifications-16.3.3/
 flutter_local_notifications_linux=/Users/brett/.pub-cache/hosted/pub.dev/flutter_local_notifications_linux-4.0.1/
+home_widget=/Users/brett/.pub-cache/hosted/pub.dev/home_widget-0.6.0/
 path_provider=/Users/brett/.pub-cache/hosted/pub.dev/path_provider-2.1.5/
 path_provider_android=/Users/brett/.pub-cache/hosted/pub.dev/path_provider_android-2.2.19/
 path_provider_foundation=/Users/brett/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.2/
 path_provider_linux=/Users/brett/.pub-cache/hosted/pub.dev/path_provider_linux-2.2.1/
 path_provider_windows=/Users/brett/.pub-cache/hosted/pub.dev/path_provider_windows-2.3.0/
+purchases_flutter=/Users/brett/.pub-cache/hosted/pub.dev/purchases_flutter-6.30.2/
 share_plus=/Users/brett/.pub-cache/hosted/pub.dev/share_plus-7.2.2/
 shared_preferences=/Users/brett/.pub-cache/hosted/pub.dev/shared_preferences-2.5.3/
 shared_preferences_android=/Users/brett/.pub-cache/hosted/pub.dev/shared_preferences_android-2.4.13/

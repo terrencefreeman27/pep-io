@@ -219,12 +219,34 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final dayDoses = _getDosesForDay(provider, _selectedDay);
 
     if (dayDoses.isEmpty) {
-      return AnimatedEmptyState(
-        icon: Icons.event_available,
-        title: 'No Doses Scheduled',
-        subtitle: 'No doses are scheduled for this day',
-        iconColor: AppColors.mediumGray,
-        imagePath: 'assets/images/empty_calendar.png',
+      return SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: AppSpacing.l),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.event_available,
+                size: 48,
+                color: AppColors.mediumGray,
+              ),
+              const SizedBox(height: AppSpacing.s),
+              Text(
+                'No Doses Scheduled',
+                style: AppTypography.headline.copyWith(
+                  color: AppColors.mediumGray,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'No doses are scheduled for this day',
+                style: AppTypography.body.copyWith(
+                  color: AppColors.mediumGray,
+                ),
+              ),
+            ],
+          ),
+        ),
       );
     }
 

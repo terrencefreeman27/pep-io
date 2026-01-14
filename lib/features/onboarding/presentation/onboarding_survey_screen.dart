@@ -370,67 +370,119 @@ class _SetupStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(AppSpacing.l),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // Success/Goal image
-          SizedBox(
-            width: 150,
-            height: 150,
-            child: Image.asset(
-              'assets/images/success_goal.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primaryBlue.withOpacity(0.1),
-                  ),
-                  child: Icon(
-                    Icons.celebration_outlined,
-                    size: 50,
-                    color: AppColors.primaryBlue,
-                  ),
-                );
-              },
+          // Success header with animated gradient
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: AppColors.primaryGradient,
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primaryBlue.withOpacity(0.4),
+                  blurRadius: 20,
+                  spreadRadius: 2,
+                ),
+              ],
+            ),
+            child: const Icon(
+              Icons.rocket_launch_rounded,
+              size: 48,
+              color: Colors.white,
             ),
           ),
           const SizedBox(height: AppSpacing.l),
           
           Text(
-            'You\'re all set!',
-            style: AppTypography.title1,
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: AppSpacing.s),
-          Text(
-            'Set up your first protocol now, or explore the app first.',
-            style: AppTypography.body.copyWith(
-              color: AppColors.mediumGray,
+            'Welcome to pep.io',
+            style: AppTypography.title1.copyWith(
+              fontWeight: FontWeight.bold,
             ),
             textAlign: TextAlign.center,
           ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Your complete peptide companion',
+            style: AppTypography.subhead.copyWith(
+              color: AppColors.primaryBlue,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.l),
+          
+          // Feature cards
+          _FeatureCard(
+            icon: Icons.science_outlined,
+            iconColor: AppColors.purple,
+            title: 'Comprehensive Library',
+            description: 'Explore 60+ peptides across 9 categories with detailed benefits, research insights, and safety information.',
+          ),
+          const SizedBox(height: AppSpacing.s),
+          
+          _FeatureCard(
+            icon: Icons.calendar_month_outlined,
+            iconColor: AppColors.teal,
+            title: 'Smart Protocol Tracking',
+            description: 'Create personalized protocols with flexible scheduling, dose reminders, and seamless Apple Calendar sync.',
+          ),
+          const SizedBox(height: AppSpacing.s),
+          
+          _FeatureCard(
+            icon: Icons.calculate_outlined,
+            iconColor: AppColors.orange,
+            title: 'Precision Calculator',
+            description: 'Calculate reconstitution doses with ease—input your vial size, water volume, and desired dose for instant results.',
+          ),
+          const SizedBox(height: AppSpacing.s),
+          
+          _FeatureCard(
+            icon: Icons.insights_outlined,
+            iconColor: AppColors.green,
+            title: 'Progress & Insights',
+            description: 'Track your adherence, unlock achievements, and receive personalized insights to optimize your journey.',
+          ),
+          const SizedBox(height: AppSpacing.s),
+          
+          _FeatureCard(
+            icon: Icons.lock_outline,
+            iconColor: AppColors.primaryBlue,
+            title: '100% Private & Secure',
+            description: 'Your data stays on your device—always. No cloud sync, no accounts, complete privacy by design.',
+          ),
+          
           const SizedBox(height: AppSpacing.xl),
           
+          // CTA Buttons
           SizedBox(
             width: double.infinity,
-            child: ElevatedButton(
+            child: ElevatedButton.icon(
               onPressed: () => _createProtocol(context),
-              child: const Text('Create My First Protocol'),
+              icon: const Icon(Icons.add_circle_outline, size: 20),
+              label: const Text('Create My First Protocol'),
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.m),
           SizedBox(
             width: double.infinity,
-            child: OutlinedButton(
+            child: OutlinedButton.icon(
               onPressed: () => _finish(context),
-              child: const Text('I\'ll Do This Later'),
+              icon: const Icon(Icons.explore_outlined, size: 20),
+              label: const Text('Explore the App First'),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.m),
+              ),
             ),
           ),
+          const SizedBox(height: AppSpacing.m),
         ],
       ),
     );
@@ -470,6 +522,91 @@ class _SetupStep extends StatelessWidget {
     }
     
     await provider.completeOnboarding();
+  }
+}
+
+/// Feature card for onboarding summary
+class _FeatureCard extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String description;
+
+  const _FeatureCard({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.description,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.m),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.cardDark : Colors.white,
+        borderRadius: AppRadius.largeRadius,
+        border: Border.all(
+          color: iconColor.withOpacity(0.2),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: iconColor.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  iconColor.withOpacity(0.15),
+                  iconColor.withOpacity(0.05),
+                ],
+              ),
+              borderRadius: AppRadius.mediumRadius,
+            ),
+            child: Icon(
+              icon,
+              color: iconColor,
+              size: 24,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.m),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: AppTypography.headline.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xxs),
+                Text(
+                  description,
+                  style: AppTypography.footnote.copyWith(
+                    color: AppColors.mediumGray,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

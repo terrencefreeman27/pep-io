@@ -112,34 +112,19 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.all(AppSpacing.m),
       child: Row(
         children: [
-          // Animated Avatar with App Icon
+          // Settings Button
           BouncyTap(
             onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
             child: Container(
-              width: 52,
-              height: 52,
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                boxShadow: AppShadows.glow(AppColors.primaryBlue, intensity: 0.3),
+                color: isDark ? AppColors.cardDark : AppColors.softGray,
+                borderRadius: AppRadius.mediumRadius,
               ),
-              child: ClipOval(
-                child: Image.asset(
-                  'assets/images/app_icon.png',
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      decoration: const BoxDecoration(
-                        gradient: AppColors.primaryGradient,
-                      ),
-                      child: Center(
-                        child: Text(
-                          name?.isNotEmpty == true ? name![0].toUpperCase() : '👤',
-                          style: AppTypography.title2.copyWith(color: Colors.white),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+              child: const Icon(
+                Icons.settings_outlined,
+                color: AppColors.mediumGray,
               ),
             ),
           ),
@@ -218,28 +203,6 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           
-          const SizedBox(width: AppSpacing.s),
-          
-          // Notification bell
-          Container(
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.cardDark : AppColors.softGray,
-              borderRadius: AppRadius.mediumRadius,
-            ),
-            child: IconButton(
-              onPressed: () {
-                // TODO: Open notifications
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Notifications coming soon!'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              icon: const Icon(Icons.notifications_outlined),
-              color: AppColors.mediumGray,
-            ),
-          ),
         ],
       ),
     );
@@ -375,30 +338,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
-          // Empty doses image
-          SizedBox(
-            width: 120,
-            height: 120,
-            child: Image.asset(
-              'assets/images/empty_doses.png',
-              fit: BoxFit.contain,
-              errorBuilder: (context, error, stackTrace) {
-                return Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppColors.primaryBlue.withOpacity(0.1),
-                  ),
-                  child: Icon(
-                    Icons.calendar_today_outlined,
-                    size: 32,
-                    color: AppColors.primaryBlue,
-                  ),
-                );
-              },
-            ),
-          ),
           const SizedBox(height: AppSpacing.m),
           Text(
             'No doses scheduled today',

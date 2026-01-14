@@ -6,6 +6,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
 import '../../../core/widgets/animated_widgets.dart';
+import '../../../core/services/premium_service.dart';
 import 'settings_provider.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -19,14 +20,23 @@ class SettingsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Settings', style: AppTypography.title3),
       ),
-      body: Consumer<SettingsProvider>(
-        builder: (context, settings, _) {
+      body: Consumer2<SettingsProvider, PremiumService>(
+        builder: (context, settings, premiumService, _) {
           return ListView(
             padding: const EdgeInsets.all(AppSpacing.m),
             children: [
-              // Profile Section
+              // Premium Section
               _AnimatedSection(
                 index: 0,
+                title: 'Subscription',
+                child: _buildPremiumCard(context, premiumService, isDark),
+              ),
+
+              const SizedBox(height: AppSpacing.l),
+
+              // Profile Section
+              _AnimatedSection(
+                index: 1,
                 title: 'Profile',
                 child: _SettingsCard(
                   children: [
@@ -53,7 +63,7 @@ class SettingsScreen extends StatelessWidget {
 
               // Notifications Section
               _AnimatedSection(
-                index: 1,
+                index: 2,
                 title: 'Notifications',
                 child: _SettingsCard(
                   children: [
@@ -91,7 +101,7 @@ class SettingsScreen extends StatelessWidget {
 
               // Calendar Integration Section
               _AnimatedSection(
-                index: 2,
+                index: 3,
                 title: 'Calendar Integration',
                 child: _SettingsCard(
                   children: [
@@ -132,7 +142,7 @@ class SettingsScreen extends StatelessWidget {
 
               // Appearance Section
               _AnimatedSection(
-                index: 3,
+                index: 4,
                 title: 'Appearance',
                 child: _SettingsCard(
                   children: [
@@ -159,7 +169,7 @@ class SettingsScreen extends StatelessWidget {
 
               // Data & Privacy Section
               _AnimatedSection(
-                index: 4,
+                index: 5,
                 title: 'Data & Privacy',
                 child: _SettingsCard(
                   children: [
@@ -195,7 +205,7 @@ class SettingsScreen extends StatelessWidget {
 
               // About Section
               _AnimatedSection(
-                index: 5,
+                index: 6,
                 title: 'About',
                 child: _SettingsCard(
                   children: [
@@ -295,6 +305,183 @@ class SettingsScreen extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Widget _buildPremiumCard(BuildContext context, PremiumService premiumService, bool isDark) {
+    if (premiumService.isPremium) {
+      // Premium user card
+      return Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.accent.withOpacity(0.15),
+              AppColors.purple.withOpacity(0.1),
+            ],
+          ),
+          borderRadius: AppRadius.largeRadius,
+          border: Border.all(
+            color: AppColors.accent.withOpacity(0.3),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(AppSpacing.m),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.accentGradient,
+                      borderRadius: AppRadius.mediumRadius,
+                      boxShadow: AppShadows.glow(AppColors.accent, intensity: 0.3),
+                    ),
+                    child: const Icon(
+                      Icons.star,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.m),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Premium',
+                              style: AppTypography.headline.copyWith(
+                                color: AppColors.accent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 6,
+                                vertical: 2,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.green.withOpacity(0.15),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                'ACTIVE',
+                                style: AppTypography.caption2.copyWith(
+                                  color: AppColors.green,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          premiumService.subscriptionExpiry != null
+                              ? 'Renews ${_formatDate(premiumService.subscriptionExpiry!)}'
+                              : 'All premium features unlocked',
+                          style: AppTypography.caption1.copyWith(
+                            color: AppColors.mediumGray,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.m),
+              // Features list
+              Wrap(
+                spacing: AppSpacing.s,
+                runSpacing: AppSpacing.xs,
+                children: [
+                  _PremiumFeatureChip(label: 'Unlimited Protocols', icon: Icons.all_inclusive),
+                  _PremiumFeatureChip(label: 'Large Widgets', icon: Icons.widgets),
+                  _PremiumFeatureChip(label: 'AI Insights', icon: Icons.auto_awesome),
+                ],
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      // Free user card - encourage upgrade
+      return _SettingsCard(
+        children: [
+          BouncyTap(
+            onTap: () => Navigator.pushNamed(context, AppRoutes.upgrade),
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.m),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      gradient: AppColors.accentGradient,
+                      borderRadius: AppRadius.mediumRadius,
+                    ),
+                    child: const Icon(
+                      Icons.star_outline,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.m),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Upgrade to Premium',
+                          style: AppTypography.headline.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Unlimited protocols, widgets & more',
+                          style: AppTypography.caption1.copyWith(
+                            color: AppColors.mediumGray,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.m,
+                      vertical: AppSpacing.s,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppColors.accentGradient,
+                      borderRadius: AppRadius.mediumRadius,
+                    ),
+                    child: Text(
+                      'PRO',
+                      style: AppTypography.caption1.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+  }
+
+  String _formatDate(DateTime date) {
+    final months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
   String _formatTime(TimeOfDay time) {
@@ -938,6 +1125,51 @@ class _ThemeOption extends StatelessWidget {
           ? Icon(Icons.check_circle, color: AppColors.primaryBlue)
           : null,
       onTap: onTap,
+    );
+  }
+}
+
+class _PremiumFeatureChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+
+  const _PremiumFeatureChip({
+    required this.label,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.s,
+        vertical: AppSpacing.xs,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.accent.withOpacity(0.1),
+        borderRadius: AppRadius.smallRadius,
+        border: Border.all(
+          color: AppColors.accent.withOpacity(0.2),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: AppColors.accent,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: AppTypography.caption2.copyWith(
+              color: AppColors.accent,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

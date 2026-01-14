@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:provider/provider.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/theme/app_typography.dart';
+import '../../../core/services/premium_service.dart';
 
 class UpgradeScreen extends StatefulWidget {
   const UpgradeScreen({super.key});
@@ -16,6 +18,8 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
   int _currentPage = 0;
   PlanType _selectedPlan = PlanType.yearly;
 
+  bool _isPurchasing = false;
+
   final List<_FeatureSlide> _features = [
     _FeatureSlide(
       title: 'Unlimited Protocols & Stacking',
@@ -23,14 +27,14 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
       icon: Icons.science_outlined,
     ),
     _FeatureSlide(
-      title: 'Advanced Analytics',
-      description: 'Deep insights into your progress',
-      icon: Icons.analytics_outlined,
+      title: 'Medium & Large Widgets',
+      description: 'Beautiful home screen widgets',
+      icon: Icons.widgets_outlined,
     ),
     _FeatureSlide(
-      title: 'Calendar Sync',
-      description: 'Sync doses to Apple Calendar',
-      icon: Icons.calendar_month_outlined,
+      title: 'AI Insights',
+      description: 'AI-powered protocol recommendations',
+      icon: Icons.auto_awesome,
     ),
     _FeatureSlide(
       title: 'Priority Support',
@@ -43,6 +47,103 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Future<void> _handlePurchase(BuildContext context) async {
+    setState(() => _isPurchasing = true);
+    
+    try {
+      final premiumService = context.read<PremiumService>();
+      
+      // Get the appropriate package based on selected plan
+      final package = _selectedPlan == PlanType.yearly
+          ? premiumService.yearlyPackage
+          : premiumService.monthlyPackage;
+      
+      if (package == null) {
+        // If no packages available from RevenueCat, show message
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Subscription products not yet configured. Please try again later.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+      
+      // Attempt purchase via RevenueCat
+      final success = await premiumService.purchasePackage(package);
+      
+      if (!mounted) return;
+      
+      if (success) {
+        // Show success and close
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('🎉 Welcome to Premium!'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Purchase failed: ${e.toString()}'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isPurchasing = false);
+      }
+    }
+  }
+
+  Future<void> _handleRestore(BuildContext context) async {
+    setState(() => _isPurchasing = true);
+    
+    try {
+      final premiumService = context.read<PremiumService>();
+      final restored = await premiumService.restorePurchases();
+      
+      if (!mounted) return;
+      
+      if (restored) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Purchase restored successfully!'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+        Navigator.pop(context);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No previous purchase found'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Restore failed: ${e.toString()}'),
+          behavior: SnackBarBehavior.floating,
+          backgroundColor: AppColors.error,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isPurchasing = false);
+      }
+    }
   }
 
   @override
@@ -172,15 +273,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                         width: double.infinity,
                         height: 56,
                         child: ElevatedButton(
-                          onPressed: () {
-                            // TODO: Implement purchase
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
-                                content: Text('Premium features coming soon!'),
-                                behavior: SnackBarBehavior.floating,
-                              ),
-                            );
-                          },
+                          onPressed: _isPurchasing ? null : () => _handlePurchase(context),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: AppColors.accent,
                             foregroundColor: AppColors.white,
@@ -189,13 +282,22 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
                             ),
                             elevation: 0,
                           ),
-                          child: Text(
-                            'Upgrade to Premium',
-                            style: AppTypography.headline.copyWith(
-                              color: AppColors.white,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
+                          child: _isPurchasing
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  ),
+                                )
+                              : Text(
+                                  'Upgrade to Premium',
+                                  style: AppTypography.headline.copyWith(
+                                    color: AppColors.white,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
                         ),
                       )
                           .animate()
@@ -216,15 +318,7 @@ class _UpgradeScreenState extends State<UpgradeScreen> {
 
                       // Restore Purchase button
                       TextButton(
-                        onPressed: () {
-                          // TODO: Implement restore purchase
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Restore purchase coming soon!'),
-                              behavior: SnackBarBehavior.floating,
-                            ),
-                          );
-                        },
+                        onPressed: _isPurchasing ? null : () => _handleRestore(context),
                         style: TextButton.styleFrom(
                           padding: EdgeInsets.zero,
                           minimumSize: const Size(0, 36),

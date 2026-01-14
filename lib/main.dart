@@ -1,14 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:purchases_flutter/purchases_flutter.dart';
 
 import 'app.dart';
 import 'core/services/calendar_service.dart';
 import 'core/services/database_service.dart';
 import 'core/services/notification_service.dart';
 import 'core/services/storage_service.dart';
+import 'core/services/premium_service.dart';
 import 'features/protocols/data/protocol_repository.dart';
 import 'features/protocols/presentation/protocol_provider.dart';
 import 'features/library/data/peptide_repository.dart';
@@ -25,6 +28,9 @@ void main() async {
   
   // Initialize timezone data
   tz.initializeTimeZones();
+  
+  // Initialize RevenueCat
+  await _initializeRevenueCat();
   
   // Set preferred orientations
   await SystemChrome.setPreferredOrientations([
@@ -44,6 +50,10 @@ void main() async {
   
   final calendarService = CalendarService();
   
+  // Initialize premium service
+  final premiumService = PremiumService();
+  await premiumService.initialize();
+  
   // Initialize repositories
   final protocolRepository = ProtocolRepository(databaseService);
   final peptideRepository = PeptideRepository(databaseService);
@@ -58,6 +68,7 @@ void main() async {
         Provider<StorageService>.value(value: storageService),
         Provider<NotificationService>.value(value: notificationService),
         Provider<CalendarService>.value(value: calendarService),
+        ChangeNotifierProvider<PremiumService>.value(value: premiumService),
         
         // Repositories
         Provider<ProtocolRepository>.value(value: protocolRepository),
@@ -90,3 +101,21 @@ void main() async {
   );
 }
 
+/// Initialize RevenueCat SDK
+Future<void> _initializeRevenueCat() async {
+  await Purchases.setLogLevel(LogLevel.debug);
+  
+  // Platform-specific API keys
+  // Note: Replace with production keys before release
+  String apiKey;
+  if (Platform.isIOS) {
+    apiKey = 'test_fQaWdMxsjZvqqAGATuUIVZrkIEb';
+  } else if (Platform.isAndroid) {
+    apiKey = 'test_fQaWdMxsjZvqqAGATuUIVZrkIEb'; // Use Android key when available
+  } else {
+    // Skip RevenueCat on unsupported platforms
+    return;
+  }
+  
+  await Purchases.configure(PurchasesConfiguration(apiKey));
+}
