@@ -5,7 +5,7 @@ import 'package:sqflite/sqflite.dart';
 class DatabaseService {
   static Database? _database;
   static const String _databaseName = 'pep_io.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   Future<Database> get database async {
     if (_database != null) return _database!;
@@ -170,6 +170,25 @@ class DatabaseService {
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Handle database migrations for future versions
+    if (oldVersion < 2) {
+      // Add Retatrutide peptide
+      final now = DateTime.now().millisecondsSinceEpoch;
+      await db.insert('peptides', _createPeptideMap(
+        id: 'retatrutide',
+        name: 'Retatrutide',
+        alternativeNames: ['LY3437943', 'Triple G'],
+        category: 'Body Composition / Metabolism',
+        categoryColor: '#E67E22',
+        description: 'Retatrutide is a novel triple agonist peptide that activates GIP, GLP-1, and glucagon receptors. It has shown promising results in clinical trials for weight management and metabolic health.',
+        benefits: ['Triple receptor action', 'Weight management', 'Metabolic support', 'Blood sugar regulation'],
+        researchProtocols: {'dosage_range': '1-12 mg', 'administration': 'Subcutaneous', 'duration': '24-48 weeks', 'frequency': 'Once weekly'},
+        reconstitution: {'common_vial_sizes': [5.0, 10.0], 'typical_water_volume': '1-2 mL', 'concentration_example': '10 mg + 2 mL = 5 mg/mL'},
+        considerations: 'Investigational peptide in Phase 3 trials. Triple agonist mechanism includes glucagon receptor activation for enhanced metabolic effects. Requires gradual dose titration.',
+        storage: 'Refrigerate at 2-8°C. Follow product-specific storage guidelines.',
+        stacksWellWith: [],
+        now: now,
+      ));
+    }
   }
 
   /// Seed the peptide database with initial data
@@ -362,6 +381,21 @@ class DatabaseService {
         reconstitution: {'common_vial_sizes': [], 'typical_water_volume': 'Pre-filled pens', 'concentration_example': 'Varies by product'},
         considerations: 'FDA approved. Novel dual-action mechanism. Requires dose titration.',
         storage: 'Refrigerate unused. Follow product-specific storage guidelines.',
+        stacksWellWith: [],
+        now: now,
+      ),
+      _createPeptideMap(
+        id: 'retatrutide',
+        name: 'Retatrutide',
+        alternativeNames: ['LY3437943', 'Triple G'],
+        category: 'Body Composition / Metabolism',
+        categoryColor: '#E67E22',
+        description: 'Retatrutide is a novel triple agonist peptide that activates GIP, GLP-1, and glucagon receptors. It has shown promising results in clinical trials for weight management and metabolic health.',
+        benefits: ['Triple receptor action', 'Weight management', 'Metabolic support', 'Blood sugar regulation'],
+        researchProtocols: {'dosage_range': '1-12 mg', 'administration': 'Subcutaneous', 'duration': '24-48 weeks', 'frequency': 'Once weekly'},
+        reconstitution: {'common_vial_sizes': [5.0, 10.0], 'typical_water_volume': '1-2 mL', 'concentration_example': '10 mg + 2 mL = 5 mg/mL'},
+        considerations: 'Investigational peptide in Phase 3 trials. Triple agonist mechanism includes glucagon receptor activation for enhanced metabolic effects. Requires gradual dose titration.',
+        storage: 'Refrigerate at 2-8°C. Follow product-specific storage guidelines.',
         stacksWellWith: [],
         now: now,
       ),

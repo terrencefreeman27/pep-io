@@ -281,9 +281,7 @@ class _PeptideDetailScreenState extends State<PeptideDetailScreen> {
                           color: AppColors.yellow,
                           child: Text(
                             peptide.considerations,
-                            style: AppTypography.body.copyWith(
-                              color: AppColors.darkGray,
-                            ),
+                            style: AppTypography.body,
                           ),
                         ),
 
@@ -339,31 +337,6 @@ class _PeptideDetailScreenState extends State<PeptideDetailScreen> {
                           ),
                         ),
 
-                      const SizedBox(height: AppSpacing.m),
-
-                      // User Notes
-                      _SectionCard(
-                        title: 'My Notes',
-                        icon: Icons.edit_note,
-                        color: categoryColor,
-                        trailing: IconButton(
-                          icon: const Icon(Icons.edit_outlined),
-                          onPressed: () => _editNotes(peptide),
-                        ),
-                        child: (peptide.userNotes?.isEmpty ?? true)
-                            ? Text(
-                                'Tap to add your personal notes...',
-                                style: AppTypography.body.copyWith(
-                                  color: AppColors.mediumGray,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              )
-                            : Text(
-                                peptide.userNotes!,
-                                style: AppTypography.body,
-                              ),
-                      ),
-
                       const SizedBox(height: AppSpacing.xl),
 
                       // Disclaimer
@@ -408,56 +381,6 @@ class _PeptideDetailScreenState extends State<PeptideDetailScreen> {
 
   void _sharePeptide(Peptide peptide) {
     // Share peptide info
-  }
-
-  void _editNotes(Peptide peptide) {
-    final controller = TextEditingController(text: peptide.userNotes);
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (context) => Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(AppSpacing.m),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text('My Notes', style: AppTypography.headline),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () {
-                      context.read<PeptideProvider>().updateUserNotes(
-                            peptide.id,
-                            controller.text,
-                          );
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Save'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.m),
-              TextField(
-                controller: controller,
-                maxLines: 6,
-                autofocus: true,
-                decoration: const InputDecoration(
-                  hintText: 'Add your personal notes about this peptide...',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.m),
-            ],
-          ),
-        ),
-      ),
-    );
   }
 }
 

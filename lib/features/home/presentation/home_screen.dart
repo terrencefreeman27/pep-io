@@ -153,32 +153,90 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
               children: [
                 Text(
-                  _getGreeting(),
+                  'Hello',
                   style: AppTypography.subhead.copyWith(
                     color: AppColors.mediumGray,
                   ),
                     ),
-                    const SizedBox(width: 4),
-                    Text(_getGreetingEmoji()),
                   ],
                 ),
                 Text(
                   name ?? 'Welcome back',
-                  style: AppTypography.title2,
+                  style: AppTypography.headline.copyWith(
+                    color: AppColors.primaryBlue,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ],
             ),
           ),
           
-          // Settings button
+          // Upgrade button
+          BouncyTap(
+            onTap: () => Navigator.pushNamed(context, AppRoutes.upgrade),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.m,
+                vertical: AppSpacing.xs,
+              ),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFFFF6B35), // Orange
+                    Color(0xFFE53E3E), // Red
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFE53E3E).withOpacity(0.4),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Upgrade',
+                    style: AppTypography.subhead.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.star,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          const SizedBox(width: AppSpacing.s),
+          
+          // Notification bell
           Container(
             decoration: BoxDecoration(
               color: isDark ? AppColors.cardDark : AppColors.softGray,
               borderRadius: AppRadius.mediumRadius,
             ),
             child: IconButton(
-            onPressed: () => Navigator.pushNamed(context, AppRoutes.settings),
-            icon: const Icon(Icons.settings_outlined),
+              onPressed: () {
+                // TODO: Open notifications
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Notifications coming soon!'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              icon: const Icon(Icons.notifications_outlined),
               color: AppColors.mediumGray,
             ),
           ),

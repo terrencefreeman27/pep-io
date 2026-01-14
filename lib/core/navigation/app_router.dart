@@ -14,6 +14,7 @@ import '../../features/calculator/presentation/calculator_screen.dart';
 import '../../features/calendar/presentation/calendar_screen.dart';
 import '../../features/progress/presentation/progress_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
+import '../../features/upgrade/presentation/upgrade_screen.dart';
 
 /// App route names
 class AppRoutes {
@@ -36,6 +37,7 @@ class AppRoutes {
   static const String goals = '/settings/goals';
   static const String notifications = '/settings/notifications';
   static const String calendarSettings = '/settings/calendar';
+  static const String upgrade = '/upgrade';
 }
 
 /// App router for generating routes
@@ -143,6 +145,12 @@ class AppRouter {
             appBar: AppBar(title: const Text('Notification Settings')),
             body: const Center(child: Text('Notification Settings - Coming Soon')),
           ),
+        );
+        
+      case AppRoutes.upgrade:
+        return MaterialPageRoute(
+          builder: (_) => const UpgradeScreen(),
+          fullscreenDialog: true,
         );
         
       default:
